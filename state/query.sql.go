@@ -9,25 +9,157 @@ import (
 	"context"
 )
 
+const commentsForPost = `-- name: CommentsForPost :many
+SELECT id, post_id, author_id, content, score, db_created_at, db_updated_at FROM comments
+  WHERE post_id = $1
+`
+
+func (q *Queries) CommentsForPost(ctx context.Context, postID int64) ([]Comment, error) {
+	rows, err := q.db.Query(ctx, commentsForPost, postID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Comment
+	for rows.Next() {
+		var i Comment
+		if err := rows.Scan(
+			&i.ID,
+			&i.PostID,
+			&i.AuthorID,
+			&i.Content,
+			&i.Score,
+			&i.DbCreatedAt,
+			&i.DbUpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const createComment = `-- name: CreateComment :one
+WITH updated_posts AS (
+  UPDATE posts
+    SET comments_count = comments_count + 1
+    WHERE id = $1
+    RETURNING id
+)
+INSERT INTO comments (
+    post_id, author_id, content, score
+  ) VALUES (
+    $1, $2, $3, 1
+  )
+  RETURNING id, post_id, author_id, content, score, db_created_at, db_updated_at
+`
+
+type CreateCommentParams struct {
+	PostID   int64
+	AuthorID int64
+	Content  string
+}
+
+func (q *Queries) CreateComment(ctx context.Context, arg CreateCommentParams) (Comment, error) {
+	row := q.db.QueryRow(ctx, createComment, arg.PostID, arg.AuthorID, arg.Content)
+	var i Comment
+	err := row.Scan(
+		&i.ID,
+		&i.PostID,
+		&i.AuthorID,
+		&i.Content,
+		&i.Score,
+		&i.DbCreatedAt,
+		&i.DbUpdatedAt,
+	)
+	return i, err
+}
+
+const createPost = `-- name: CreatePost :one
+INSERT INTO posts (
+    title, url, author_id, score, comments_count
+  ) VALUES (
+    $1, $2, $3, 1, 0
+  )
+  RETURNING id, title, url, author_id, score, comments_count, created_at, db_created_at, db_updated_at
+`
+
+type CreatePostParams struct {
+	Title    string
+	Url      string
+	AuthorID int64
+}
+
+func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, error) {
+	row := q.db.QueryRow(ctx, createPost, arg.Title, arg.Url, arg.AuthorID)
+	var i Post
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Url,
+		&i.AuthorID,
+		&i.Score,
+		&i.CommentsCount,
+		&i.CreatedAt,
+		&i.DbCreatedAt,
+		&i.DbUpdatedAt,
+	)
+	return i, err
+}
+
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
-  name, role
+  username, role
 ) VALUES (
   $1, $2
 )
-RETURNING id, name, role
+RETURNING id, username, role, db_created_at, db_updated_at
 `
 
 type CreateUserParams struct {
-	Name string
-	Role RoleType
+	Username string
+	Role     UserRole
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
-	row := q.db.QueryRow(ctx, createUser, arg.Name, arg.Role)
+	row := q.db.QueryRow(ctx, createUser, arg.Username, arg.Role)
 	var i User
-	err := row.Scan(&i.ID, &i.Name, &i.Role)
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Role,
+		&i.DbCreatedAt,
+		&i.DbUpdatedAt,
+	)
 	return i, err
+}
+
+const deleteComment = `-- name: DeleteComment :exec
+WITH updated_posts AS (
+  UPDATE posts
+    SET comments_count = comments_count - 1
+    WHERE id = (SELECT post_id FROM comments WHERE id = $1)
+)
+DELETE FROM comments
+  WHERE comments.id = $1
+`
+
+func (q *Queries) DeleteComment(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, deleteComment, id)
+	return err
+}
+
+const deletePost = `-- name: DeletePost :exec
+DELETE FROM posts
+  WHERE id = $1
+`
+
+func (q *Queries) DeletePost(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, deletePost, id)
+	return err
 }
 
 const deleteUser = `-- name: DeleteUser :exec
@@ -40,20 +172,139 @@ func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 	return err
 }
 
-const getUser = `-- name: GetUser :one
-SELECT id, name, role FROM users
-  WHERE id = $1 LIMIT 1
+const downVotePost = `-- name: DownVotePost :one
+SELECT id, post_id, user_id, value, db_created_at, db_updated_at FROM down_vote_post($1, $2)
 `
 
-func (q *Queries) GetUser(ctx context.Context, id int64) (User, error) {
-	row := q.db.QueryRow(ctx, getUser, id)
-	var i User
-	err := row.Scan(&i.ID, &i.Name, &i.Role)
+type DownVotePostParams struct {
+	PostID int64
+	UserID int64
+}
+
+func (q *Queries) DownVotePost(ctx context.Context, arg DownVotePostParams) (PostVote, error) {
+	row := q.db.QueryRow(ctx, downVotePost, arg.PostID, arg.UserID)
+	var i PostVote
+	err := row.Scan(
+		&i.ID,
+		&i.PostID,
+		&i.UserID,
+		&i.Value,
+		&i.DbCreatedAt,
+		&i.DbUpdatedAt,
+	)
 	return i, err
 }
 
+const getComment = `-- name: GetComment :one
+
+SELECT id, post_id, author_id, content, score, db_created_at, db_updated_at FROM comments
+  WHERE id = $1 LIMIT 1
+`
+
+// ------------------------------------------------------------------------------
+// Comment Queries
+// ------------------------------------------------------------------------------
+func (q *Queries) GetComment(ctx context.Context, id int64) (Comment, error) {
+	row := q.db.QueryRow(ctx, getComment, id)
+	var i Comment
+	err := row.Scan(
+		&i.ID,
+		&i.PostID,
+		&i.AuthorID,
+		&i.Content,
+		&i.Score,
+		&i.DbCreatedAt,
+		&i.DbUpdatedAt,
+	)
+	return i, err
+}
+
+const getPost = `-- name: GetPost :one
+
+SELECT id, title, url, author_id, score, comments_count, created_at, db_created_at, db_updated_at FROM posts
+  WHERE id = $1 LIMIT 1
+`
+
+// ------------------------------------------------------------------------------
+// Post Queries
+// ------------------------------------------------------------------------------
+func (q *Queries) GetPost(ctx context.Context, id int64) (Post, error) {
+	row := q.db.QueryRow(ctx, getPost, id)
+	var i Post
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Url,
+		&i.AuthorID,
+		&i.Score,
+		&i.CommentsCount,
+		&i.CreatedAt,
+		&i.DbCreatedAt,
+		&i.DbUpdatedAt,
+	)
+	return i, err
+}
+
+const getUser = `-- name: GetUser :one
+
+SELECT id, username, role, db_created_at, db_updated_at FROM users
+  WHERE id = $1 LIMIT 1
+`
+
+// ------------------------------------------------------------------------------
+// User Queries
+// ------------------------------------------------------------------------------
+func (q *Queries) GetUser(ctx context.Context, id int64) (User, error) {
+	row := q.db.QueryRow(ctx, getUser, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Role,
+		&i.DbCreatedAt,
+		&i.DbUpdatedAt,
+	)
+	return i, err
+}
+
+const latestPosts = `-- name: LatestPosts :many
+SELECT id, title, url, author_id, score, comments_count, created_at, db_created_at, db_updated_at FROM posts
+  ORDER BY created_at DESC
+  LIMIT $1
+`
+
+func (q *Queries) LatestPosts(ctx context.Context, limit int32) ([]Post, error) {
+	rows, err := q.db.Query(ctx, latestPosts, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Post
+	for rows.Next() {
+		var i Post
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Url,
+			&i.AuthorID,
+			&i.Score,
+			&i.CommentsCount,
+			&i.CreatedAt,
+			&i.DbCreatedAt,
+			&i.DbUpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listUsers = `-- name: ListUsers :many
-SELECT id, name, role FROM users
+SELECT id, username, role, db_created_at, db_updated_at FROM users
   ORDER BY id
 `
 
@@ -66,7 +317,13 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 	var items []User
 	for rows.Next() {
 		var i User
-		if err := rows.Scan(&i.ID, &i.Name, &i.Role); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.Role,
+			&i.DbCreatedAt,
+			&i.DbUpdatedAt,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -75,4 +332,106 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const noneVotePost = `-- name: NoneVotePost :one
+SELECT id, post_id, user_id, value, db_created_at, db_updated_at FROM none_vote_post($1, $2)
+`
+
+type NoneVotePostParams struct {
+	PostID int64
+	UserID int64
+}
+
+func (q *Queries) NoneVotePost(ctx context.Context, arg NoneVotePostParams) (PostVote, error) {
+	row := q.db.QueryRow(ctx, noneVotePost, arg.PostID, arg.UserID)
+	var i PostVote
+	err := row.Scan(
+		&i.ID,
+		&i.PostID,
+		&i.UserID,
+		&i.Value,
+		&i.DbCreatedAt,
+		&i.DbUpdatedAt,
+	)
+	return i, err
+}
+
+const topPosts = `-- name: TopPosts :many
+SELECT id, title, url, author_id, score, comments_count, created_at, db_created_at, db_updated_at FROM posts
+  ORDER BY score DESC
+  LIMIT $1
+`
+
+func (q *Queries) TopPosts(ctx context.Context, limit int32) ([]Post, error) {
+	rows, err := q.db.Query(ctx, topPosts, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Post
+	for rows.Next() {
+		var i Post
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Url,
+			&i.AuthorID,
+			&i.Score,
+			&i.CommentsCount,
+			&i.CreatedAt,
+			&i.DbCreatedAt,
+			&i.DbUpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const upVotePost = `-- name: UpVotePost :one
+
+SELECT id, post_id, user_id, value, db_created_at, db_updated_at FROM up_vote_post($1, $2)
+`
+
+type UpVotePostParams struct {
+	PostID int64
+	UserID int64
+}
+
+// ------------------------------------------------------------------------------
+// Votes Queries
+// ------------------------------------------------------------------------------
+func (q *Queries) UpVotePost(ctx context.Context, arg UpVotePostParams) (PostVote, error) {
+	row := q.db.QueryRow(ctx, upVotePost, arg.PostID, arg.UserID)
+	var i PostVote
+	err := row.Scan(
+		&i.ID,
+		&i.PostID,
+		&i.UserID,
+		&i.Value,
+		&i.DbCreatedAt,
+		&i.DbUpdatedAt,
+	)
+	return i, err
+}
+
+const updateCommentContent = `-- name: UpdateCommentContent :exec
+UPDATE comments
+  SET content = $2
+  WHERE id = $1
+`
+
+type UpdateCommentContentParams struct {
+	ID      int64
+	Content string
+}
+
+func (q *Queries) UpdateCommentContent(ctx context.Context, arg UpdateCommentContentParams) error {
+	_, err := q.db.Exec(ctx, updateCommentContent, arg.ID, arg.Content)
+	return err
 }
