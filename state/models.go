@@ -99,13 +99,14 @@ func (ns NullVoteValue) Value() (driver.Value, error) {
 }
 
 type Comment struct {
-	ID          int64
-	PostID      int64
-	AuthorID    int64
-	Content     string
-	Score       int32
-	DbCreatedAt pgtype.Timestamptz
-	DbUpdatedAt pgtype.Timestamptz
+	ID              int64
+	PostID          int64
+	AuthorID        int64
+	ParentCommentID pgtype.Int8
+	Content         string
+	Score           int32
+	DbCreatedAt     pgtype.Timestamptz
+	DbUpdatedAt     pgtype.Timestamptz
 }
 
 type CommentVote struct {

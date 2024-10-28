@@ -7,10 +7,12 @@ package state
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const commentsForPost = `-- name: CommentsForPost :many
-SELECT id, post_id, author_id, content, score, db_created_at, db_updated_at FROM comments
+SELECT id, post_id, author_id, parent_comment_id, content, score, db_created_at, db_updated_at FROM comments
   WHERE post_id = $1
 `
 
@@ -27,6 +29,7 @@ func (q *Queries) CommentsForPost(ctx context.Context, postID int64) ([]Comment,
 			&i.ID,
 			&i.PostID,
 			&i.AuthorID,
+			&i.ParentCommentID,
 			&i.Content,
 			&i.Score,
 			&i.DbCreatedAt,
@@ -50,26 +53,33 @@ WITH updated_posts AS (
     RETURNING id
 )
 INSERT INTO comments (
-    post_id, author_id, content, score
+    post_id, author_id, parent_comment_id, content, score
   ) VALUES (
-    $1, $2, $3, 1
+    $1, $2, $3, $4, 1
   )
-  RETURNING id, post_id, author_id, content, score, db_created_at, db_updated_at
+  RETURNING id, post_id, author_id, parent_comment_id, content, score, db_created_at, db_updated_at
 `
 
 type CreateCommentParams struct {
-	PostID   int64
-	AuthorID int64
-	Content  string
+	PostID          int64
+	AuthorID        int64
+	ParentCommentID pgtype.Int8
+	Content         string
 }
 
 func (q *Queries) CreateComment(ctx context.Context, arg CreateCommentParams) (Comment, error) {
-	row := q.db.QueryRow(ctx, createComment, arg.PostID, arg.AuthorID, arg.Content)
+	row := q.db.QueryRow(ctx, createComment,
+		arg.PostID,
+		arg.AuthorID,
+		arg.ParentCommentID,
+		arg.Content,
+	)
 	var i Comment
 	err := row.Scan(
 		&i.ID,
 		&i.PostID,
 		&i.AuthorID,
+		&i.ParentCommentID,
 		&i.Content,
 		&i.Score,
 		&i.DbCreatedAt,
@@ -162,14 +172,27 @@ func (q *Queries) DeletePost(ctx context.Context, id int64) error {
 	return err
 }
 
-const deleteUser = `-- name: DeleteUser :exec
-DELETE FROM users
-WHERE id = $1
+const downVoteComment = `-- name: DownVoteComment :one
+SELECT id, comment_id, user_id, value, db_created_at, db_updated_at FROM down_vote_comment($1, $2)
 `
 
-func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
-	_, err := q.db.Exec(ctx, deleteUser, id)
-	return err
+type DownVoteCommentParams struct {
+	CommentID int64
+	UserID    int64
+}
+
+func (q *Queries) DownVoteComment(ctx context.Context, arg DownVoteCommentParams) (CommentVote, error) {
+	row := q.db.QueryRow(ctx, downVoteComment, arg.CommentID, arg.UserID)
+	var i CommentVote
+	err := row.Scan(
+		&i.ID,
+		&i.CommentID,
+		&i.UserID,
+		&i.Value,
+		&i.DbCreatedAt,
+		&i.DbUpdatedAt,
+	)
+	return i, err
 }
 
 const downVotePost = `-- name: DownVotePost :one
@@ -197,7 +220,7 @@ func (q *Queries) DownVotePost(ctx context.Context, arg DownVotePostParams) (Pos
 
 const getComment = `-- name: GetComment :one
 
-SELECT id, post_id, author_id, content, score, db_created_at, db_updated_at FROM comments
+SELECT id, post_id, author_id, parent_comment_id, content, score, db_created_at, db_updated_at FROM comments
   WHERE id = $1 LIMIT 1
 `
 
@@ -211,6 +234,7 @@ func (q *Queries) GetComment(ctx context.Context, id int64) (Comment, error) {
 		&i.ID,
 		&i.PostID,
 		&i.AuthorID,
+		&i.ParentCommentID,
 		&i.Content,
 		&i.Score,
 		&i.DbCreatedAt,
@@ -334,6 +358,29 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 	return items, nil
 }
 
+const noneVoteComment = `-- name: NoneVoteComment :one
+SELECT id, comment_id, user_id, value, db_created_at, db_updated_at FROM none_vote_comment($1, $2)
+`
+
+type NoneVoteCommentParams struct {
+	CommentID int64
+	UserID    int64
+}
+
+func (q *Queries) NoneVoteComment(ctx context.Context, arg NoneVoteCommentParams) (CommentVote, error) {
+	row := q.db.QueryRow(ctx, noneVoteComment, arg.CommentID, arg.UserID)
+	var i CommentVote
+	err := row.Scan(
+		&i.ID,
+		&i.CommentID,
+		&i.UserID,
+		&i.Value,
+		&i.DbCreatedAt,
+		&i.DbUpdatedAt,
+	)
+	return i, err
+}
+
 const noneVotePost = `-- name: NoneVotePost :one
 SELECT id, post_id, user_id, value, db_created_at, db_updated_at FROM none_vote_post($1, $2)
 `
@@ -391,6 +438,29 @@ func (q *Queries) TopPosts(ctx context.Context, limit int32) ([]Post, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const upVoteComment = `-- name: UpVoteComment :one
+SELECT id, comment_id, user_id, value, db_created_at, db_updated_at FROM up_vote_comment($1, $2)
+`
+
+type UpVoteCommentParams struct {
+	CommentID int64
+	UserID    int64
+}
+
+func (q *Queries) UpVoteComment(ctx context.Context, arg UpVoteCommentParams) (CommentVote, error) {
+	row := q.db.QueryRow(ctx, upVoteComment, arg.CommentID, arg.UserID)
+	var i CommentVote
+	err := row.Scan(
+		&i.ID,
+		&i.CommentID,
+		&i.UserID,
+		&i.Value,
+		&i.DbCreatedAt,
+		&i.DbUpdatedAt,
+	)
+	return i, err
 }
 
 const upVotePost = `-- name: UpVotePost :one

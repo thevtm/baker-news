@@ -18,10 +18,6 @@ INSERT INTO users (
 )
 RETURNING *;
 
--- name: DeleteUser :exec
-DELETE FROM users
-WHERE id = $1;
-
 
 --------------------------------------------------------------------------------
 -- Post Queries
@@ -70,9 +66,9 @@ WITH updated_posts AS (
     RETURNING id
 )
 INSERT INTO comments (
-    post_id, author_id, content, score
+    post_id, author_id, parent_comment_id, content, score
   ) VALUES (
-    $1, $2, $3, 1
+    $1, $2, $3, $4, 1
   )
   RETURNING *;
 
@@ -108,3 +104,11 @@ SELECT * FROM down_vote_post($1, $2);
 -- name: NoneVotePost :one
 SELECT * FROM none_vote_post($1, $2);
 
+-- name: UpVoteComment :one
+SELECT * FROM up_vote_comment($1, $2);
+
+-- name: DownVoteComment :one
+SELECT * FROM down_vote_comment($1, $2);
+
+-- name: NoneVoteComment :one
+SELECT * FROM none_vote_comment($1, $2);
