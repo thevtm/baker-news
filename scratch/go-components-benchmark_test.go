@@ -51,7 +51,7 @@ func BenchmarkStaticSmallToRaw(b *testing.B) {
 	raw_str := buf.String()
 
 	component := func() gc.Node {
-		return gc.Raw(fmt.Sprint(raw_str))
+		return gc.Raw(raw_str)
 	}
 
 	buf = new(bytes.Buffer)
