@@ -3,21 +3,23 @@
 // goarch: amd64
 // cpu: Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz
 // BenchmarkStaticSmall
-// BenchmarkStaticSmall-12          	 3317254	       328.2 ns/op	     104 B/op	       7 allocs/op
+// BenchmarkStaticSmall-12              	 3588330	       323.9 ns/op	     104 B/op	       7 allocs/op
 // BenchmarkStaticSmallToRaw
-// BenchmarkStaticSmallToRaw-12     	 7103900	       176.9 ns/op	      88 B/op	       4 allocs/op
+// BenchmarkStaticSmallToRaw-12         	36431824	        39.23 ns/op	      24 B/op	       1 allocs/op
 // BenchmarkDynamicSmall
-// BenchmarkDynamicSmall-12         	 3636391	       338.7 ns/op	      96 B/op	       7 allocs/op
+// BenchmarkDynamicSmall-12             	 3742520	       321.5 ns/op	      96 B/op	       7 allocs/op
 // BenchmarkDynamicSmallToRaw
-// BenchmarkDynamicSmallToRaw-12    	 5991890	       204.1 ns/op	      72 B/op	       4 allocs/op
+// BenchmarkDynamicSmallToRaw-12        	 6603398	       204.6 ns/op	      72 B/op	       4 allocs/op
 // BenchmarkStaticLarge
-// BenchmarkStaticLarge-12          	    2236	    694947 ns/op	  206976 B/op	   10810 allocs/op
+// BenchmarkStaticLarge-12              	    2380	    635167 ns/op	  206971 B/op	   10810 allocs/op
 // BenchmarkStaticLargeCache
-// BenchmarkStaticLargeCache-12     	    3601	    328425 ns/op	   39576 B/op	    5030 allocs/op
+// BenchmarkStaticLargeCache-12         	    3696	    320086 ns/op	   39575 B/op	    5030 allocs/op
 // BenchmarkStaticLargeToRaw
-// BenchmarkStaticLargeToRaw-12     	  284622	      4338 ns/op	   37070 B/op	       4 allocs/op
+// BenchmarkStaticLargeToRaw-12         	  530688	      2081 ns/op	   18432 B/op	       1 allocs/op
+// BenchmarkStaticLargeToRawCache
+// BenchmarkStaticLargeToRawCache-12    	  573744	      2024 ns/op	   18432 B/op	       1 allocs/op
 // PASS
-// ok  	command-line-arguments	10.835s
+// ok  	command-line-arguments	11.965s
 
 package main
 
@@ -164,10 +166,12 @@ func BenchmarkStaticLargeToRawCache(b *testing.B) {
 		return gc.Raw(raw_str)
 	}
 
+	node_raw := component()
+
 	buf = new(bytes.Buffer)
 
 	for i := 0; i < b.N; i++ {
-		component().Render(buf)
+		node_raw.Render(buf)
 		buf.Reset()
 	}
 }
