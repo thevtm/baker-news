@@ -28,12 +28,26 @@ services:
   #   volumes:
   #     - ./state/sql/migrations/:/migrations
 
-  adminer:
-    image: adminer
+  # pgAdmin is better
+  # adminer:
+  #   image: adminer
+  #   ports:
+  #     - 58081:8080
+  #   networks:
+  #     - std-network
+
+  pgadmin:
+    image: dpage/pgadmin4:8
     ports:
-      - 58081:8080
+      - 50080:80
+    environment:
+      PGADMIN_CONFIG_SERVER_MODE: "False" # Run in Desktop Mode, no need to log in.
+      PGADMIN_DEFAULT_EMAIL: "admin@domain.com"
+      PGADMIN_DEFAULT_PASSWORD: "password"
     networks:
       - std-network
+    volumes:
+      - ./docker-compose/pgadmin/data:/var/lib/pgadmin
 
   ############################
   # Redis state store

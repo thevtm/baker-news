@@ -2,9 +2,14 @@
 -- User Queries
 --------------------------------------------------------------------------------
 
--- name: GetUser :one
+-- name: GetUserByID :one
 SELECT * FROM users
   WHERE id = $1 LIMIT 1;
+
+-- name: GetUserByUsername :one
+SELECT * FROM users
+  WHERE LOWER(username) = LOWER($1)
+  LIMIT 1;
 
 -- name: ListUsers :many
 SELECT * FROM users
@@ -17,6 +22,12 @@ INSERT INTO users (
   $1, $2
 )
 RETURNING *;
+
+-- name: IsUsernameTaken :one
+SELECT EXISTS (
+  SELECT 1 FROM users
+    WHERE LOWER(username) = LOWER($1)
+);
 
 
 --------------------------------------------------------------------------------
