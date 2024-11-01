@@ -1,0 +1,76 @@
+package posts
+
+import (
+  "fmt"
+  "net/url"
+  "github.com/thevtm/baker-news/app/template_page"
+  "github.com/thevtm/baker-news/state"
+)
+
+func PostPageURL(post *state.Post) string {
+  return fmt.Sprintf("/post/%d", post.ID)
+}
+
+templ Post(post_row *state.TopPostsWithAuthorAndVotesForUserRow) {
+  {{ post := &post_row.Post }}
+  {{ author := &post_row.User }}
+  {{ vote_value, has_voted := post_row.VoteValue.VoteValue, post_row.VoteValue.Valid }}
+  {{ url, _ := url.Parse(post.Url) }}
+
+  <div class="flex my-1">
+    <div class="flex flex-col mx-2">
+      if has_voted {
+        if vote_value == state.VoteValueUp {
+          <button class="hover:grayscale" hx-get="/" hx-target="main" hx-push-url="true">🔼</button>
+          <button class="grayscale hover:grayscale-0" hx-get="/" hx-target="main" hx-push-url="true">🔽</button>
+        } else {
+          <button class="grayscale hover:grayscale-0" hx-get="/" hx-target="main" hx-push-url="true">🔼</button>
+          <button class="hover:grayscale" hx-get="/" hx-target="main" hx-push-url="true">🔽</button>
+        }
+      } else {
+        <button class="grayscale hover:grayscale-0" hx-get="/" hx-target="main" hx-push-url="true">🔼</button>
+        <button class="grayscale hover:grayscale-0" hx-get="/" hx-target="main" hx-push-url="true">🔽</button>
+      }
+
+    </div>
+
+    <div class="flex flex-col text-black">
+
+      <div class="flex">
+        <a href={ templ.SafeURL(post.Url) }>
+          <h1>{ post.Title }</h1>
+        </a>
+
+        if url.Host != "" {
+          <a href={ templ.SafeURL(fmt.Sprintf("%s://%s", url.Scheme, url.Host)) }
+            class="pl-1 text-xs text-gray-500 self-end hover:underline">
+            ({ url.Host })
+          </a>
+        }
+      </div>
+
+      <div class="flex text-xs text-gray-500">
+        <span class="post-score">{ fmt.Sprint(post.Score) }</span>&nbsp;points by { fmt.Sprint(author.Username) }
+        <span class="mx-1">|</span>
+        <a class="hover:underline" href={ templ.SafeURL(PostPageURL(post)) } hx-get={ PostPageURL(post) } hx-target="main" hx-push-url="true">{ fmt.Sprint(post.CommentsCount) } comments</a>
+      </div>
+
+    </div>
+  </div>
+}
+
+templ PostsList(post_rows *[]state.TopPostsWithAuthorAndVotesForUserRow) {
+  <div class="container mx-auto bg-orange-100 py-1">
+    for _, post_row := range *post_rows {
+      @Post(&post_row)
+    }
+  </div>
+}
+
+templ PostsMain(post_rows *[]state.TopPostsWithAuthorAndVotesForUserRow) {
+  @PostsList(post_rows)
+}
+
+templ PostsPage(user *state.User, post_rows *[]state.TopPostsWithAuthorAndVotesForUserRow) {
+  @template_page.TemplatePage(user, PostsList(post_rows))
+}

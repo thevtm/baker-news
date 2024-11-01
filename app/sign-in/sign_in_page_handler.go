@@ -16,9 +16,9 @@ func NewUserSignInHandler(queries *state.Queries) *UserSignInPageHandler {
 }
 
 func (h *UserSignInPageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	user_cookie := ParseUserCookieOrSetAsGuest(r, w)
+	user := GetAuthContext(r.Context()).User
 
-	if user_cookie.IsUser() {
+	if user.IsUser() {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
@@ -30,5 +30,5 @@ func (h *UserSignInPageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	SignInPage("").Render(r.Context(), w)
+	SignInPage(&user, "").Render(r.Context(), w)
 }

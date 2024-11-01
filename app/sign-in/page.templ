@@ -1,7 +1,8 @@
 package signin
 
 import (
-  "github.com/thevtm/baker-news/ui/base_page"
+  "github.com/thevtm/baker-news/app/template_page"
+	"github.com/thevtm/baker-news/state"
 )
 
 templ SignInMain(error_message string) {
@@ -9,10 +10,12 @@ templ SignInMain(error_message string) {
     <div class="p-16 flex flex-col items-center">
       <h1 class="text-base">Sign in / Register</h1>
 
-      <form class="flex flex-col" action="/sign-in" method="POST" hx-target="#main">
+      <form class="flex flex-col" hx-post="/sign-in" method="POST" hx-target="#main">
 
         if error_message != "" {
-          <div class="text-red-500">{error_message}</div>
+          <div class="mt-2 text-red-500 text-center">{error_message}</div>
+        } else {
+          <div class="mt-2 text-red-500" style="visibility: hidden;">Hidden</div>
         }
 
         <input class="m-2 bg-gray-100" type="text" id="username" name="username" placeholder="Username" required>
@@ -24,6 +27,6 @@ templ SignInMain(error_message string) {
   </div>
 }
 
-templ SignInPage(error_message string) {
-  @base_page.BasePage(SignInMain(error_message))
+templ SignInPage(user *state.User, error_message string) {
+  @template_page.TemplatePage(user, SignInMain(error_message))
 }

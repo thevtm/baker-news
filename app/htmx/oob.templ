@@ -1,0 +1,17 @@
+package htmx
+
+templ HTMXOOB(id string, hx_swap_obb string, content templ.Component) {
+  <div id={id} hx-swap-oob={hx_swap_obb}>
+    @content
+  </div>
+}
+
+templ HTMXRedirectForOOB(path string, target string) {
+  <div
+    hx-get={path}
+    hx-trigger="load"
+    hx-target={target}
+    hx-push-url={path}
+  ></div>
+}
+
