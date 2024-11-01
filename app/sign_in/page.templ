@@ -1,11 +1,11 @@
-package signin
+package sign_in
 
 import (
   "github.com/thevtm/baker-news/app/template_page"
 	"github.com/thevtm/baker-news/state"
 )
 
-templ SignInMain(error_message string) {
+templ SignInMain(error_message string, redirect_to string) {
   <div class="container mx-auto bg-orange-100">
     <div class="p-16 flex flex-col items-center">
       <h1 class="text-base">Sign in / Register</h1>
@@ -18,6 +18,8 @@ templ SignInMain(error_message string) {
           <div class="mt-2 text-red-500" style="visibility: hidden;">Hidden</div>
         }
 
+        <input type="hidden" name="redirect_to" value={redirect_to}>
+
         <input class="m-2 bg-gray-100" type="text" id="username" name="username" placeholder="Username" required>
         <input class="m-2 bg-gray-100" type="password" id="password" name="password" placeholder="Password">
 
@@ -27,6 +29,6 @@ templ SignInMain(error_message string) {
   </div>
 }
 
-templ SignInPage(user *state.User, error_message string) {
-  @template_page.TemplatePage(user, SignInMain(error_message))
+templ SignInPage(user *state.User, error_message string, redirect_to string) {
+  @template_page.TemplatePage(user, SignInMain(error_message, redirect_to))
 }

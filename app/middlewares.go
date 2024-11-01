@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	app_ctx "github.com/thevtm/baker-news/app/context"
-	signin "github.com/thevtm/baker-news/app/sign-in"
+	signin "github.com/thevtm/baker-news/app/sign_in"
 )
 
 ////////////////////////////////////////

@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/thevtm/baker-news/app/htmx"
-	signin "github.com/thevtm/baker-news/app/sign-in"
+	signin "github.com/thevtm/baker-news/app/sign_in"
 	"github.com/thevtm/baker-news/state"
 )
 
@@ -38,9 +38,9 @@ func (p *TopPostsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 2. Render the page
-	htmx_headers := htmx.NewHTMXHeaders(r.Header)
+	htmx_headers := htmx.ParseHTMXHeaders(r.Header)
 
-	if htmx_headers.IsHTMXRequest() && htmx_headers.HX_Target == "main" {
+	if htmx_headers.IsHTMXRequest() && htmx_headers.HXTarget == "main" {
 		PostsMain(&posts).Render(r.Context(), w)
 		return
 	}

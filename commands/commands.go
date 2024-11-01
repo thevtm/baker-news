@@ -11,5 +11,3 @@ type Commands struct {
 func New(queries *state.Queries) *Commands {
 	return &Commands{queries: queries}
 }
-
-

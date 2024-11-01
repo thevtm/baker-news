@@ -3,6 +3,8 @@ package posts
 import (
   "fmt"
   "net/url"
+
+  "github.com/samber/lo"
   "github.com/thevtm/baker-news/app/template_page"
   "github.com/thevtm/baker-news/state"
 )
@@ -11,34 +13,43 @@ func PostPageURL(post *state.Post) string {
   return fmt.Sprintf("/post/%d", post.ID)
 }
 
+func voteBoxID(postID int64) string {
+  return fmt.Sprintf("vote-box-%d", postID)
+}
+
+templ PostVoteButton(post_id int64, vote_value state.VoteValue, active bool) {
+  {{ post_vote_value := lo.If(active, state.VoteValueNone).Else(vote_value) }}
+  {{ vote_box_id := voteBoxID(post_id) }}
+
+  <button class={ lo.If(active, "").Else("grayscale") }
+    hx-post="./"
+    hx-target={ fmt.Sprintf("#%s", vote_box_id) }
+    hx-vals={ fmt.Sprintf(`{"post_id": %d, "vote_value": "%s"}`, post_id, post_vote_value) }>
+    { lo.If(vote_value == state.VoteValueUp, "🔼").Else("🔽") }
+  </button>
+}
+
+templ PostVoteBoxContents(post_id int64, vote_value state.VoteValue) {
+  @PostVoteButton(post_id, state.VoteValueUp, vote_value == state.VoteValueUp)
+  @PostVoteButton(post_id, state.VoteValueDown, vote_value == state.VoteValueDown)
+}
+
 templ Post(post_row *state.TopPostsWithAuthorAndVotesForUserRow) {
   {{ post := &post_row.Post }}
   {{ author := &post_row.User }}
-  {{ vote_value, has_voted := post_row.VoteValue.VoteValue, post_row.VoteValue.Valid }}
   {{ url, _ := url.Parse(post.Url) }}
 
   <div class="flex my-1">
-    <div class="flex flex-col mx-2">
-      if has_voted {
-        if vote_value == state.VoteValueUp {
-          <button class="hover:grayscale" hx-get="/" hx-target="main" hx-push-url="true">🔼</button>
-          <button class="grayscale hover:grayscale-0" hx-get="/" hx-target="main" hx-push-url="true">🔽</button>
-        } else {
-          <button class="grayscale hover:grayscale-0" hx-get="/" hx-target="main" hx-push-url="true">🔼</button>
-          <button class="hover:grayscale" hx-get="/" hx-target="main" hx-push-url="true">🔽</button>
-        }
-      } else {
-        <button class="grayscale hover:grayscale-0" hx-get="/" hx-target="main" hx-push-url="true">🔼</button>
-        <button class="grayscale hover:grayscale-0" hx-get="/" hx-target="main" hx-push-url="true">🔽</button>
-      }
-
+    <div id={ voteBoxID(post.ID) } class="flex flex-col mx-2">
+      {{ vote_value := lo.If(post_row.VoteValue.Valid, post_row.VoteValue.VoteValue).Else(state.VoteValueNone) }}
+      @PostVoteBoxContents(post.ID, vote_value)
     </div>
 
     <div class="flex flex-col text-black">
 
-      <div class="flex">
+      <div>
         <a href={ templ.SafeURL(post.Url) }>
-          <h1>{ post.Title }</h1>
+          { post.Title }
         </a>
 
         if url.Host != "" {

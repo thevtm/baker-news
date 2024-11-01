@@ -1,4 +1,4 @@
-package signin
+package sign_in
 
 import (
 	"context"
@@ -22,21 +22,21 @@ func NewUserSignInSubmitHandler(queries *state.Queries, commands *commands.Comma
 	return &UserSignInSubmitHandler{Queries: queries, Commands: commands}
 }
 
-func renderError(ctx context.Context, w http.ResponseWriter, err error) {
+func renderError(ctx context.Context, w http.ResponseWriter, err error, redirect_to string) {
 	SetAuthCookie(w, &GuestCookie)
 
 	var validation_err *commands.ErrCommandValidationFailed
 	if errors.As(err, &validation_err) {
-		SignInMain(validation_err.Error()).Render(ctx, w)
+		SignInMain(validation_err.Error(), redirect_to).Render(ctx, w)
 		return
 	}
 
 	slog.ErrorContext(ctx, "UserSignInSubmitHandler failed", slog.Any("error", err))
-	SignInMain("An error occurred").Render(ctx, w)
+	SignInMain("An error occurred", redirect_to).Render(ctx, w)
 }
 
-func renderSuccess(w http.ResponseWriter) {
-	htmx.HTMXLocation(w, "/", "body")
+func renderSuccess(w http.ResponseWriter, redirect_to string) {
+	htmx.HTMXLocation(w, redirect_to, "body")
 }
 
 func (h *UserSignInSubmitHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -47,11 +47,16 @@ func (h *UserSignInSubmitHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 	username_form_value := r.FormValue("username")
 	username_form_value = strings.TrimSpace(username_form_value)
 
+	// We don't do anything with the password
 	password_form_value := r.FormValue("password")
+
+	redirect_to_form_value := r.FormValue("redirect_to")
+	redirect_to := redirect_to_form_value
 
 	slog.DebugContext(r.Context(), "Login form submitted",
 		slog.String("username_form_value", username_form_value),
 		slog.String("password_form_value", password_form_value),
+		slog.String("redirect_to_form_value", redirect_to_form_value),
 	)
 
 	// 2. Try to sign in the user
@@ -59,7 +64,7 @@ func (h *UserSignInSubmitHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 
 	if err != nil {
 		err = fmt.Errorf("failed to sign in user: %w", err)
-		renderError(ctx, w, err)
+		renderError(ctx, w, err, redirect_to)
 		return
 	}
 
@@ -74,7 +79,7 @@ func (h *UserSignInSubmitHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 			),
 		)
 
-		renderSuccess(w)
+		renderSuccess(w, redirect_to)
 		return
 	}
 
@@ -89,7 +94,7 @@ func (h *UserSignInSubmitHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 			slog.Any("error", err),
 		)
 
-		renderError(ctx, w, err)
+		renderError(ctx, w, err, redirect_to)
 		return
 	}
 
@@ -103,5 +108,5 @@ func (h *UserSignInSubmitHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 		),
 	)
 
-	renderSuccess(w)
+	renderSuccess(w, redirect_to)
 }
