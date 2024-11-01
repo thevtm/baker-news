@@ -26,12 +26,13 @@ templ BasePage(main templ.Component) {
     <header class="container mx-auto bg-orange-800 text-gray-100">
       <nav class="py-1 flex">
         <div class="flex grow">
-          <a class="mx-1 font-bold" href="#" hx-get="/" hx-target="main" hx-push-url="true">🥖</a>
-          <a class="mx-1 font-bold" href="#" hx-get="/" hx-target="main" hx-push-url="true">Backer News</a>
+          <a class="mx-1 font-bold" href="/" hx-get="/" hx-target="main" hx-push-url="true">🥖</a>
+          <a class="mx-1 font-bold" href="/" hx-get="/" hx-target="main" hx-push-url="true">Backer News</a>
         </div>
 
         <div class="flex">
-          <a class="mx-1" href="/sign-in">Sign In</a>
+          <a class="mx-1" href="/sign-in" hx-get="/sign-in" hx-target="main" hx-push-url="true">Sign In</a>
+          <a class="mx-1" href="/sign-out">Sign Out</a>
         </div>
       </nav>
     </header>

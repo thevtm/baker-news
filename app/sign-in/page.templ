@@ -1,0 +1,29 @@
+package signin
+
+import (
+  "github.com/thevtm/baker-news/ui/base_page"
+)
+
+templ SignInMain(error_message string) {
+  <div class="container mx-auto bg-orange-100">
+    <div class="p-16 flex flex-col items-center">
+      <h1 class="text-base">Sign in / Register</h1>
+
+      <form class="flex flex-col" action="/sign-in" method="POST" hx-target="#main">
+
+        if error_message != "" {
+          <div class="text-red-500">{error_message}</div>
+        }
+
+        <input class="m-2 bg-gray-100" type="text" id="username" name="username" placeholder="Username" required>
+        <input class="m-2 bg-gray-100" type="password" id="password" name="password" placeholder="Password">
+
+        <button class="py-1 px-2 bg-gray-300 self-center" type="submit">Submit</button>
+      </form>
+    </div>
+  </div>
+}
+
+templ SignInPage(error_message string) {
+  @base_page.BasePage(SignInMain(error_message))
+}

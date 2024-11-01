@@ -67,6 +67,8 @@ services:
       - "55540:5540"
     networks:
       - std-network
+    volumes:
+      - ./docker-compose/redis-insight/data:/data
 
   ############################
   # Zipkin tracing service

@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/thevtm/baker-news/state"
 )
@@ -10,33 +11,22 @@ var ErrUserSignUpCommandUsernameAlreadyTaken = NewErrCommandValidationFailed("us
 var ErrUserSignUpCommandUsernameTooShort = NewErrCommandValidationFailed("username is too short")
 var ErrUserSignUpCommandUsernameTooLong = NewErrCommandValidationFailed("username is too long")
 
-type UserSignUpCommand struct {
-	Username string
-}
+func (c *Commands) UserSignUp(ctx context.Context, username string) (state.User, error) {
+	queries := c.queries
+	var user state.User
 
-func NewUserSignUpCommand(username string) (*UserSignUpCommand, error) {
 	if len(username) < 5 {
-		return nil, ErrUserSignUpCommandUsernameTooShort
+		return user, ErrUserSignUpCommandUsernameTooShort
 	}
 
 	if len(username) > 20 {
-		return nil, ErrUserSignUpCommandUsernameTooLong
+		return user, ErrUserSignUpCommandUsernameTooLong
 	}
-
-	cmd := UserSignUpCommand{
-		Username: username,
-	}
-
-	return &cmd, nil
-}
-
-func (s *UserSignUpCommand) Execute(ctx context.Context, queries *state.Queries) (state.User, error) {
-	username := s.Username
 
 	is_username_taken, err := queries.IsUsernameTaken(ctx, username)
 
 	if err != nil {
-		return state.User{}, err
+		return state.User{}, fmt.Errorf("failed to verify if username was taken: %w", err)
 	}
 
 	if is_username_taken {
