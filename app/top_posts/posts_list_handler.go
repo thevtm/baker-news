@@ -4,8 +4,8 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/thevtm/baker-news/app/auth"
 	"github.com/thevtm/baker-news/app/htmx"
-	signin "github.com/thevtm/baker-news/app/sign_in"
 	"github.com/thevtm/baker-news/state"
 )
 
@@ -20,7 +20,7 @@ func NewTopPosts(queries *state.Queries) *TopPostsHandler {
 func (p *TopPostsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx, queries := r.Context(), p.queries
 
-	user := signin.GetAuthContext(ctx).User
+	user := auth.GetAuthContext(ctx).User
 
 	// 1. Retrieve top posts
 	query_params := &state.TopPostsWithAuthorAndVotesForUserParams{

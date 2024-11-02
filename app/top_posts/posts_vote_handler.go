@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/thevtm/baker-news/app/auth"
 	"github.com/thevtm/baker-news/app/htmx"
 	"github.com/thevtm/baker-news/app/shared_components"
-	"github.com/thevtm/baker-news/app/sign_in"
 	"github.com/thevtm/baker-news/commands"
 	"github.com/thevtm/baker-news/state"
 )
@@ -23,7 +23,7 @@ func NewPostListVoteHandler(commands *commands.Commands) *PostListVoteHandler {
 func (p *PostListVoteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx, commands := r.Context(), p.Commands
 
-	user := sign_in.GetAuthContext(ctx).User
+	user := auth.GetAuthContext(ctx).User
 
 	// 1. Redirect to sign in if user is guest
 	if user.IsGuest() {

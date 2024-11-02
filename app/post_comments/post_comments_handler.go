@@ -7,8 +7,8 @@ import (
 	"strconv"
 
 	"github.com/samber/lo"
+	"github.com/thevtm/baker-news/app/auth"
 	"github.com/thevtm/baker-news/app/htmx"
-	"github.com/thevtm/baker-news/app/sign_in"
 	"github.com/thevtm/baker-news/state"
 )
 
@@ -23,7 +23,7 @@ func NewPostCommentsHandler(queries *state.Queries) *PostCommentsHandler {
 func (p *PostCommentsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx, queries := r.Context(), p.Queries
 
-	user := sign_in.GetAuthContext(ctx).User
+	user := auth.GetAuthContext(ctx).User
 
 	// 1. Parse request
 	post_id_str := r.PathValue("post_id")
