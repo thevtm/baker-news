@@ -1,4 +1,4 @@
-package top_posts
+package post_block
 
 import (
 	"log/slog"
@@ -7,7 +7,6 @@ import (
 
 	"github.com/thevtm/baker-news/app/auth"
 	"github.com/thevtm/baker-news/app/htmx"
-	"github.com/thevtm/baker-news/app/shared_components"
 	"github.com/thevtm/baker-news/commands"
 	"github.com/thevtm/baker-news/state"
 )
@@ -70,5 +69,5 @@ func (p *PostListVoteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	)
 
 	// 4. Render the response
-	shared_components.PostVoteBoxContents(post_vote.PostID, post_vote.Value).Render(ctx, w)
+	PostVoteBoxContents(post_vote.PostID, post_vote.Value).Render(ctx, w)
 }

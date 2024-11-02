@@ -1,5 +1,4 @@
-package shared_components
-
+package post_block
 import (
   "fmt"
   "net/url"
@@ -21,7 +20,7 @@ templ PostVoteButton(post_id int64, vote_value state.VoteValue, active bool) {
   {{ vote_box_id := voteBoxID(post_id) }}
 
   <button class={ lo.If(active, "").Else("grayscale") }
-    hx-post="./"
+    hx-post="/post/vote"
     hx-target={ fmt.Sprintf("#%s", vote_box_id) }
     hx-vals={ fmt.Sprintf(`{"post_id": %d, "vote_value": "%s"}`, post_id, post_vote_value) }>
     { lo.If(vote_value == state.VoteValueUp, "🔼").Else("🔽") }
