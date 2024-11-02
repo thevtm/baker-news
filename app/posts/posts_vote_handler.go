@@ -46,7 +46,7 @@ func (p *PostListVoteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 			slog.String("post_id", post_id_arg),
 			slog.Any("error", err),
 		)
-		http.Error(w, "Invalid Post ID", http.StatusBadRequest)
+		http.Error(w, "Invalid Post", http.StatusBadRequest)
 		return
 	}
 
@@ -63,7 +63,7 @@ func (p *PostListVoteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	slog.InfoContext(ctx, "Post voted",
+	slog.InfoContext(ctx, "Post voted successfully",
 		slog.Int64("post_id", post_vote.PostID),
 		slog.String("vote_value", string(post_vote.Value)),
 	)
