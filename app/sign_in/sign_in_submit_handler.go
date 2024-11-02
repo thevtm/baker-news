@@ -25,7 +25,7 @@ func NewUserSignInSubmitHandler(queries *state.Queries, commands *commands.Comma
 func renderError(ctx context.Context, w http.ResponseWriter, err error, redirect_to string) {
 	SetAuthCookie(w, &GuestCookie)
 
-	var validation_err *commands.ErrCommandValidationFailed
+	var validation_err *commands.CommandValidationError
 	if errors.As(err, &validation_err) {
 		SignInMain(validation_err.Error(), redirect_to).Render(ctx, w)
 		return

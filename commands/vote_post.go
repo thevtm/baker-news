@@ -6,8 +6,8 @@ import (
 	"github.com/thevtm/baker-news/state"
 )
 
-var ErrVotePostCommandUserNotAllowed = NewErrCommandValidationFailed("user is not allowed to vote")
-var ErrVotePostCommandInvalidVoteValue = NewErrCommandValidationFailed("invalid vote value")
+var ErrVotePostCommandUserNotAllowed = NewCommandValidationError("user is not allowed to vote")
+var ErrVotePostCommandInvalidVoteValue = NewCommandValidationError("invalid vote value")
 
 func (c *Commands) UserVotePost(ctx context.Context, user *state.User, post_id int64, value state.VoteValue) (state.PostVote, error) {
 	queries := c.queries

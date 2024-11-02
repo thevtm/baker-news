@@ -3,6 +3,7 @@ package app
 import (
 	"net/http"
 
+	"github.com/thevtm/baker-news/app/post_comments"
 	"github.com/thevtm/baker-news/app/posts"
 	signin "github.com/thevtm/baker-news/app/sign_in"
 	"github.com/thevtm/baker-news/commands"
@@ -39,6 +40,14 @@ func (a *App) MakeServer() *http.ServeMux {
 
 	mux.Handle("POST /", post_vote_handler)
 	mux.Handle("POST /top", post_vote_handler)
+
+	// Post Comments
+	var post_comments_handler http.Handler = post_comments.NewPostCommentsHandler(a.Queries)
+	post_comments_handler = NewLoggingMiddleware(post_comments_handler)
+	post_comments_handler = signin.NewAuthMiddlewareHandler(post_comments_handler, a.Queries)
+	post_comments_handler = NewRequestIDMiddleware(post_comments_handler, &request_id_inc)
+
+	mux.Handle("GET /post/{post_id}", post_comments_handler)
 
 	// Sign In
 	var sign_in_handler http.Handler = signin.NewUserSignInHandler(a.Queries)

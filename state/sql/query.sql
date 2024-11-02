@@ -69,6 +69,12 @@ SELECT sqlc.embed(posts), sqlc.embed(author), post_votes.value AS vote_value FRO
   ORDER BY score DESC
   LIMIT $2;
 
+-- name: GetPostWithAuthorAndUserVote :one
+SELECT sqlc.embed(posts), sqlc.embed(author), post_votes.value AS vote_value FROM posts
+  JOIN users author ON posts.author_id = author.id
+  LEFT JOIN post_votes ON posts.id = post_votes.post_id AND post_votes.user_id = @user_id
+  WHERE posts.id = @post_id;
+
 --------------------------------------------------------------------------------
 -- Comment Queries
 --------------------------------------------------------------------------------
@@ -108,6 +114,12 @@ SELECT * FROM comments
 UPDATE comments
   SET content = $2
   WHERE id = $1;
+
+-- name: CommentsForPostWithAuthorAndVotesForUser :many
+SELECT sqlc.embed(comments), sqlc.embed(author), comment_votes.value AS vote_value FROM comments
+  JOIN users author ON comments.author_id = author.id
+  LEFT JOIN comment_votes ON comments.id = comment_votes.comment_id AND comment_votes.user_id = $1
+  WHERE comments.post_id = $2;
 
 
 --------------------------------------------------------------------------------

@@ -7,9 +7,9 @@ import (
 	"github.com/thevtm/baker-news/state"
 )
 
-var ErrUserSignUpCommandUsernameAlreadyTaken = NewErrCommandValidationFailed("username is already taken")
-var ErrUserSignUpCommandUsernameTooShort = NewErrCommandValidationFailed("username is too short")
-var ErrUserSignUpCommandUsernameTooLong = NewErrCommandValidationFailed("username is too long")
+var ErrUserSignUpCommandUsernameAlreadyTaken = NewCommandValidationError("username is already taken")
+var ErrUserSignUpCommandUsernameTooShort = NewCommandValidationError("username is too short")
+var ErrUserSignUpCommandUsernameTooLong = NewCommandValidationError("username is too long")
 
 func (c *Commands) UserSignUp(ctx context.Context, username string) (state.User, error) {
 	queries := c.queries
