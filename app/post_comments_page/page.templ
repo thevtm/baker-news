@@ -111,7 +111,7 @@ templ PostMain(post *state.Post, author *state.User, post_vote_value state.VoteV
     <form class="mx-8 my-2 mb-6" hx-post="/post/comment/add" hx-target="#comments" hx-swap="afterbegin">
       <input type="hidden" name="post_id" value={ fmt.Sprint(post.ID) }>
       <textarea _="on htmx:afterRequest from closest <form/> set my value to ''"
-        class="my-2 block w-full" name="content" rows="8" wrap="virtual"></textarea>
+        class="my-2 block w-full" name="content" rows="8" wrap="virtual"/>
       <button class="py-1 px-2 bg-gray-300" type="submit">Add Comment</button>
     </form>
 
