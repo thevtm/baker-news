@@ -60,6 +60,17 @@ SELECT * FROM posts
   ORDER BY created_at DESC
   LIMIT $1;
 
+-- name: PostWithAuthor :one
+SELECT sqlc.embed(posts), sqlc.embed(author) FROM posts
+  JOIN users author ON posts.author_id = author.id
+  WHERE posts.id = @post_id;
+
+-- name: GetPostWithAuthorAndUserVote :one
+SELECT sqlc.embed(posts), sqlc.embed(author), post_votes.value AS vote_value FROM posts
+  JOIN users author ON posts.author_id = author.id
+  LEFT JOIN post_votes ON posts.id = post_votes.post_id AND post_votes.user_id = @user_id
+  WHERE posts.id = @post_id;
+
 -- TODO: Look into performance of this query, maybe add a multicolumn index
 -- TODO: I ran into a bug where using `sqlc.embed` with a `LEFT JOIN` didn't work as expected (https://github.com/sqlc-dev/sqlc/issues/3269)
 -- name: TopPostsWithAuthorAndVotesForUser :many
@@ -68,12 +79,6 @@ SELECT sqlc.embed(posts), sqlc.embed(author), post_votes.value AS vote_value FRO
   LEFT JOIN post_votes ON posts.id = post_votes.post_id AND post_votes.user_id = $1
   ORDER BY score DESC
   LIMIT $2;
-
--- name: GetPostWithAuthorAndUserVote :one
-SELECT sqlc.embed(posts), sqlc.embed(author), post_votes.value AS vote_value FROM posts
-  JOIN users author ON posts.author_id = author.id
-  LEFT JOIN post_votes ON posts.id = post_votes.post_id AND post_votes.user_id = @user_id
-  WHERE posts.id = @post_id;
 
 --------------------------------------------------------------------------------
 -- Comment Queries
@@ -119,7 +124,8 @@ UPDATE comments
 SELECT sqlc.embed(comments), sqlc.embed(author), comment_votes.value AS vote_value FROM comments
   JOIN users author ON comments.author_id = author.id
   LEFT JOIN comment_votes ON comments.id = comment_votes.comment_id AND comment_votes.user_id = $1
-  WHERE comments.post_id = $2;
+  WHERE comments.post_id = $2
+  ORDER BY comments.id ASC;
 
 
 --------------------------------------------------------------------------------

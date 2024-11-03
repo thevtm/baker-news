@@ -34,7 +34,7 @@ func (a *App) MakeServer() *http.ServeMux {
 	mux.Handle("GET /top", posts_handler)
 
 	// Post Vote
-	var post_vote_handler http.Handler = post_block.NewPostListVoteHandler(a.Commands)
+	var post_vote_handler http.Handler = post_block.NewPostListVoteHandler(a.Queries, a.Commands)
 	post_vote_handler = NewLoggingMiddleware(post_vote_handler)
 	post_vote_handler = auth.NewAuthMiddlewareHandler(post_vote_handler, a.Queries)
 	post_vote_handler = NewRequestIDMiddleware(post_vote_handler, &request_id_inc)

@@ -43,7 +43,7 @@ func ParseAuthCookie(r *http.Request) (AuthCookie, bool, error) {
 	// 1. Check if User cookie is present
 	user_id_cookie := r.CookiesNamed(AuthCookieUserIDName)
 	user_id_cookie_present := len(user_id_cookie) > 0
-	assert.LessOrEqual(user_id_cookie, 1, "User id cookie must be present at most once")
+	assert.LessOrEqual(len(user_id_cookie), 1, "User id cookie must be present at most once")
 
 	if !user_id_cookie_present {
 		return user_cookie, false, nil
@@ -60,7 +60,7 @@ func ParseAuthCookie(r *http.Request) (AuthCookie, bool, error) {
 	// 3. Parse user role cookie
 	user_role_cookie := r.CookiesNamed(AuthCookieRoleName)
 	user_role_cookie_present := len(user_role_cookie) > 0
-	assert.LessOrEqual(user_role_cookie, 1, "User role cookie must be present at most once")
+	assert.LessOrEqual(len(user_role_cookie), 1, "User role cookie must be present at most once")
 
 	if !user_role_cookie_present {
 		return user_cookie, false, nil
