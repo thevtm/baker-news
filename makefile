@@ -178,7 +178,7 @@ db/goose-alias:
 		GOOSE_DRIVER=pgx \
 		GOOSE_DBSTRING="$(DATABASE_URI)" \
 		go run $(GOOSE_PKG) \
-		--dir $(MIGRATIONS_DIRECTORY)\'
+		-dir $(GOOSE_MIGRATIONS_DIRECTORY)\'
 
 
 # ==================================================================================== #

@@ -107,6 +107,7 @@ type Comment struct {
 	Score           int32
 	DbCreatedAt     pgtype.Timestamptz
 	DbUpdatedAt     pgtype.Timestamptz
+	CreatedAt       pgtype.Timestamptz
 }
 
 type CommentVote struct {

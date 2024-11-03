@@ -12,16 +12,18 @@ import (
 	"fmt"
 
 	"github.com/samber/lo"
+	"github.com/thevtm/baker-news/app/components"
 	"github.com/thevtm/baker-news/app/post_block"
 	"github.com/thevtm/baker-news/app/template_page"
 	"github.com/thevtm/baker-news/state"
+	"github.com/xeonx/timeago"
 )
 
 func voteBoxID(postID int64) string {
 	return fmt.Sprintf("comment-vote-box-%d", postID)
 }
 
-func CommentVoteButton(comment_id int64, vote_value state.VoteValue, active bool) templ.Component {
+func Comment(comment *state.Comment, author *state.User, vote_value state.VoteValue) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -42,66 +44,103 @@ func CommentVoteButton(comment_id int64, vote_value state.VoteValue, active bool
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		post_vote_value := lo.If(active, state.VoteValueNone).Else(vote_value)
-		vote_box_id := voteBoxID(comment_id)
-		var templ_7745c5c3_Var2 = []any{lo.If(active, "").Else("grayscale")}
-		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var2...)
+		comment_block_id := fmt.Sprintf("post-block-%d", comment.ID)
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<button class=\"")
+		var templ_7745c5c3_Var2 string
+		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(comment_block_id)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `app/post_comments_page/page.templ`, Line: 22, Col: 27}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"flex my-1\"><div class=\"flex flex-col mx-2\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		up := vote_value == state.VoteValueUp
+		templ_7745c5c3_Err = components.VoteButton(components.VoteButtonParams{
+			HxPost:   "/post/comment/vote",
+			HxTarget: "#" + comment_block_id,
+			HxSwap:   "outerHTML",
+			HxVals: fmt.Sprintf(`{"comment_id": %d, "vote_value": "%s"}`, comment.ID,
+				lo.If(up, state.VoteValueNone).Else(state.VoteValueUp)),
+			Active: up,
+			Icon:   components.VoteIconUp(),
+		}).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		down := vote_value == state.VoteValueDown
+		templ_7745c5c3_Err = components.VoteButton(components.VoteButtonParams{
+			HxPost:   "/post/comment/vote",
+			HxTarget: "#" + comment_block_id,
+			HxSwap:   "outerHTML",
+			HxVals: fmt.Sprintf(`{"comment_id": %d, "vote_value": "%s"}`, comment.ID,
+				lo.If(down, state.VoteValueNone).Else(state.VoteValueDown)),
+			Active: down,
+			Icon:   components.VoteIconDown(),
+		}).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><div class=\"flex flex-col text-black\"><div class=\"flex text-xs text-gray-500\"><span class=\"post-score\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var3 string
-		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(templ.CSSClasses(templ_7745c5c3_Var2).String())
+		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprint(comment.Score))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `app/post_comments_page/page.templ`, Line: 1, Col: 0}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `app/post_comments_page/page.templ`, Line: 50, Col: 60}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" hx-post=\"/post/comment/vote\" hx-target=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</span>&nbsp;points by ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var4 string
-		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("#%s", vote_box_id))
+		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprint(author.Username))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `app/post_comments_page/page.templ`, Line: 22, Col: 47}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `app/post_comments_page/page.templ`, Line: 50, Col: 114}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" hx-vals=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var5 string
-		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf(`{"comment_id": %d, "vote_value": "%s"}`, comment_id, post_vote_value))
+		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(timeago.English.Format(comment.CreatedAt.Time))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `app/post_comments_page/page.templ`, Line: 23, Col: 96}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `app/post_comments_page/page.templ`, Line: 51, Col: 56}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" <span class=\"mx-1\">|</span> <a class=\"hover:underline\" href=\"/post/comment/edit\">edit</a></div><div class=\"text-sm\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var6 string
-		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(lo.If(vote_value == state.VoteValueUp, "🔼").Else("🔽"))
+		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprint(comment.Content))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `app/post_comments_page/page.templ`, Line: 24, Col: 65}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `app/post_comments_page/page.templ`, Line: 57, Col: 37}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</button>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -109,7 +148,7 @@ func CommentVoteButton(comment_id int64, vote_value state.VoteValue, active bool
 	})
 }
 
-func Comment(comment_node *PostCommentNode) templ.Component {
+func CommentNode(comment_node *PostCommentNode) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -137,21 +176,16 @@ func Comment(comment_node *PostCommentNode) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var8 string
-		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("[%d]%s %s %s", comment.Score, vote_value, author.Username, comment.Content))
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `app/post_comments_page/page.templ`, Line: 34, Col: 94}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
+		templ_7745c5c3_Err = Comment(comment, author, vote_value).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"pl-2\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"pl-8\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		for _, child := range comment_node.Children {
-			templ_7745c5c3_Err = Comment(child).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = CommentNode(child).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -180,9 +214,9 @@ func PostMain(post *state.Post, author *state.User, post_vote_value state.VoteVa
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var9 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var9 == nil {
-			templ_7745c5c3_Var9 = templ.NopComponent
+		templ_7745c5c3_Var8 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var8 == nil {
+			templ_7745c5c3_Var8 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"container mx-auto bg-orange-100 py-1\">")
@@ -197,12 +231,12 @@ func PostMain(post *state.Post, author *state.User, post_vote_value state.VoteVa
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var10 string
-		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprint(post.ID))
+		var templ_7745c5c3_Var9 string
+		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprint(post.ID))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `app/post_comments_page/page.templ`, Line: 49, Col: 69}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `app/post_comments_page/page.templ`, Line: 86, Col: 69}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -211,7 +245,7 @@ func PostMain(post *state.Post, author *state.User, post_vote_value state.VoteVa
 			return templ_7745c5c3_Err
 		}
 		for _, comment_node := range *comment_roots {
-			templ_7745c5c3_Err = Comment(comment_node).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = CommentNode(comment_node).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -240,9 +274,9 @@ func PostPage(user *state.User, post *state.Post, author *state.User, post_vote_
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var11 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var11 == nil {
-			templ_7745c5c3_Var11 = templ.NopComponent
+		templ_7745c5c3_Var10 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var10 == nil {
+			templ_7745c5c3_Var10 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
 		templ_7745c5c3_Err = template_page.TemplatePage(user, PostMain(post, author, post_vote_value, comment_roots)).Render(ctx, templ_7745c5c3_Buffer)
