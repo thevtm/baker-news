@@ -46,7 +46,7 @@ func SignInMain(error_message string, redirect_to string) templ.Component {
 			var templ_7745c5c3_Var2 string
 			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(error_message)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `app/sign_in/page.templ`, Line: 16, Col: 67}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `app/auth/page.templ`, Line: 16, Col: 67}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {
@@ -69,13 +69,13 @@ func SignInMain(error_message string, redirect_to string) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(redirect_to)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `app/sign_in/page.templ`, Line: 21, Col: 66}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `app/auth/page.templ`, Line: 21, Col: 66}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"> <input class=\"m-2 bg-gray-100\" type=\"text\" id=\"username\" name=\"username\" placeholder=\"Username\" required> <input class=\"m-2 bg-gray-100\" type=\"password\" id=\"password\" name=\"password\" placeholder=\"Password\"> <button class=\"py-1 px-2 bg-gray-300 self-center\" type=\"submit\">Submit</button></form></div></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"> <input id=\"sign-in-username\" class=\"m-2 bg-gray-100\" type=\"text\" id=\"username\" name=\"username\" placeholder=\"Username\" required hx-preserve> <input id=\"sign-in-password\" class=\"m-2 bg-gray-100\" type=\"password\" id=\"password\" name=\"password\" placeholder=\"Password\"> <button class=\"py-1 px-2 bg-gray-300 self-center\" type=\"submit\">Submit</button></form></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
