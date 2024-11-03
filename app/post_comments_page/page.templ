@@ -2,6 +2,7 @@ package post_comments_page
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/samber/lo"
   "github.com/thevtm/baker-news/state"
@@ -10,6 +11,29 @@ import (
 	"github.com/thevtm/baker-news/app/components"
 	"github.com/xeonx/timeago"
 )
+
+type PostCommentNode struct {
+	Comment   *state.Comment
+	Author    *state.User
+	VoteValue state.VoteValue
+	Children  []*PostCommentNode
+}
+
+func NewPostCommentNode(comment *state.Comment, author *state.User, vote_value state.VoteValue) *PostCommentNode {
+	return &PostCommentNode{
+		Comment:   comment,
+		Author:    author,
+		VoteValue: vote_value,
+		Children:  make([]*PostCommentNode, 0),
+	}
+}
+
+func (p *PostCommentNode) AddChild(child *PostCommentNode) {
+	p.Children = append(p.Children, child)
+	slices.SortFunc(p.Children, func(a, b *PostCommentNode) int {
+		return -1 * Compare(a.Comment.Score, b.Comment.Score)
+	})
+}
 
 func voteBoxID(postID int64) string {
   return fmt.Sprintf("comment-vote-box-%d", postID)
@@ -50,7 +74,9 @@ templ Comment(comment *state.Comment, author *state.User, vote_value state.VoteV
         <span class="post-score">{ fmt.Sprint(comment.Score) }</span>&nbsp;points by { fmt.Sprint(author.Username) }
         { timeago.English.Format(comment.CreatedAt.Time) }
         <span class="mx-1">|</span>
-        <a class="hover:underline" href="/post/comment/edit">edit</a>
+        <a class="hover:underline" href="#" hx-get="/post/comment/edit">edit</a>
+        <span class="mx-1">|</span>
+        <a class="hover:underline" href="#" hx-get="/post/comment/reply">reply</a>
       </div>
 
       <div class="text-sm">
@@ -82,13 +108,14 @@ templ PostMain(post *state.Post, author *state.User, post_vote_value state.VoteV
   <div class="container mx-auto bg-orange-100 py-1">
     @post_block.Post(post, author, post_vote_value)
 
-    <form class="mx-8 my-2" hx-post="/post/comment/add">
+    <form class="mx-8 my-2 mb-6" hx-post="/post/comment/add" hx-target="#comments" hx-swap="afterbegin">
       <input type="hidden" name="post_id" value={ fmt.Sprint(post.ID) }>
-      <textarea class="my-2 block w-full" name="content" rows="8" wrap="virtual"></textarea>
+      <textarea _="on htmx:afterRequest from closest <form/> set my value to ''"
+        class="my-2 block w-full" name="content" rows="8" wrap="virtual"></textarea>
       <button class="py-1 px-2 bg-gray-300" type="submit">Add Comment</button>
     </form>
 
-    <div class="mx-8 my-2">
+    <div id="comments" class="my-2">
       for _, comment_node := range *comment_roots {
         @CommentNode(comment_node)
       }

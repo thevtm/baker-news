@@ -15,29 +15,6 @@ import (
 	"golang.org/x/exp/constraints"
 )
 
-type PostCommentNode struct {
-	Comment   *state.Comment
-	Author    *state.User
-	VoteValue state.VoteValue
-	Children  []*PostCommentNode
-}
-
-func NewPostCommentNode(comment *state.Comment, author *state.User, vote_value state.VoteValue) *PostCommentNode {
-	return &PostCommentNode{
-		Comment:   comment,
-		Author:    author,
-		VoteValue: vote_value,
-		Children:  make([]*PostCommentNode, 0),
-	}
-}
-
-func (p *PostCommentNode) AddChild(child *PostCommentNode) {
-	p.Children = append(p.Children, child)
-	slices.SortFunc(p.Children, func(a, b *PostCommentNode) int {
-		return -1 * Compare(a.Comment.Score, b.Comment.Score)
-	})
-}
-
 func Biosjdi(comments_rows *[]state.CommentsForPostWithAuthorAndVotesForUserRow) []*PostCommentNode {
 	roots := make([]*PostCommentNode, 0)
 	node_map := make(map[int64]*PostCommentNode)

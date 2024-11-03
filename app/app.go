@@ -57,6 +57,14 @@ func (a *App) MakeServer() *http.ServeMux {
 
 	mux.Handle("POST /post/comment/vote", post_comment_vote_handler)
 
+	// Post Comment Add
+	var post_comment_add_handler http.Handler = post_comments_page.NewPostCommentAddHandler(a.Queries, a.Commands)
+	post_comment_add_handler = NewLoggingMiddleware(post_comment_add_handler)
+	post_comment_add_handler = auth.NewAuthMiddlewareHandler(post_comment_add_handler, a.Queries)
+	post_comment_add_handler = NewRequestIDMiddleware(post_comment_add_handler, &request_id_inc)
+
+	mux.Handle("POST /post/comment/add", post_comment_add_handler)
+
 	// Sign In
 	var sign_in_handler http.Handler = auth.NewUserSignInHandler(a.Queries)
 	sign_in_handler = NewLoggingMiddleware(sign_in_handler)
