@@ -11,6 +11,39 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const commentWithAuthor = `-- name: CommentWithAuthor :one
+SELECT comments.id, comments.post_id, comments.author_id, comments.parent_comment_id, comments.content, comments.score, comments.db_created_at, comments.db_updated_at, comments.created_at, author.id, author.username, author.role, author.db_created_at, author.db_updated_at FROM comments
+  JOIN users author ON comments.author_id = author.id
+  WHERE comments.id = $1
+`
+
+type CommentWithAuthorRow struct {
+	Comment Comment
+	User    User
+}
+
+func (q *Queries) CommentWithAuthor(ctx context.Context, id int64) (CommentWithAuthorRow, error) {
+	row := q.db.QueryRow(ctx, commentWithAuthor, id)
+	var i CommentWithAuthorRow
+	err := row.Scan(
+		&i.Comment.ID,
+		&i.Comment.PostID,
+		&i.Comment.AuthorID,
+		&i.Comment.ParentCommentID,
+		&i.Comment.Content,
+		&i.Comment.Score,
+		&i.Comment.DbCreatedAt,
+		&i.Comment.DbUpdatedAt,
+		&i.Comment.CreatedAt,
+		&i.User.ID,
+		&i.User.Username,
+		&i.User.Role,
+		&i.User.DbCreatedAt,
+		&i.User.DbUpdatedAt,
+	)
+	return i, err
+}
+
 const commentsForPost = `-- name: CommentsForPost :many
 SELECT id, post_id, author_id, parent_comment_id, content, score, db_created_at, db_updated_at, created_at FROM comments
   WHERE post_id = $1
