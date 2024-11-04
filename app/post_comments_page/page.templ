@@ -74,8 +74,6 @@ templ Comment(comment *state.Comment, author *state.User, vote_value state.VoteV
         <span class="post-score">{ fmt.Sprint(comment.Score) }</span>&nbsp;points by { fmt.Sprint(author.Username) }
         { timeago.English.Format(comment.CreatedAt.Time) }
         <span class="mx-1">|</span>
-        <a class="hover:underline" href="#" hx-get="/post/comment/edit">edit</a>
-        <span class="mx-1">|</span>
         <a class="hover:underline" href="#" hx-get="/post/comment/reply">reply</a>
       </div>
 
