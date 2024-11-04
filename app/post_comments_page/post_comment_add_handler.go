@@ -1,10 +1,13 @@
 package post_comments_page
 
 import (
+	"context"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strconv"
 
+	"github.com/negrel/assert"
 	"github.com/thevtm/baker-news/app/auth"
 	"github.com/thevtm/baker-news/app/htmx"
 	"github.com/thevtm/baker-news/commands"
@@ -18,6 +21,16 @@ type PostCommentAddHandler struct {
 
 func NewPostCommentAddHandler(queries *state.Queries, commands *commands.Commands) *PostCommentAddHandler {
 	return &PostCommentAddHandler{Queries: queries, Commands: commands}
+}
+
+func render_success(ctx context.Context, w http.ResponseWriter, comment *state.Comment, author *state.User) {
+	comment_node := NewPostCommentNode(comment, author, state.VoteValueNone)
+	err := CommentNode(comment_node).Render(ctx, w)
+
+	if err != nil {
+		slog.ErrorContext(ctx, "Failed to render comment node", slog.Any("error", err))
+		http.Error(w, "Failed to render comment node", http.StatusInternalServerError)
+	}
 }
 
 func (p *PostCommentAddHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -34,48 +47,96 @@ func (p *PostCommentAddHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 
 	// 2. Parse request
 	post_id_arg := r.FormValue("post_id")
+	parent_comment_id_arg := r.FormValue("parent_comment_id")
 	content_arg := r.FormValue("content")
 
 	slog.DebugContext(ctx, "Args received",
 		slog.String("post_id", post_id_arg),
+		slog.String("parent_comment_id", parent_comment_id_arg),
 		slog.String("content", content_arg),
 	)
 
-	post_id, err := strconv.ParseInt(post_id_arg, 10, 64)
-	if err != nil {
-		slog.ErrorContext(ctx, "Failed to parse post_id",
-			slog.String("post_id", post_id_arg),
-			slog.Any("error", err),
-		)
-		http.Error(w, "Invalid Comment", http.StatusBadRequest)
-		return
-	}
-
 	content := content_arg
 
-	// 3. Fetch post
-	post, err := queries.GetPost(ctx, post_id)
-	if err != nil {
-		slog.ErrorContext(ctx, "Failed to fetch post",
-			slog.Int64("post_id", post_id),
-			slog.Any("error", err),
-		)
-		http.Error(w, "Failed to fetch post", http.StatusInternalServerError)
+	assert.True((post_id_arg == "") != (parent_comment_id_arg == ""), "either a post or a comment must be provided, but not both")
+
+	// 3. Add Comment to Post
+	if post_id_arg != "" {
+		// 3.1 Parse post_id
+		post_id, err := strconv.ParseInt(post_id_arg, 10, 64)
+		if err != nil {
+			slog.ErrorContext(ctx, "Failed to parse post_id",
+				slog.String("post_id", post_id_arg),
+				slog.Any("error", err),
+			)
+			http.Error(w, "Invalid Comment", http.StatusBadRequest)
+			return
+		}
+
+		// 3.2 Fetch post
+		post, err := queries.GetPost(ctx, post_id)
+		if err != nil {
+			slog.ErrorContext(ctx, "Failed to fetch post",
+				slog.Int64("post_id", post_id),
+				slog.Any("error", err),
+			)
+			http.Error(w, "Failed to fetch post", http.StatusInternalServerError)
+			return
+		}
+
+		// 3.3 Create Comment
+		comment, err := commands.UserAddCommentToPost(ctx, &user, &post, content)
+		if err != nil {
+			slog.ErrorContext(ctx, "Failed to add comment to post",
+				slog.Int64("post_id", post_id),
+				slog.Any("error", err),
+			)
+			http.Error(w, "Failed to add comment to post", http.StatusInternalServerError)
+			return
+		}
+
+		slog.InfoContext(ctx, "Comment added to post", slog.Int64("comment_id", comment.ID))
+
+		// 3.4 Render response
+		render_success(r.Context(), w, &comment, &user)
 		return
 	}
 
-	// 4. Comment
-	comment, err := commands.UserSubmitComment(ctx, &user, &post, nil, content)
-	if err != nil {
-		slog.ErrorContext(ctx, "Failed to vote comment",
-			slog.Int64("comment_id", post_id),
-			slog.Any("error", err),
-		)
-		http.Error(w, "Failed to vote comment", http.StatusInternalServerError)
+	// 4. Reply to Comment
+	if parent_comment_id_arg != "" {
+		// 4.1 Parse parent_comment_id_arg
+		parent_comment_id, err := strconv.ParseInt(parent_comment_id_arg, 10, 64)
+		if err != nil {
+			slog.ErrorContext(ctx, "Failed to parse parent_comment_id",
+				slog.String("parent_comment_id", parent_comment_id_arg), slog.Any("error", err))
+			http.Error(w, "Invalid Parent Comment", http.StatusBadRequest)
+			return
+		}
+
+		// 4.2 Fetch parent_comment
+		parent_comment, err := queries.GetComment(ctx, parent_comment_id)
+		if err != nil {
+			slog.ErrorContext(ctx, "Failed to fetch parent comment",
+				slog.Int64("parent_comment_id", parent_comment_id), slog.Any("error", err))
+			http.Error(w, "Failed to fetch parent comment", http.StatusInternalServerError)
+			return
+		}
+
+		// 4.3 Create Comment
+		comment, err := commands.UserSubmitCommentForComment(ctx, &user, &parent_comment, content)
+		if err != nil {
+			slog.ErrorContext(ctx, "Failed to reply to comment", slog.Any("error", err))
+			http.Error(w, "Failed to add comment to comment", http.StatusInternalServerError)
+			return
+		}
+
+		// 4.4 Render response
+		render_success(r.Context(), w, &comment, &user)
 		return
 	}
 
-	// 5. Render response
-	comment_node := NewPostCommentNode(&comment, &user, state.VoteValueNone)
-	CommentNode(comment_node).Render(ctx, w)
+	// 5. Invalid request
+	err := fmt.Errorf("neither post or parent comment were provided")
+	slog.ErrorContext(ctx, "Invalid request", slog.Any("error", err))
+	http.Error(w, "Invalid request", http.StatusBadRequest)
 }

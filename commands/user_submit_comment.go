@@ -4,37 +4,52 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/negrel/assert"
 	"github.com/thevtm/baker-news/state"
 )
 
-var ErrUserSubmitCommentCommandNotAuthorized = NewCommandValidationError("user is not authorized to comment")
-var ErrUserSubmitCommentCommandPostOrCommentMustBeProvided = NewCommandValidationError("post or comment must be provided")
+var ErrUserSubmitCommentNotAuthorized = NewCommandValidationError("user is not authorized to comment")
+var ErrUserSubmitCommentPostOrCommentMustBeProvided = NewCommandValidationError("post or comment must be provided")
 
-func (c *Commands) UserSubmitComment(
+func (c *Commands) UserAddCommentToPost(ctx context.Context, user *state.User,
+	post *state.Post, content string) (state.Comment, error) {
+
+	return c.userSubmitComment(ctx, user, post, nil, content)
+}
+
+func (c *Commands) UserSubmitCommentForComment(ctx context.Context, user *state.User,
+	parent_comment *state.Comment, content string) (state.Comment, error) {
+
+	return c.userSubmitComment(ctx, user, nil, parent_comment, content)
+}
+
+func (c *Commands) userSubmitComment(
 	ctx context.Context,
 	user *state.User,
 	post *state.Post,
-	comment *state.Comment,
+	parent_comment *state.Comment,
 	content string) (state.Comment, error) {
 	queries := c.queries
 
+	assert.True((post == nil) != (parent_comment == nil), "either a post or a comment must be provided, not both")
+
 	if !user.IsUser() {
-		return state.Comment{}, ErrUserSubmitCommentCommandNotAuthorized
+		return state.Comment{}, ErrUserSubmitCommentNotAuthorized
 	}
 
 	var post_id int64
 	var parent_comment_id pgtype.Int8
 
-	if comment != nil {
-		post_id = comment.PostID
-		parent_comment_id = pgtype.Int8{Int64: comment.ID, Valid: true}
+	if parent_comment != nil {
+		post_id = parent_comment.PostID
+		parent_comment_id = pgtype.Int8{Int64: parent_comment.ID, Valid: true}
 
 	} else if post != nil {
 		post_id = post.ID
 		parent_comment_id = pgtype.Int8{Valid: false}
 
 	} else {
-		return state.Comment{}, ErrUserSubmitCommentCommandPostOrCommentMustBeProvided
+		return state.Comment{}, ErrUserSubmitCommentPostOrCommentMustBeProvided
 	}
 
 	return queries.CreateComment(ctx, state.CreateCommentParams{

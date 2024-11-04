@@ -90,6 +90,7 @@ func (m *AuthMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 		slog.Any("error", err),
 	)
 
-	ctx = SetAuthContext(ctx, AuthContext{User: user})
+	SetAuthCookie(w, &GuestCookie)
+	ctx = SetAuthContext(ctx, AuthContext{User: state.UserGuest})
 	m.Handler.ServeHTTP(w, r.WithContext(ctx))
 }
