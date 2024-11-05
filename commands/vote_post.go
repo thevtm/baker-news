@@ -55,14 +55,6 @@ func (c *Commands) UserVotePost(ctx context.Context, user *state.User, post_id i
 	}
 
 	// 3. Publish event
-	// event_data := events.UserVotedPostEventData{
-	// 	PostVoteID: post_vote.ID,
-	// 	UserID:     user.ID,
-	// 	PostID:     post_id,
-	// 	VoteValue:  vote_value,
-	// 	Timestamp:  post_vote.DbCreatedAt.Time,
-	// }
-
 	err = c.Events.PublishUserVotedPostEvent(ctx, &post_vote)
 
 	if err != nil {
