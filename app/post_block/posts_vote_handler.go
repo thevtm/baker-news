@@ -64,10 +64,7 @@ func (p *PostListVoteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	slog.InfoContext(ctx, "Post voted successfully",
-		slog.Int64("post_id", post_vote.PostID),
-		slog.String("vote_value", string(post_vote.Value)),
-	)
+	slog.InfoContext(ctx, "Post voted successfully", slog.Int64("post_id", post_vote.PostID))
 
 	// 4. Render the response
 	row, err := queries.PostWithAuthor(ctx, post_id)

@@ -8,16 +8,18 @@ import (
 	"github.com/thevtm/baker-news/app/post_comments_page"
 	"github.com/thevtm/baker-news/app/top_posts_page"
 	"github.com/thevtm/baker-news/commands"
+	"github.com/thevtm/baker-news/events"
 	"github.com/thevtm/baker-news/state"
 )
 
 type App struct {
 	Queries  *state.Queries
 	Commands *commands.Commands
+	Events   *events.Events
 }
 
-func NewApp(queries *state.Queries, commands *commands.Commands) *App {
-	return &App{Queries: queries, Commands: commands}
+func New(queries *state.Queries, commands *commands.Commands, events *events.Events) *App {
+	return &App{Queries: queries, Commands: commands, Events: events}
 }
 
 func (a *App) MakeServer() *http.ServeMux {
