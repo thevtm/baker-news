@@ -195,9 +195,9 @@ func main() {
 	// 3. Set up app
 	queries := state.New(conn)
 	events := events.New(client, "pubsub")
-	cmds := commands.New(queries, events)
+	commands := commands.New(queries, events)
 
-	app := app.New(queries, cmds, events)
+	app := app.New(queries, commands, events)
 
 	// 4. Set up and start the server
 	const PORT = 8080

@@ -2,6 +2,7 @@ package events
 
 import (
 	"encoding/json"
+	"reflect"
 	"testing"
 	"time"
 
@@ -49,4 +50,8 @@ func TestUserPostedEventJSONMarshalAndUnmarshal(t *testing.T) {
 	}
 
 	t.Logf("unmarshaled_event: %v", unmarshaled_event)
+
+	if !reflect.DeepEqual(event, unmarshaled_event) {
+		t.Fatalf("unmarshaled event does not match original event")
+	}
 }
