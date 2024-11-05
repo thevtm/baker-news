@@ -6,30 +6,32 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/thevtm/baker-news/state"
 )
 
-func TestEventJSONMarshal(t *testing.T) {
-	event := NewEvent("test_event", map[string]interface{}{
-		"key": "value",
-	})
+func TestUserPostedEventJSONMarshalAndUnmarshal(t *testing.T) {
+	// event_data := UserVotedPostEventData{
+	// 	PostVoteID: 0,
+	// 	PostID:     1,
+	// 	UserID:     2,
+	// 	VoteValue:  state.VoteValueUp,
+	// 	Timestamp:  time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+	// }
 
-	event_json, err := json.Marshal(event)
-
-	if err != nil {
-		t.Fatalf("failed to marshal event: %v", err)
+	timestamp := pgtype.Timestamptz{
+		Time:             time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+		Valid:            true,
+		InfinityModifier: pgtype.Finite,
 	}
 
-	t.Logf("event_json: %s", string(event_json))
-}
-
-func TestUserPostedEventJSONMarshalAndUnmarshal(t *testing.T) {
 	event_data := UserVotedPostEventData{
-		PostVoteID: 0,
-		PostID:     1,
-		UserID:     2,
-		VoteValue:  state.VoteValueUp,
-		Timestamp:  time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+		ID:          0,
+		PostID:      1,
+		UserID:      2,
+		Value:       state.VoteValueUp,
+		DbCreatedAt: timestamp,
+		DbUpdatedAt: timestamp,
 	}
 
 	event := NewEvent("user_voted_post", event_data)
