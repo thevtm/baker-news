@@ -25,7 +25,9 @@ func (e *Events) Publish(ctx context.Context, topic string, event Event) error {
 		return fmt.Errorf("failed to marshal event: %w", err)
 	}
 
-	err = e.DaprClient.PublishEvent(ctx, e.PubSubComponentName, topic, event_json)
+	err = e.DaprClient.PublishEvent(ctx, e.PubSubComponentName, topic, event_json,
+		dapr.PublishEventWithContentType("application/json; charset=utf-8"),
+		dapr.PublishEventWithMetadata(map[string]string{"type": "com.baker-news.events.v1.foobar"}))
 
 	if err != nil {
 		return fmt.Errorf("failed to publish event: %w", err)

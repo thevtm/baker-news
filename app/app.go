@@ -1,6 +1,8 @@
 package app
 
 import (
+	"io"
+	"log/slog"
 	"net/http"
 
 	"github.com/thevtm/baker-news/app/auth"
@@ -91,6 +93,21 @@ func (a *App) MakeServer() *http.ServeMux {
 
 	mux.Handle("GET /sign-out", sign_out_handler)
 	mux.Handle("POST /sign-out", sign_out_handler)
+
+	// Foobar
+	mux.HandleFunc("POST /dapr/pubsub/user-voted-event", func(w http.ResponseWriter, r *http.Request) {
+		body, err := io.ReadAll(r.Body)
+
+		if err != nil {
+			slog.Error("failed to read body", slog.Any("error", err))
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		slog.Info("received event endpoint", slog.Any("body", string(body)))
+
+		w.WriteHeader(http.StatusOK)
+	})
 
 	return mux
 }

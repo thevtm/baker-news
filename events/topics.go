@@ -1,3 +1,3 @@
 package events
 
-const PostEventsTopic = "post_events"
+const UserVotedTopic = "user-voted"

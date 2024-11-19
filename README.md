@@ -20,3 +20,9 @@ A hacker news clone that I made while learning Go.
 - [Dapr Dashboard](http://localhost:58080/)
 - [Adminer](http://localhost:58081)
 - [Zipkin](http://localhost:59411)
+
+## Learning Resources
+
+- [Go by Example](https://gobyexample.com/)
+- [How to shutdown a Go application gracefully](https://josemyduarte.github.io/2023-04-24-golang-lifecycle/)
+- [Parse, don’t validate](https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/)
