@@ -6,16 +6,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/thevtm/baker-news/state"
 )
 
 func TestUserPostedEventJSONMarshalAndUnmarshal(t *testing.T) {
-	timestamp := pgtype.Timestamptz{
-		Time:             time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
-		Valid:            true,
-		InfinityModifier: pgtype.Finite,
-	}
+	timestamp := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	event_data := UserVotedPostEventData{
 		PostVoteID: 0,

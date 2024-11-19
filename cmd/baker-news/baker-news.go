@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	dapr "github.com/dapr/go-sdk/client"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/samber/lo"
 	"github.com/thevtm/baker-news/app"
 	"github.com/thevtm/baker-news/commands"
@@ -179,9 +179,12 @@ func main() {
 	if !command_nil_found {
 		panic("DATABASE_URI env var is not set")
 	}
+
 	ctx := context.Background()
-	conn := lo.Must1(pgx.Connect(ctx, db_uri))
-	defer conn.Close(ctx)
+
+	conn_pool_config := lo.Must1(pgxpool.ParseConfig(db_uri))
+	conn_pool := lo.Must1(pgxpool.NewWithConfig(ctx, conn_pool_config))
+	defer conn_pool.Close()
 
 	// 2. Set up the Dapr dapr_client
 	dapr_client, err := dapr.NewClient()
@@ -194,14 +197,14 @@ func main() {
 	slog.Info("Dapr client initialized")
 
 	// 3. Set up app
-	queries := state.New(conn)
+	queries := state.New(conn_pool)
 	events := events.New(dapr_client, "pubsub")
 	commands := commands.New(queries, events)
 
 	app := app.New(queries, commands, events)
 
 	// 4. Worker
-	worker := worker.New(dapr_client, "pubsub")
+	worker := worker.New(dapr_client, commands, "pubsub")
 	worker.Start()
 
 	defer worker.Stop()
