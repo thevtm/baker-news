@@ -18,12 +18,11 @@ func TestUserPostedEventJSONMarshalAndUnmarshal(t *testing.T) {
 	}
 
 	event_data := UserVotedPostEventData{
-		ID:          0,
-		PostID:      1,
-		UserID:      2,
-		Value:       state.VoteValueUp,
-		DbCreatedAt: timestamp,
-		DbUpdatedAt: timestamp,
+		PostVoteID: 0,
+		PostID:     1,
+		UserID:     2,
+		VoteType:   state.VoteValueUp,
+		Timestamp:  timestamp,
 	}
 
 	event := NewEvent("user_voted_post", event_data)
