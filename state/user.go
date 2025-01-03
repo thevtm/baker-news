@@ -25,3 +25,7 @@ func (u *User) IsGuest() bool {
 func (u *User) IsUser() bool {
 	return u.Role == UserRoleUser
 }
+
+func (u *User) IsAdmin() bool {
+	return u.Role == UserRoleAdmin
+}

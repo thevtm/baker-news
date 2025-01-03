@@ -1,0 +1,49 @@
+package web_console
+
+import (
+  "github.com/thevtm/baker-news/state"
+  "github.com/thevtm/baker-news/app/template_page"
+)
+
+templ WebConsoleMain() {
+  <div class="container mx-auto bg-orange-100 py-1">
+    <h1>Web Console</h1>
+
+    <script type="text/javascript">
+      (() => {
+        const web_console = {}
+
+        web_console.user_sign_up = async (username) => {
+          const response = await fetch("/web-console", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({type: "user_sign_up", data: {username: username}}),
+          })
+
+          const data = await response.json()
+          return data
+        }
+
+        web_console.user_create_post = async (user, title, url) => {
+          const response = await fetch("/web-console", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({type: "user_create_post", data: {user_id: user.ID, title: title, url: url}}),
+          })
+
+          const data = await response.json()
+          return data
+        }
+
+        // r = await fetch("/web-console", {method: "POST", data: JSON.stringify({type: "user_sign_up", data: {username: "admin"}})})
+
+        window.web_console = web_console
+        console.log("Web Console Loaded")
+      })()
+    </script>
+  </div>
+}
+
+templ WebConsolePage(user *state.User) {
+  @template_page.TemplatePage(user, WebConsoleMain())
+}
