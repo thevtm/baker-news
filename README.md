@@ -35,7 +35,7 @@ Read the `Makefile` (`make help`) and the `docker-compose.yml` to understand how
 ├── commands - Operations that mutate the domain
 ├── docker-compose - Dev environment docker-compose related things
 │   ├── dapr
-│   ├── gonb - Jupyther notebook kernel (Not used anymore)
+│   ├── gonb - Jupyther notebook kernel (not used anymore)
 │   ├── pgadmin
 │   ├── postgres
 │   ├── redis
