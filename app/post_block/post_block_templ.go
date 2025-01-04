@@ -84,7 +84,7 @@ func PostBlock(params PostBlockParams) templ.Component {
 			HxPost:   "/post/vote",
 			HxTarget: "#" + post_block_id,
 			HxSwap:   "outerHTML",
-			HxVals: fmt.Sprintf(`{ "post_id": %d, "vote_value": "%s "}`, post.ID,
+			HxVals: fmt.Sprintf(`{ "post_id": %d, "vote_value": "%s"}`, post.ID,
 				lo.If(up, state.VoteValueNone).Else(state.VoteValueUp)),
 			Active: up,
 			Icon:   components.VoteIconUp(),
