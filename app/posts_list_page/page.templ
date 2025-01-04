@@ -1,0 +1,23 @@
+package posts_list_page
+
+import (
+  "github.com/thevtm/baker-news/state"
+  "github.com/thevtm/baker-news/app/template_page"
+	"github.com/thevtm/baker-news/app/post_block"
+)
+
+templ PostsList(post_blocks_params *[]post_block.PostBlockParams) {
+  <div class="container mx-auto bg-orange-100 py-1">
+    for _, post_block_params := range *post_blocks_params {
+      @post_block.PostBlock(post_block_params)
+    }
+  </div>
+}
+
+templ PostsListMain(post_rows *[]post_block.PostBlockParams) {
+  @PostsList(post_rows)
+}
+
+templ PostsListPage(user *state.User, post_rows *[]post_block.PostBlockParams) {
+  @template_page.TemplatePage(user, PostsList(post_rows))
+}

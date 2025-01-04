@@ -11,11 +11,11 @@ import (
 var ErrVotePostCommandUserNotAllowed = NewCommandValidationError("user is not allowed to vote")
 var ErrVotePostCommandInvalidVoteValue = NewCommandValidationError("invalid vote value")
 
-func (c *Commands) UserVotePost(ctx context.Context, user *state.User, post_id int64, vote_value state.VoteValue) (state.PostVote, error) {
+func (c *Commands) VotePost(ctx context.Context, user *state.User, post_id int64, vote_value state.VoteValue) (state.PostVote, error) {
 	queries := c.queries
 
 	// 1. Check if user is allowed to vote
-	if !user.IsUser() {
+	if user.IsGuest() {
 		return state.PostVote{}, ErrVotePostCommandUserNotAllowed
 	}
 

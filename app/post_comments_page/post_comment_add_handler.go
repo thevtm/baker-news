@@ -14,13 +14,13 @@ import (
 	"github.com/thevtm/baker-news/state"
 )
 
-type PostCommentAddHandler struct {
+type PostSubmitCommentHandler struct {
 	Queries  *state.Queries
 	Commands *commands.Commands
 }
 
-func NewPostCommentAddHandler(queries *state.Queries, commands *commands.Commands) *PostCommentAddHandler {
-	return &PostCommentAddHandler{Queries: queries, Commands: commands}
+func NewPostSubmitCommentHandler(queries *state.Queries, commands *commands.Commands) *PostSubmitCommentHandler {
+	return &PostSubmitCommentHandler{Queries: queries, Commands: commands}
 }
 
 func render_success(ctx context.Context, w http.ResponseWriter, comment *state.Comment, author *state.User) {
@@ -33,7 +33,7 @@ func render_success(ctx context.Context, w http.ResponseWriter, comment *state.C
 	}
 }
 
-func (p *PostCommentAddHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (p *PostSubmitCommentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx, commands, queries := r.Context(), p.Commands, p.Queries
 
 	user := auth.GetAuthContext(ctx).User
@@ -85,7 +85,7 @@ func (p *PostCommentAddHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 		}
 
 		// 3.3 Create Comment
-		comment, err := commands.UserAddCommentToPost(ctx, &user, &post, content)
+		comment, err := commands.SubmitComment(ctx, &user, &post, nil, content)
 		if err != nil {
 			slog.ErrorContext(ctx, "Failed to add comment to post",
 				slog.Int64("post_id", post_id),
@@ -123,7 +123,7 @@ func (p *PostCommentAddHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 		}
 
 		// 4.3 Create Comment
-		comment, err := commands.UserSubmitCommentForComment(ctx, &user, &parent_comment, content)
+		comment, err := commands.SubmitComment(ctx, &user, nil, &parent_comment, content)
 		if err != nil {
 			slog.ErrorContext(ctx, "Failed to reply to comment", slog.Any("error", err))
 			http.Error(w, "Failed to add comment to comment", http.StatusInternalServerError)

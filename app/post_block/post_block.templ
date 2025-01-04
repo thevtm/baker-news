@@ -13,7 +13,25 @@ func PostPageURL(post *state.Post) string {
   return fmt.Sprintf("/post/%d", post.ID)
 }
 
-templ Post(post *state.Post, author *state.User, vote_value state.VoteValue) {
+const (
+  DeleteStrategyNotAuthorized = iota
+  DeleteStrategyRemove
+  DeleteStrategyRedirect
+)
+
+type PostBlockParams struct {
+  Post *state.Post
+  Author *state.User
+  VoteValue state.VoteValue
+  DeleteStrategy int
+}
+
+templ PostBlock(params PostBlockParams) {
+  {{ post := params.Post }}
+  {{ author := params.Author }}
+  {{ vote_value := params.VoteValue }}
+  {{ delete_strategy := params.DeleteStrategy }}
+
   {{ url, _ := url.Parse(post.Url) }}
   {{ post_block_id := fmt.Sprintf("post-block-%d", post.ID) }}
 
@@ -24,7 +42,7 @@ templ Post(post *state.Post, author *state.User, vote_value state.VoteValue) {
         HxPost: "/post/vote",
         HxTarget: "#" + post_block_id,
         HxSwap: "outerHTML",
-        HxVals: fmt.Sprintf(`{"post_id": %d, "vote_value": "%s"}`, post.ID,
+        HxVals: fmt.Sprintf(`{ "post_id": %d, "vote_value": "%s "}`, post.ID,
           lo.If(up, state.VoteValueNone).Else(state.VoteValueUp)),
         Active: up,
         Icon: components.VoteIconUp(),
@@ -60,7 +78,24 @@ templ Post(post *state.Post, author *state.User, vote_value state.VoteValue) {
       <div class="flex text-xs text-gray-500">
         <span class="post-score">{ fmt.Sprint(post.Score) }</span>&nbsp;points by { fmt.Sprint(author.Username) }
         { timeago.English.Format(post.CreatedAt.Time) }
+
+        if delete_strategy != DeleteStrategyNotAuthorized {
+          <span class="mx-1">|</span>
+
+          <a
+            class="hover:underline"
+            href=""
+            hx-post="/post/delete"
+            hx-target={ "#" + post_block_id }
+            hx-swap="delete"
+            hx-vals={ fmt.Sprintf(`{ "post_id": %d }`, post.ID) }
+          >
+            delete
+          </a>
+        }
+
         <span class="mx-1">|</span>
+
         <a class="hover:underline" href={ templ.SafeURL(PostPageURL(post)) } hx-get={ PostPageURL(post) } hx-target="main" hx-push-url="true">{ fmt.Sprint(post.CommentsCount) } comments</a>
       </div>
 

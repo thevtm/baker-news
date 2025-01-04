@@ -8,22 +8,10 @@ import (
 	"github.com/thevtm/baker-news/state"
 )
 
-var ErrUserSubmitCommentNotAuthorized = NewCommandValidationError("user is not authorized to comment")
-var ErrUserSubmitCommentPostOrCommentMustBeProvided = NewCommandValidationError("post or comment must be provided")
+var ErrSubmitCommentCommandNotAuthorized = NewCommandValidationError("user is not authorized to comment")
+var ErrSubmitCommentCommandPostOrCommentMustBeProvided = NewCommandValidationError("post or comment must be provided")
 
-func (c *Commands) UserAddCommentToPost(ctx context.Context, user *state.User,
-	post *state.Post, content string) (state.Comment, error) {
-
-	return c.userSubmitComment(ctx, user, post, nil, content)
-}
-
-func (c *Commands) UserSubmitCommentForComment(ctx context.Context, user *state.User,
-	parent_comment *state.Comment, content string) (state.Comment, error) {
-
-	return c.userSubmitComment(ctx, user, nil, parent_comment, content)
-}
-
-func (c *Commands) userSubmitComment(
+func (c *Commands) SubmitComment(
 	ctx context.Context,
 	user *state.User,
 	post *state.Post,
@@ -33,8 +21,8 @@ func (c *Commands) userSubmitComment(
 
 	assert.True((post == nil) != (parent_comment == nil), "either a post or a comment must be provided, not both")
 
-	if !user.IsUser() {
-		return state.Comment{}, ErrUserSubmitCommentNotAuthorized
+	if user.IsGuest() {
+		return state.Comment{}, ErrSubmitCommentCommandNotAuthorized
 	}
 
 	var post_id int64
@@ -49,7 +37,7 @@ func (c *Commands) userSubmitComment(
 		parent_comment_id = pgtype.Int8{Valid: false}
 
 	} else {
-		return state.Comment{}, ErrUserSubmitCommentPostOrCommentMustBeProvided
+		return state.Comment{}, ErrSubmitCommentCommandPostOrCommentMustBeProvided
 	}
 
 	return queries.CreateComment(ctx, state.CreateCommentParams{

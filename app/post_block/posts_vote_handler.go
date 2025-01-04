@@ -54,7 +54,7 @@ func (p *PostListVoteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	vote_value := state.VoteValue(vote_value_arg)
 
 	// 3. Vote
-	post_vote, err := commands.UserVotePost(ctx, &user, post_id, vote_value)
+	post_vote, err := commands.VotePost(ctx, &user, post_id, vote_value)
 	if err != nil {
 		slog.ErrorContext(ctx, "Failed to vote post",
 			slog.Int64("post_id", post_id),
@@ -81,5 +81,12 @@ func (p *PostListVoteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	post := row.Post
 	author := row.User
 
-	Post(&post, &author, vote_value).Render(ctx, w)
+	post_block_params := PostBlockParams{
+		Post:           &post,
+		Author:         &author,
+		VoteValue:      vote_value,
+		DeleteStrategy: DeleteStrategyNotAuthorized,
+	}
+
+	PostBlock(post_block_params).Render(ctx, w)
 }

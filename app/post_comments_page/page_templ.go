@@ -313,7 +313,12 @@ func PostMain(post *state.Post, author *state.User, post_vote_value state.VoteVa
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = post_block.Post(post, author, post_vote_value).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = post_block.PostBlock(post_block.PostBlockParams{
+			Post:           post,
+			Author:         author,
+			VoteValue:      post_vote_value,
+			DeleteStrategy: post_block.DeleteStrategyNotAuthorized,
+		}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -324,7 +329,7 @@ func PostMain(post *state.Post, author *state.User, post_vote_value state.VoteVa
 		var templ_7745c5c3_Var14 string
 		templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprint(post.ID))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `app/post_comments_page/page.templ`, Line: 126, Col: 69}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `app/post_comments_page/page.templ`, Line: 131, Col: 69}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 		if templ_7745c5c3_Err != nil {

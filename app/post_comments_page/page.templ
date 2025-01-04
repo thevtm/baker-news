@@ -120,7 +120,12 @@ templ CommentNode(comment_node *PostCommentNode) {
 
 templ PostMain(post *state.Post, author *state.User, post_vote_value state.VoteValue, comment_roots *[]*PostCommentNode) {
   <div class="container mx-auto bg-orange-100 py-1">
-    @post_block.Post(post, author, post_vote_value)
+    @post_block.PostBlock(post_block.PostBlockParams{
+      Post: post,
+      Author: author,
+      VoteValue: post_vote_value,
+      DeleteStrategy: post_block.DeleteStrategyNotAuthorized,
+    })
 
     <form class="mx-8 my-2 mb-6" hx-post="/post/comment/add" hx-target="#comments" hx-swap="afterbegin">
       <input type="hidden" name="post_id" value={ fmt.Sprint(post.ID) }>
