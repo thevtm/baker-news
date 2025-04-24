@@ -1,8 +1,8 @@
 # Set the shell to bash explicitly, as some commands may not work in sh.
 SHELL := /bin/bash
 
-# Define Go binary path
-GO_BIN_PATH := $(shell go env GOPATH)/bin
+# Set the Docker Compose command
+COMPOSE_EXEC_CMD=$(shell if command -v docker-compose &> /dev/null; then echo "docker-compose exec --interactive --tty"; else echo "podman compose exec"; fi)
 
 # Change these variables as necessary.
 main_package_path = ./cmd/baker-news
@@ -132,7 +132,7 @@ db/schema-dump:
 	@echo -e "$(BLUE)📝 Dumping database schema to ./state/sql/schema.sql...$(NC)"
 	@echo ""
 
-	docker-compose exec --interactive --tty postgres \
+	${COMPOSE_EXEC_CMD} postgres \
 				pg_dump \
 					--schema-only \
 					--host=localhost \
@@ -195,7 +195,7 @@ tidy:
 .PHONY: templ/generate
 templ/generate:
 	TEMPL_EXPERIMENT=rawgo \
-		${GO_BIN_PATH}/templ generate -lazy
+		go tool templ generate -lazy
 
 ## build: build the application
 .PHONY: build
