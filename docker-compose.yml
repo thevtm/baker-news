@@ -1,0 +1,141 @@
+services:
+  ############################
+  # PostgreSQL state store
+  ############################
+  postgres:
+    image: "postgres:17-alpine"
+    shm_size: 128mb
+    environment:
+      POSTGRES_PASSWORD: "password"
+    ports:
+      - "5432:5432"
+    networks:
+      - std-network
+    volumes:
+      - ./docker-compose/postgres/data:/var/lib/postgresql/data
+
+  # atlas:
+  #   image: arigaio/atlas:0.28.1-distroless
+  #   command: >
+  #     migrate apply
+  #     --url postgres://postgres:password@postgres:5432/baker_news
+  #   networks:
+  #     - db
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   volumes:
+  #     - ./state/sql/migrations/:/migrations
+
+  adminer:
+    image: adminer
+    ports:
+      - 58081:8080
+    networks:
+      - std-network
+
+  ############################
+  # Redis state store
+  ############################
+  redis:
+    image: "redis:7-alpine"
+    ports:
+      - "6379:6379"
+    networks:
+      - std-network
+    volumes:
+      - ./docker-compose/redis/data:/data
+
+  redis-insight:
+    image: "redis/redisinsight:2.58.0"
+    ports:
+      - "55540:5540"
+    networks:
+      - std-network
+
+  ############################
+  # Zipkin tracing service
+  ############################
+  zipkin:
+    image: "openzipkin/zipkin-slim:3.4.2"
+    ports:
+      - "59411:9411"
+    networks:
+      - std-network
+
+  ############################
+  # Dapr scheduler service
+  ############################
+  dapr-scheduler:
+    image: "daprio/dapr:1.14.4"
+    command: ["./scheduler", "--port", "50007", "--etcd-data-dir=/var/lock/dapr/scheduler"]
+    ports:
+      - "50007:50007"
+      # - "58081:8080" # Healthz server
+      # - "59091:9090" # Metrics server
+    networks:
+      - std-network
+
+  ############################
+  # Dapr placement service
+  ############################
+  dapr-placement:
+    image: "daprio/dapr:1.14.4"
+    command: ["./placement", "--port", "50006"]
+    ports:
+      - "50006:50006"
+      # - "58080:8080" # Healthz server
+      # - "59090:9090" # Metrics server
+    depends_on:
+      - redis
+      - dapr-scheduler
+    networks:
+      - std-network
+
+  ############################
+  # Dapr sidecar
+  ############################
+  dapr-sidecar:
+    image: "daprio/daprd:1.14.4"
+    command: [
+      "./daprd",
+      "--app-id", "baker-news",
+      "--app-port", "8080",
+      "--placement-host-address", "dapr-placement:50006", # Dapr's placement service can be reach via the docker DNS entry
+      "--resources-path", "./components"
+    ]
+    ports:
+      - "3500:3500" # HTTP port
+      - "50001:50001" # gRPC port
+    volumes:
+        # Mount our components folder for the runtime to use. The mounted location must match the --resources-path argument.
+        - ./docker-compose/dapr/components/:/components
+    networks:
+      - std-network
+
+  ############################
+  # Dapr dashboard
+  ############################
+  dapr-dashboard:
+    image: "daprio/dashboard:0.15.0"
+    command: [
+      "--docker-compose=true",
+      "--components-path=/home/nonroot/components",
+      "--config-path=/home/nonroot/configuration",
+      "--docker-compose-path=/home/nonroot/docker-compose.yml"
+    ]
+    ports:
+      - "58080:8080"
+    volumes:
+      - ./docker-compose/dapr/components/:/home/nonroot/components
+      - ./docker-compose/dapr/config/:/home/nonroot/configuration
+      - ./docker-compose.yml:/home/nonroot/docker-compose.yml
+    networks:
+      - std-network
+
+
+############################
+# Networks
+############################
+networks:
+  std-network:

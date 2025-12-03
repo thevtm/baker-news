@@ -1,0 +1,28 @@
+package posts_page
+
+import (
+  "strconv"
+  "github.com/thevtm/baker-news/ui/base_page"
+  "github.com/thevtm/baker-news/models"
+)
+
+templ PostsList(posts []models.Post) {
+  <ul>
+    for _, post := range posts {
+      <li>
+        { strconv.Itoa(post.Score) } -
+        <a href="#" hx-get={ post.URL } hx-target="main" hx-push-url="true">
+          { post.Title }
+        </a>
+      </li>
+    }
+  </ul>
+}
+
+templ PostsMain(posts []models.Post) {
+  @PostsList(posts)
+}
+
+templ PostsPage(posts []models.Post) {
+  @base_page.BasePage(PostsList(posts))
+}
