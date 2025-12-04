@@ -7,54 +7,141 @@ package state
 import (
 	"database/sql/driver"
 	"fmt"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type RoleType string
+type UserRole string
 
 const (
-	RoleTypeSystem RoleType = "system"
-	RoleTypeAdmin  RoleType = "admin"
-	RoleTypeUser   RoleType = "user"
-	RoleTypeGuest  RoleType = "guest"
+	UserRoleSystem UserRole = "system"
+	UserRoleAdmin  UserRole = "admin"
+	UserRoleUser   UserRole = "user"
+	UserRoleGuest  UserRole = "guest"
 )
 
-func (e *RoleType) Scan(src interface{}) error {
+func (e *UserRole) Scan(src interface{}) error {
 	switch s := src.(type) {
 	case []byte:
-		*e = RoleType(s)
+		*e = UserRole(s)
 	case string:
-		*e = RoleType(s)
+		*e = UserRole(s)
 	default:
-		return fmt.Errorf("unsupported scan type for RoleType: %T", src)
+		return fmt.Errorf("unsupported scan type for UserRole: %T", src)
 	}
 	return nil
 }
 
-type NullRoleType struct {
-	RoleType RoleType
-	Valid    bool // Valid is true if RoleType is not NULL
+type NullUserRole struct {
+	UserRole UserRole
+	Valid    bool // Valid is true if UserRole is not NULL
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullRoleType) Scan(value interface{}) error {
+func (ns *NullUserRole) Scan(value interface{}) error {
 	if value == nil {
-		ns.RoleType, ns.Valid = "", false
+		ns.UserRole, ns.Valid = "", false
 		return nil
 	}
 	ns.Valid = true
-	return ns.RoleType.Scan(value)
+	return ns.UserRole.Scan(value)
 }
 
 // Value implements the driver Valuer interface.
-func (ns NullRoleType) Value() (driver.Value, error) {
+func (ns NullUserRole) Value() (driver.Value, error) {
 	if !ns.Valid {
 		return nil, nil
 	}
-	return string(ns.RoleType), nil
+	return string(ns.UserRole), nil
+}
+
+type VoteValue string
+
+const (
+	VoteValueUp   VoteValue = "up"
+	VoteValueDown VoteValue = "down"
+	VoteValueNone VoteValue = "none"
+)
+
+func (e *VoteValue) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = VoteValue(s)
+	case string:
+		*e = VoteValue(s)
+	default:
+		return fmt.Errorf("unsupported scan type for VoteValue: %T", src)
+	}
+	return nil
+}
+
+type NullVoteValue struct {
+	VoteValue VoteValue
+	Valid     bool // Valid is true if VoteValue is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullVoteValue) Scan(value interface{}) error {
+	if value == nil {
+		ns.VoteValue, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.VoteValue.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullVoteValue) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.VoteValue), nil
+}
+
+type Comment struct {
+	ID          int64
+	PostID      int64
+	AuthorID    int64
+	Content     string
+	Score       int32
+	DbCreatedAt pgtype.Timestamptz
+	DbUpdatedAt pgtype.Timestamptz
+}
+
+type CommentVote struct {
+	ID          int64
+	CommentID   int64
+	UserID      int64
+	Value       VoteValue
+	DbCreatedAt pgtype.Timestamptz
+	DbUpdatedAt pgtype.Timestamptz
+}
+
+type Post struct {
+	ID            int64
+	Title         string
+	Url           string
+	AuthorID      int64
+	Score         int32
+	CommentsCount int32
+	CreatedAt     pgtype.Timestamptz
+	DbCreatedAt   pgtype.Timestamptz
+	DbUpdatedAt   pgtype.Timestamptz
+}
+
+type PostVote struct {
+	ID          int64
+	PostID      int64
+	UserID      int64
+	Value       VoteValue
+	DbCreatedAt pgtype.Timestamptz
+	DbUpdatedAt pgtype.Timestamptz
 }
 
 type User struct {
-	ID   int64
-	Name string
-	Role RoleType
+	ID          int64
+	Username    string
+	Role        UserRole
+	DbCreatedAt pgtype.Timestamptz
+	DbUpdatedAt pgtype.Timestamptz
 }
