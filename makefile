@@ -106,21 +106,22 @@ production/deploy: confirm audit no-dirty
 # DATABASE
 # ==================================================================================== #
 
-DATABASE_URI := postgres://postgres:password@localhost:5432
+POSTGRES_URI := postgres://postgres:password@localhost:5432
+DATABASE_URI := $(POSTGRES_URI)/baker_news
 MIGRATIONS_DIRECTORY := ./state/sql/migrations
 
 ## db/create-if-absent: create the database if it does not exists
 .PHONY: db/create-if-absent
 .SILENT: db/create-if-absent
 db/create-if-absent:
-	DATABASE_URI="${DATABASE_URI}" \
+	POSTGRES_URI="${POSTGRES_URI}" \
 		go run ./bin/db-utils/db-utils.go create-database-if-absent
 
 ## db/drop-if-exists: drop the database if it exists
 .PHONY: db/drop-if-exists
 .SILENT: db/drop-if-exists
 db/drop-if-exists:
-	DATABASE_URI="${DATABASE_URI}" \
+	POSTGRES_URI="${POSTGRES_URI}" \
 		go run ./bin/db-utils/db-utils.go drop-database-if-exists
 
 ## db/goose-alias: adds an alias for goose to the shell (use it with `eval $(make db/goose-alias)`)
@@ -128,13 +129,9 @@ db/drop-if-exists:
 db/goose-alias:
 	echo alias goose=\' \
 		GOOSE_DRIVER=pgx \
-		GOOSE_DBSTRING="$(DATABASE_URI)/baker_news" \
+		GOOSE_DBSTRING="$(DATABASE_URI)" \
 		go run github.com/pressly/goose/v3/cmd/goose@v3.22.1 \
 		--dir $(MIGRATIONS_DIRECTORY)\'
-
-# .PHONY: db/schema-dump
-# 	db/schema-dump:
-# 		docker run --interactive --tty postgres:17-alpine /bin/sh --workdir /working --volume ./state/sql:/working
 
 # db/schema-dump: dump the database schema
 .PHONY: db/schema-dump
@@ -151,6 +148,11 @@ db/schema-dump:
 			baker_news \
 		> ./state/sql/schema.sql
 
+# db/seed: seed the database
+.PHONY: db/seed
+db/seed:
+	DATABASE_URI="${DATABASE_URI}" \
+		go run ./cmd/seed
 
 ## db/sqlc/generate: generate SQLC code
 .PHONY: db/sqlc/generate

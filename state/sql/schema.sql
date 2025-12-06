@@ -45,6 +45,58 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
+-- Name: comment_votes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.comment_votes (
+    id bigint NOT NULL,
+    comment_id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    value public.vote_value NOT NULL,
+    db_created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    db_updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+--
+-- Name: down_vote_comment(bigint, bigint); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.down_vote_comment(comment_id bigint, user_id bigint) RETURNS public.comment_votes
+    LANGUAGE plpgsql
+    AS $_$
+DECLARE
+  p_comment_id ALIAS FOR $1;
+  p_user_id ALIAS FOR $2;
+  rec comment_votes;
+BEGIN
+  SELECT * INTO rec FROM comment_votes
+    WHERE comment_votes.comment_id = p_comment_id AND comment_votes.user_id = p_user_id;
+
+  IF rec IS NOT NULL THEN
+
+    IF rec.value = 'up' THEN
+      PERFORM update_comment_score_by(comment_id, -2);
+    ELSIF rec.value = 'down' THEN
+      RETURN rec;
+    ELSIF rec.value = 'none' THEN
+      PERFORM update_comment_score_by(comment_id, -1);
+    END IF;
+
+    UPDATE comment_votes SET value = 'down' WHERE comment_votes.id = rec.id RETURNING * INTO rec;
+
+  ELSE
+    PERFORM update_comment_score_by(comment_id, -1);
+    INSERT INTO comment_votes (comment_id, user_id, value) VALUES (comment_id, user_id, 'down') RETURNING * INTO rec;
+
+  END IF;
+
+  RETURN rec;
+END;
+$_$;
+
+
+--
 -- Name: post_votes; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -97,6 +149,43 @@ $_$;
 
 
 --
+-- Name: none_vote_comment(bigint, bigint); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.none_vote_comment(comment_id bigint, user_id bigint) RETURNS public.comment_votes
+    LANGUAGE plpgsql
+    AS $_$
+DECLARE
+  p_comment_id ALIAS FOR $1;
+  p_user_id ALIAS FOR $2;
+  rec comment_votes;
+BEGIN
+  SELECT * INTO rec FROM comment_votes
+    WHERE comment_votes.comment_id = p_comment_id AND comment_votes.user_id = p_user_id;
+
+  IF rec IS NOT NULL THEN
+
+    IF rec.value = 'up' THEN
+      PERFORM update_comment_score_by(comment_id, -1);
+    ELSIF rec.value = 'down' THEN
+      PERFORM update_comment_score_by(comment_id, 1);
+    ELSIF rec.value = 'none' THEN
+      RETURN rec;
+    END IF;
+
+    UPDATE comment_votes SET value = 'none' WHERE comment_votes.id = rec.id RETURNING * INTO rec;
+
+  ELSE
+    INSERT INTO comment_votes (comment_id, user_id, value) VALUES (comment_id, user_id, 'none') RETURNING * INTO rec;
+
+  END IF;
+
+  RETURN rec;
+END;
+$_$;
+
+
+--
 -- Name: none_vote_post(bigint, bigint); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -125,6 +214,44 @@ BEGIN
 
   ELSE
     INSERT INTO post_votes (post_id, user_id, value) VALUES (post_id, user_id, 'none') RETURNING * INTO rec;
+
+  END IF;
+
+  RETURN rec;
+END;
+$_$;
+
+
+--
+-- Name: up_vote_comment(bigint, bigint); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.up_vote_comment(comment_id bigint, user_id bigint) RETURNS public.comment_votes
+    LANGUAGE plpgsql
+    AS $_$
+DECLARE
+  p_comment_id ALIAS FOR $1;
+  p_user_id ALIAS FOR $2;
+  rec comment_votes;
+BEGIN
+  SELECT * INTO rec FROM comment_votes
+    WHERE comment_votes.comment_id = p_comment_id AND comment_votes.user_id = p_user_id;
+
+  IF rec IS NOT NULL THEN
+
+    IF rec.value = 'up' THEN
+      RETURN rec;
+    ELSIF rec.value = 'down' THEN
+      PERFORM update_comment_score_by(comment_id, 2);
+    ELSIF rec.value = 'none' THEN
+      PERFORM update_comment_score_by(comment_id, 1);
+    END IF;
+
+    UPDATE comment_votes SET value = 'up' WHERE comment_votes.id = rec.id RETURNING * INTO rec;
+
+  ELSE
+    PERFORM update_comment_score_by(comment_id, 1);
+    INSERT INTO comment_votes (comment_id, user_id, value) VALUES (comment_id, user_id, 'up') RETURNING * INTO rec;
 
   END IF;
 
@@ -172,6 +299,21 @@ $_$;
 
 
 --
+-- Name: update_comment_score_by(bigint, integer); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.update_comment_score_by(comment_id bigint, score_change integer) RETURNS void
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  UPDATE comments
+    SET score = score + score_change
+    WHERE comments.id = comment_id;
+END;
+$$;
+
+
+--
 -- Name: update_db_updated_at_column(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -201,20 +343,6 @@ $$;
 
 
 --
--- Name: comment_votes; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.comment_votes (
-    id bigint NOT NULL,
-    comment_id bigint NOT NULL,
-    user_id bigint NOT NULL,
-    value public.vote_value NOT NULL,
-    db_created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    db_updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
-);
-
-
---
 -- Name: comment_votes_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -241,6 +369,7 @@ CREATE TABLE public.comments (
     id bigint NOT NULL,
     post_id bigint NOT NULL,
     author_id bigint NOT NULL,
+    parent_comment_id bigint,
     content text NOT NULL,
     score integer NOT NULL,
     db_created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -566,6 +695,14 @@ ALTER TABLE ONLY public.comment_votes
 
 ALTER TABLE ONLY public.comments
     ADD CONSTRAINT comments_author_id_fkey FOREIGN KEY (author_id) REFERENCES public.users(id);
+
+
+--
+-- Name: comments comments_parent_comment_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.comments
+    ADD CONSTRAINT comments_parent_comment_id_fkey FOREIGN KEY (parent_comment_id) REFERENCES public.comments(id);
 
 
 --
