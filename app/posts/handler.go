@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/thevtm/baker-news/app/htmx"
+	signin "github.com/thevtm/baker-news/app/sign-in"
 	"github.com/thevtm/baker-news/state"
-	"github.com/thevtm/baker-news/ui/posts_page"
 )
 
 type TopPostsHandler struct {
@@ -20,10 +20,12 @@ func NewTopPosts(queries *state.Queries) *TopPostsHandler {
 func (p *TopPostsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx, queries := r.Context(), p.queries
 
+	user := signin.GetAuthContext(ctx).User
+
 	// 1. Retrieve top posts
 	query_params := &state.TopPostsWithAuthorAndVotesForUserParams{
 		Limit:  30,
-		UserID: 1545,
+		UserID: user.ID,
 	}
 	posts, err := queries.TopPostsWithAuthorAndVotesForUser(ctx, *query_params)
 
@@ -39,9 +41,9 @@ func (p *TopPostsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	htmx_headers := htmx.NewHTMXHeaders(r.Header)
 
 	if htmx_headers.IsHTMXRequest() && htmx_headers.HX_Target == "main" {
-		posts_page.PostsMain(&posts).Render(r.Context(), w)
+		PostsMain(&posts).Render(r.Context(), w)
 		return
 	}
 
-	posts_page.PostsPage(&posts).Render(r.Context(), w)
+	PostsPage(&user, &posts).Render(r.Context(), w)
 }

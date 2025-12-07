@@ -9,7 +9,8 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
-	"github.com/thevtm/baker-news/ui/base_page"
+	"github.com/thevtm/baker-news/app/template_page"
+	"github.com/thevtm/baker-news/state"
 )
 
 func SignInMain(error_message string) templ.Component {
@@ -33,25 +34,30 @@ func SignInMain(error_message string) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"container mx-auto bg-orange-100\"><div class=\"p-16 flex flex-col items-center\"><h1 class=\"text-base\">Sign in / Register</h1><form class=\"flex flex-col\" action=\"/sign-in\" method=\"POST\" hx-target=\"#main\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"container mx-auto bg-orange-100\"><div class=\"p-16 flex flex-col items-center\"><h1 class=\"text-base\">Sign in / Register</h1><form class=\"flex flex-col\" hx-post=\"/sign-in\" method=\"POST\" hx-target=\"#main\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if error_message != "" {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"text-red-500\">")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"mt-2 text-red-500 text-center\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var2 string
 			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(error_message)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `app/sign-in/page.templ`, Line: 15, Col: 50}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `app/sign-in/page.templ`, Line: 16, Col: 67}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"mt-2 text-red-500\" style=\"visibility: hidden;\">Hidden</div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -64,7 +70,7 @@ func SignInMain(error_message string) templ.Component {
 	})
 }
 
-func SignInPage(error_message string) templ.Component {
+func SignInPage(user *state.User, error_message string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -85,7 +91,7 @@ func SignInPage(error_message string) templ.Component {
 			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = base_page.BasePage(SignInMain(error_message)).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = template_page.TemplatePage(user, SignInMain(error_message)).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

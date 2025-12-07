@@ -2,51 +2,46 @@ package signin
 
 import (
 	"fmt"
-	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/negrel/assert"
-	app_ctx "github.com/thevtm/baker-news/app/context"
 	"github.com/thevtm/baker-news/state"
 )
 
-const ContextKeyUserID app_ctx.ContextKey = "user_id"
-const ContextKeyUserRole app_ctx.ContextKey = "user_role"
-
-const AuthUserIDCookieName = "baker-news_user-id"
-const AuthUserRoleCookieName = "baker-news_user-role"
+const AuthCookieUserIDName = "baker-news_user-id"
+const AuthCookieRoleName = "baker-news_user-role"
 
 const CookieExpirationDuration = 30 * 24 * time.Hour
 
-var GuestCookie = NewUserCookie(state.GuestID, state.UserRoleGuest)
+var GuestCookie = NewAuthCookie(state.UserGuest.ID, state.UserRoleGuest)
 
-type UserCookie struct {
+type AuthCookie struct {
 	UserID   int64
 	UserRole state.UserRole
 }
 
-func NewUserCookie(user_id int64, user_role state.UserRole) UserCookie {
-	return UserCookie{
+func NewAuthCookie(user_id int64, user_role state.UserRole) AuthCookie {
+	return AuthCookie{
 		UserID:   user_id,
 		UserRole: user_role,
 	}
 }
 
-func (c UserCookie) IsGuest() bool {
+func (c AuthCookie) IsGuest() bool {
 	return c.UserRole == state.UserRoleGuest
 }
 
-func (c UserCookie) IsUser() bool {
+func (c AuthCookie) IsUser() bool {
 	return c.UserRole == state.UserRoleUser
 }
 
-func ParseUserCookie(r *http.Request) (UserCookie, bool, error) {
-	user_cookie := UserCookie{}
+func ParseAuthCookie(r *http.Request) (AuthCookie, bool, error) {
+	user_cookie := AuthCookie{}
 
 	// 1. Check if User cookie is present
-	user_id_cookie := r.CookiesNamed(AuthUserIDCookieName)
+	user_id_cookie := r.CookiesNamed(AuthCookieUserIDName)
 	user_id_cookie_present := len(user_id_cookie) > 0
 	assert.LessOrEqual(user_id_cookie, 1, "User id cookie must be present at most once")
 
@@ -63,7 +58,7 @@ func ParseUserCookie(r *http.Request) (UserCookie, bool, error) {
 	}
 
 	// 3. Parse user role cookie
-	user_role_cookie := r.CookiesNamed(AuthUserRoleCookieName)
+	user_role_cookie := r.CookiesNamed(AuthCookieRoleName)
 	user_role_cookie_present := len(user_role_cookie) > 0
 	assert.LessOrEqual(user_role_cookie, 1, "User role cookie must be present at most once")
 
@@ -79,9 +74,9 @@ func ParseUserCookie(r *http.Request) (UserCookie, bool, error) {
 	return user_cookie, true, nil
 }
 
-func SetUserCookie(w http.ResponseWriter, user_cookie *UserCookie) {
+func SetAuthCookie(w http.ResponseWriter, user_cookie *AuthCookie) {
 	http.SetCookie(w, &http.Cookie{
-		Name:     AuthUserIDCookieName,
+		Name:     AuthCookieUserIDName,
 		Value:    strconv.FormatInt(user_cookie.UserID, 10),
 		Expires:  time.Now().Add(CookieExpirationDuration),
 		Secure:   false,
@@ -90,32 +85,11 @@ func SetUserCookie(w http.ResponseWriter, user_cookie *UserCookie) {
 	})
 
 	http.SetCookie(w, &http.Cookie{
-		Name:     AuthUserRoleCookieName,
+		Name:     AuthCookieRoleName,
 		Value:    string(user_cookie.UserRole),
 		Expires:  time.Now().Add(CookieExpirationDuration),
 		Secure:   false,
 		HttpOnly: true,
 		Path:     "/",
 	})
-}
-
-func SetGuestUserCookie(w http.ResponseWriter) UserCookie {
-	SetUserCookie(w, &GuestCookie)
-	return GuestCookie
-}
-
-func ParseUserCookieOrSetAsGuest(r *http.Request, w http.ResponseWriter) UserCookie {
-	user_cookie, ok, err := ParseUserCookie(r)
-
-	if err != nil {
-		err = fmt.Errorf("failed to parse user cookie: %w", err)
-		slog.ErrorContext(r.Context(), "ParseUserCookieOrSetAsGuest failed", slog.Any("error", err))
-		return SetGuestUserCookie(w)
-	}
-
-	if !ok {
-		return GuestCookie
-	}
-
-	return user_cookie
 }

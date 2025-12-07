@@ -1,0 +1,63 @@
+package template_page
+
+import (
+  "time"
+  "fmt"
+
+  "github.com/thevtm/baker-news/state"
+)
+
+templ NavAuth(user *state.User) {
+  <div id="nav-auth" class="flex mr-2">
+    if user.IsGuest() {
+      <a class="mx-1" href="/sign-in" hx-get="/sign-in" hx-target="main" hx-push-url="true">Sign In</a>
+    } else {
+      <span>{ user.Username }</span>
+      <span class="mx-1" style="line-height: 1.0rem;">|</span>
+      <a href="/sign-out" hx-post="/sign-out" hx-target="#nav-auth" hx-swap="outerHTML">Sign Out</a>
+    }
+  </div>
+}
+
+templ TemplatePage(user *state.User, main templ.Component) {
+  {{ current_year, _, _ := time.Now().Date() }}
+
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+      <title>Baker News</title>
+
+      <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥖</text></svg>">
+
+      // Include Tailwind CSS (this should only be used for development)
+      <script src="https://cdn.tailwindcss.com"></script>
+
+      <script src="https://unpkg.com/htmx.org@2.0.2" defer></script>
+  </head>
+  <body class="font-sans antialiased bg-gray-100 text-sm text-gray-600 min-h-full flex flex-col [overflow-anchor:none]">
+
+    <header class="container mx-auto bg-orange-800 text-gray-200">
+      <nav class="py-1 flex">
+        <div class="flex grow">
+          <a class="mx-1 font-bold" href="/" hx-get="/" hx-target="main" hx-push-url="true">🥖</a>
+          <a class="mx-1 font-bold" href="/" hx-get="/" hx-target="main" hx-push-url="true">Backer News</a>
+        </div>
+
+        @NavAuth(user)
+      </nav>
+    </header>
+
+    <main id="main">
+      @main
+    </main>
+
+    <footer class="container mx-auto bg-orange-200 py-4 flex justify-center ">
+      &copy; { fmt.Sprint(current_year) } Baker News Ltda.
+    </footer>
+
+  </body>
+  </html>
+}
