@@ -61,47 +61,6 @@ test/cover:
 
 
 # ==================================================================================== #
-# DEVELOPMENT
-# ==================================================================================== #
-
-## tidy: tidy modfiles and format .go files
-.PHONY: tidy
-tidy:
-	go mod tidy -v
-	go fmt ./...
-
-## templ/generate: generate templates
-.PHONY: templ/generate
-templ/generate:
-	TEMPL_EXPERIMENT=rawgo \
-		${GO_BIN_PATH}/templ generate -lazy
-
-## build: build the application
-.PHONY: build
-build: templ/generate
-	# Include additional build steps, like TypeScript, SCSS or Tailwind compilation here...
-	go build -o=/tmp/bin/${binary_name} ${main_package_path}
-
-## run: run the  application
-.PHONY: run
-run: build
-	/tmp/bin/${binary_name}
-
-## run/live: run the application with reloading on file changes
-.PHONY: run/live
-run/live:
-	LOG_LEVEL="$${LOG_LEVEL:-DEBUG}" \
-	DATABASE_URI="${DATABASE_URI}" \
-		go run github.com/cosmtrek/air@v1.43.0 \
-			--build.cmd "make build" \
-			--build.bin "/tmp/bin/${binary_name}" \
-			--build.delay "100" \
-			--build.exclude_dir "docker-compose" \
-			--build.include_ext "go, tpl, tmpl, templ, html, css, scss, js, ts, sql, jpeg, jpg, gif, png, bmp, svg, webp, ico" \
-			--misc.clean_on_exit "true"
-
-
-# ==================================================================================== #
 # OPERATIONS
 # ==================================================================================== #
 
@@ -116,6 +75,7 @@ production/deploy: confirm audit no-dirty
 	GOOS=linux GOARCH=amd64 go build -ldflags='-s' -o=/tmp/bin/linux_amd64/${binary_name} ${main_package_path}
 	upx -5 /tmp/bin/linux_amd64/${binary_name}
 	# Include additional deployment steps here...
+
 
 # ==================================================================================== #
 # DATABASE
@@ -196,6 +156,11 @@ db/sqlc/generate:
 
 	@echo ""
 
+SQLC_TARGETS := ./state/db.go ./state/models.go ./state/query.sql.go
+SQLC_SOURCES := ./state/sql/sqlc.yml ./state/sql/schema.sql ./state/sql/query.sql
+$(SQLC_TARGETS): $(SQLC_SOURCES)
+	@$(MAKE) db/sqlc/generate
+
 ## db/tidy: create, migrate the database and run generators
 .PHONY: db/tidy
 db/tidy: db/create-if-absent db/migrate db/schema-dump db/sqlc/generate
@@ -214,3 +179,44 @@ db/goose-alias:
 		GOOSE_DBSTRING="$(DATABASE_URI)" \
 		go run $(GOOSE_PKG) \
 		--dir $(MIGRATIONS_DIRECTORY)\'
+
+
+# ==================================================================================== #
+# DEVELOPMENT
+# ==================================================================================== #
+
+## tidy: tidy modfiles and format .go files
+.PHONY: tidy
+tidy:
+	go mod tidy -v
+	go fmt ./...
+
+## templ/generate: generate templates
+.PHONY: templ/generate
+templ/generate:
+	TEMPL_EXPERIMENT=rawgo \
+		${GO_BIN_PATH}/templ generate -lazy
+
+## build: build the application
+.PHONY: build
+build: templ/generate $(SQLC_TARGETS)
+	# Include additional build steps, like TypeScript, SCSS or Tailwind compilation here...
+	go build -o=/tmp/bin/${binary_name} ${main_package_path}
+
+## run: run the  application
+.PHONY: run
+run: build
+	/tmp/bin/${binary_name}
+
+## run/live: run the application with reloading on file changes
+.PHONY: run/live
+run/live:
+	LOG_LEVEL="$${LOG_LEVEL:-DEBUG}" \
+	DATABASE_URI="${DATABASE_URI}" \
+		go run github.com/cosmtrek/air@v1.43.0 \
+			--build.cmd "make build" \
+			--build.bin "/tmp/bin/${binary_name}" \
+			--build.delay "100" \
+			--build.exclude_dir "docker-compose" \
+			--build.include_ext "go, tpl, tmpl, templ, html, css, scss, js, ts, sql, jpeg, jpg, gif, png, bmp, svg, webp, ico" \
+			--misc.clean_on_exit "true"
