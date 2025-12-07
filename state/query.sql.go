@@ -269,7 +269,7 @@ func (q *Queries) GetPost(ctx context.Context, id int64) (Post, error) {
 	return i, err
 }
 
-const getUser = `-- name: GetUser :one
+const getUserByID = `-- name: GetUserByID :one
 
 SELECT id, username, role, db_created_at, db_updated_at FROM users
   WHERE id = $1 LIMIT 1
@@ -278,8 +278,8 @@ SELECT id, username, role, db_created_at, db_updated_at FROM users
 // ------------------------------------------------------------------------------
 // User Queries
 // ------------------------------------------------------------------------------
-func (q *Queries) GetUser(ctx context.Context, id int64) (User, error) {
-	row := q.db.QueryRow(ctx, getUser, id)
+func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByID, id)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -289,6 +289,39 @@ func (q *Queries) GetUser(ctx context.Context, id int64) (User, error) {
 		&i.DbUpdatedAt,
 	)
 	return i, err
+}
+
+const getUserByUsername = `-- name: GetUserByUsername :one
+SELECT id, username, role, db_created_at, db_updated_at FROM users
+  WHERE LOWER(username) = LOWER($1)
+  LIMIT 1
+`
+
+func (q *Queries) GetUserByUsername(ctx context.Context, lower string) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByUsername, lower)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Role,
+		&i.DbCreatedAt,
+		&i.DbUpdatedAt,
+	)
+	return i, err
+}
+
+const isUsernameTaken = `-- name: IsUsernameTaken :one
+SELECT EXISTS (
+  SELECT 1 FROM users
+    WHERE LOWER(username) = LOWER($1)
+)
+`
+
+func (q *Queries) IsUsernameTaken(ctx context.Context, lower string) (bool, error) {
+	row := q.db.QueryRow(ctx, isUsernameTaken, lower)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
 }
 
 const latestPosts = `-- name: LatestPosts :many

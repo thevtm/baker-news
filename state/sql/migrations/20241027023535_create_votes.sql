@@ -18,7 +18,7 @@ CREATE TABLE post_votes (
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
-CREATE INDEX post_votes_user_id_idx ON post_votes(user_id);
+CREATE INDEX post_votes_post_id_and_user_id_idx ON post_votes(post_id, user_id);
 
 CREATE TRIGGER set_db_updated_at
     BEFORE UPDATE ON post_votes
@@ -41,7 +41,7 @@ CREATE TABLE comment_votes (
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
-CREATE INDEX comment_votes_user_id_idx ON comment_votes(user_id);
+CREATE INDEX comment_votes_comment_id_and_user_id_idx ON comment_votes(comment_id, user_id);
 
 CREATE TRIGGER set_db_updated_at
     BEFORE UPDATE ON comment_votes
