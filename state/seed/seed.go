@@ -19,31 +19,6 @@ func CreateSeeder(query *state.Queries, f *faker.Faker) *Seeder {
 	return &Seeder{queries: query, faker: f}
 }
 
-func (s *Seeder) CreateFakePostVote(ctx context.Context, user *state.User, post *state.Post) *state.PostVote {
-	f := s.faker
-	up, down, none := string(state.VoteValueUp), string(state.VoteValueDown), string(state.VoteValueNone)
-	vote_type := f.RandomStringElement([]string{up, up, up, up, up, up, up, up, down, down, none})
-
-	user_id := user.ID
-	post_id := post.ID
-
-	if vote_type == up {
-		up_vote_params := state.UpVotePostParams{PostID: post_id, UserID: user_id}
-		new_post_vote := lo.Must1(s.queries.UpVotePost(ctx, up_vote_params))
-		return &new_post_vote
-	} else if vote_type == down {
-		down_vote_params := state.DownVotePostParams{PostID: post_id, UserID: user_id}
-		new_post_vote := lo.Must1(s.queries.DownVotePost(ctx, down_vote_params))
-		return &new_post_vote
-	} else if vote_type == none {
-		none_vote_params := state.NoneVotePostParams{PostID: post_id, UserID: user_id}
-		new_post_vote := lo.Must1(s.queries.NoneVotePost(ctx, none_vote_params))
-		return &new_post_vote
-	} else {
-		panic("unreachable")
-	}
-}
-
 func (s *Seeder) CreateFakeUser(ctx context.Context) *state.User {
 	f := s.faker
 
@@ -76,6 +51,32 @@ func (s *Seeder) CreateFakePost(ctx context.Context, author *state.User) *state.
 	return &new_post
 }
 
+func (s *Seeder) CreateFakePostVote(ctx context.Context, user *state.User, post *state.Post) *state.PostVote {
+	up, down, none := string(state.VoteValueUp), string(state.VoteValueDown), string(state.VoteValueNone)
+
+	// 70% up, 20% down, 10% none
+	vote_type := s.faker.RandomStringElement([]string{up, up, up, up, up, up, up, down, down, none})
+
+	user_id := user.ID
+	post_id := post.ID
+
+	if vote_type == up {
+		up_vote_params := state.UpVotePostParams{PostID: post_id, UserID: user_id}
+		new_post_vote := lo.Must1(s.queries.UpVotePost(ctx, up_vote_params))
+		return &new_post_vote
+	} else if vote_type == down {
+		down_vote_params := state.DownVotePostParams{PostID: post_id, UserID: user_id}
+		new_post_vote := lo.Must1(s.queries.DownVotePost(ctx, down_vote_params))
+		return &new_post_vote
+	} else if vote_type == none {
+		none_vote_params := state.NoneVotePostParams{PostID: post_id, UserID: user_id}
+		new_post_vote := lo.Must1(s.queries.NoneVotePost(ctx, none_vote_params))
+		return &new_post_vote
+	} else {
+		panic("unreachable")
+	}
+}
+
 func (s *Seeder) CreateFakeRootComment(ctx context.Context, author *state.User, post *state.Post) *state.Comment {
 	f := s.faker
 
@@ -103,4 +104,30 @@ func (s *Seeder) CreateFakeChildComment(ctx context.Context, author *state.User,
 	new_comment := lo.Must1(s.queries.CreateComment(ctx, new_comment_params))
 
 	return &new_comment
+}
+
+func (s *Seeder) CreateFakeCommentVote(ctx context.Context, user *state.User, comment *state.Comment) *state.CommentVote {
+	up, down, none := string(state.VoteValueUp), string(state.VoteValueDown), string(state.VoteValueNone)
+
+	// 70% up, 20% down, 10% none
+	vote_type := s.faker.RandomStringElement([]string{up, up, up, up, up, up, up, up, down, down, none})
+
+	user_id := user.ID
+	comment_id := comment.ID
+
+	if vote_type == up {
+		up_vote_params := state.UpVoteCommentParams{CommentID: comment_id, UserID: user_id}
+		new_comment_vote := lo.Must1(s.queries.UpVoteComment(ctx, up_vote_params))
+		return &new_comment_vote
+	} else if vote_type == down {
+		down_vote_params := state.DownVoteCommentParams{CommentID: comment_id, UserID: user_id}
+		new_comment_vote := lo.Must1(s.queries.DownVoteComment(ctx, down_vote_params))
+		return &new_comment_vote
+	} else if vote_type == none {
+		none_vote_params := state.NoneVoteCommentParams{CommentID: comment_id, UserID: user_id}
+		new_comment_vote := lo.Must1(s.queries.NoneVoteComment(ctx, none_vote_params))
+		return &new_comment_vote
+	} else {
+		panic("unreachable")
+	}
 }

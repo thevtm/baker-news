@@ -9,6 +9,7 @@ A hacker news clone that I made while learning Go.
 - I tried to follow, the "standard" Go project structure but not too strictly.
 - Someone wrote about how they only used one single git command `git add --all && git commit -m "yolo 😎" && git push`, so I decided to try it.
 - I tried making it "portable" | "easy to install". You should only need Go, Make, Docker and Docker Compose to run everything.
+- I've used Jupyther notebooks to help with development in other languages but the kernels for Go are all broken. I've also tried interpreters but they are also not good enough.
 
 ## Project Structure
 
@@ -19,5 +20,3 @@ A hacker news clone that I made while learning Go.
 - [Dapr Dashboard](http://localhost:58080/)
 - [Adminer](http://localhost:58081)
 - [Zipkin](http://localhost:59411)
-- [GoNB](http://localhost:58888)
-  - [GoNB - Jupyter Notebooks for Go](https://github.com/janpfeifer/gonb/)

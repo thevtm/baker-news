@@ -6,11 +6,13 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/a-h/templ"
-	dapr "github.com/dapr/go-sdk/client"
-	"github.com/thevtm/baker-news/models"
+	"github.com/jackc/pgx/v5"
+	"github.com/samber/lo"
+	"github.com/thevtm/baker-news/state"
 	"github.com/thevtm/baker-news/ui/post_page"
 	"github.com/thevtm/baker-news/ui/posts_page"
 	"github.com/thevtm/baker-news/ui/ui_gallery_page"
@@ -93,41 +95,40 @@ func init() {
 	slog.Info("Logger initialized", slog.String("log_level", SlogLevelToString(log_level)))
 
 	// 2. Initialize the Dapr client
-	client, err := dapr.NewClient()
-	if err != nil {
-		panic(err)
-	}
-	slog.Info("Dapr client initialized")
-	// defer client.Close()
-	// TODO: use the client here, see below for examples
+	// client, err := dapr.NewClient()
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// slog.Info("Dapr client initialized")
+	// // defer client.Close()
+	// // TODO: use the client here, see below for examples
 
-	data := []byte(`{ "id": "a123", "value": "abcdefg", "valid": true, "count": 42 }`)
-	if err := client.PublishEvent(context.Background(), "pubsub", "topisc-name", data); err != nil {
-		panic(err)
-	}
+	// data := []byte(`{ "id": "a123", "value": "abcdefg", "valid": true, "count": 42 }`)
+	// if err := client.PublishEvent(context.Background(), "pubsub", "topisc-name", data); err != nil {
+	// 	panic(err)
+	// }
 
-	// save state with the key key1, default options: strong, last-write
-	if err := client.SaveState(context.Background(), "state-store", "key1", []byte("hello"), nil); err != nil {
-		panic(err)
-	}
+	// // save state with the key key1, default options: strong, last-write
+	// if err := client.SaveState(context.Background(), "state-store", "key1", []byte("hello"), nil); err != nil {
+	// 	panic(err)
+	// }
 
-	config, err := client.GetConfigurationItem(context.Background(), "config-store", "config-item-1")
-	if err != nil {
-		panic(err)
-	}
-	if config == nil {
-		panic("Configuration item not found")
-	}
-	slog.Info("Configuration item retrieved", slog.String("config-item-1", config.Value))
+	// config, err := client.GetConfigurationItem(context.Background(), "config-store", "config-item-1")
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// if config == nil {
+	// 	panic("Configuration item not found")
+	// }
+	// slog.Info("Configuration item retrieved", slog.String("config-item-1", config.Value))
 
-	client.SubscribeConfigurationItems(context.Background(), "config-store", []string{"config-item-2", "config-item-3"},
-		func(id string, config map[string]*dapr.ConfigurationItem) {
-			for k, v := range config {
-				slog.Info("Configuration updated", slog.String("id", id), slog.String("key", k), slog.String("value", v.Value))
-			}
-			// First invocation when app subscribes to config changes only returns subscription id
-		})
-
+	// client.SubscribeConfigurationItems(context.Background(), "config-store", []string{"config-item-2", "config-item-3"},
+	// 	func(id string, config map[string]*dapr.ConfigurationItem) {
+	// 		for k, v := range config {
+	// 			slog.Info("Configuration updated", slog.String("id", id), slog.String("key", k), slog.String("value", v.Value))
+	// 		}
+	// 		// First invocation when app subscribes to config changes only returns subscription id
+	// 	})
 }
 
 func RequestIdMiddleware(handler http.HandlerFunc) http.HandlerFunc {
@@ -159,11 +160,15 @@ func LoggingMiddleware(handler http.HandlerFunc) http.HandlerFunc {
 }
 
 func main() {
-	posts := []models.Post{
-		{Title: "My First Post", URL: "/post/1", Score: 10},
-		{Title: "My Second Post", URL: "/post/2", Score: 20},
-		{Title: "My Third Post", URL: "/post/3", Score: 30},
+	db_uri, command_nil_found := os.LookupEnv("DATABASE_URI")
+	if !command_nil_found {
+		panic("DATABASE_URI env var is not set")
 	}
+	ctx := context.Background()
+	conn := lo.Must1(pgx.Connect(ctx, db_uri))
+	defer conn.Close(ctx)
+
+	queries := state.New(conn)
 
 	// Required due to `x/net/trace: registered routes conflict with "GET /"`
 	// See https://github.com/golang/go/issues/69951
@@ -173,24 +178,53 @@ func main() {
 		is_htmx_request := r.Header.Get("HX-Request") == "true"
 		htmx_target := r.Header.Get("HX-Target")
 
-		if is_htmx_request && htmx_target == "main" {
-			posts_page.PostsMain(posts).Render(r.Context(), w)
+		// posts := lo.Must1(queries.TopPosts(ctx, 30))
+		query_params := &state.TopPostsWithAuthorAndVotesForUserParams{
+			Limit:  30,
+			UserID: 1545,
+		}
+		posts, err := queries.TopPostsWithAuthorAndVotesForUser(ctx, *query_params)
+
+		slog.InfoContext(r.Context(), "Top Posts retrieved", slog.Int("count", len(posts)))
+
+		if err != nil {
+			slog.ErrorContext(r.Context(), "Failed to retrieve Top Posts", slog.Any("error", err))
+			http.Error(w, "Failed to retrieve Top Posts", http.StatusInternalServerError)
 			return
 		}
 
-		posts_page.PostsPage(posts).Render(r.Context(), w)
+		if is_htmx_request && htmx_target == "main" {
+			posts_page.PostsMain(&posts).Render(r.Context(), w)
+			return
+		}
+
+		posts_page.PostsPage(&posts).Render(r.Context(), w)
 	})))
 
 	mux.HandleFunc("GET /post/{post_id}", RequestIdMiddleware(LoggingMiddleware(func(w http.ResponseWriter, r *http.Request) {
+		post_id_str := r.PathValue("post_id")
+		post_id, err := strconv.ParseInt(post_id_str, 10, 64)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Invalid post_id \"%s\"", post_id_str), http.StatusBadRequest)
+			return
+		}
+
+		post, err := queries.GetPost(r.Context(), post_id)
+		if err != nil {
+			slog.ErrorContext(r.Context(), "Failed to retrieve Post", slog.Int64("post_id", post_id))
+			http.Error(w, "Post not found", http.StatusNotFound)
+			return
+		}
+
 		is_htmx_request := r.Header.Get("HX-Request") == "true"
 		htmx_target := r.Header.Get("HX-Target")
 
 		if is_htmx_request && htmx_target == "main" {
-			post_page.PostMain(posts[0]).Render(r.Context(), w)
+			post_page.PostMain(post).Render(r.Context(), w)
 			return
 		}
 
-		post_page.PostPage(posts[0]).Render(r.Context(), w)
+		post_page.PostPage(post).Render(r.Context(), w)
 	})))
 
 	// index_page_component := posts_page.PostsPage(posts)

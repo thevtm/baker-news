@@ -297,7 +297,7 @@ SELECT id, title, url, author_id, score, comments_count, created_at, db_created_
   LIMIT $1
 `
 
-func (q *Queries) LatestPosts(ctx context.Context, limit int32) ([]Post, error) {
+func (q *Queries) LatestPosts(ctx context.Context, limit int64) ([]Post, error) {
 	rows, err := q.db.Query(ctx, latestPosts, limit)
 	if err != nil {
 		return nil, err
@@ -410,7 +410,7 @@ SELECT id, title, url, author_id, score, comments_count, created_at, db_created_
   LIMIT $1
 `
 
-func (q *Queries) TopPosts(ctx context.Context, limit int32) ([]Post, error) {
+func (q *Queries) TopPosts(ctx context.Context, limit int64) ([]Post, error) {
 	rows, err := q.db.Query(ctx, topPosts, limit)
 	if err != nil {
 		return nil, err
@@ -429,6 +429,63 @@ func (q *Queries) TopPosts(ctx context.Context, limit int32) ([]Post, error) {
 			&i.CreatedAt,
 			&i.DbCreatedAt,
 			&i.DbUpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const topPostsWithAuthorAndVotesForUser = `-- name: TopPostsWithAuthorAndVotesForUser :many
+SELECT posts.id, posts.title, posts.url, posts.author_id, posts.score, posts.comments_count, posts.created_at, posts.db_created_at, posts.db_updated_at, author.id, author.username, author.role, author.db_created_at, author.db_updated_at, post_votes.value AS vote_value FROM posts
+  JOIN users author ON posts.author_id = author.id
+  LEFT JOIN post_votes ON posts.id = post_votes.post_id AND post_votes.user_id = $1
+  ORDER BY score DESC
+  LIMIT $2
+`
+
+type TopPostsWithAuthorAndVotesForUserParams struct {
+	UserID int64
+	Limit  int64
+}
+
+type TopPostsWithAuthorAndVotesForUserRow struct {
+	Post      Post
+	User      User
+	VoteValue NullVoteValue
+}
+
+// TODO: Look into performance of this query, maybe add a multicolumn index
+// TODO: I ran into a bug where using `sqlc.embed` with a `LEFT JOIN` didn't work as expected (https://github.com/sqlc-dev/sqlc/issues/3269)
+func (q *Queries) TopPostsWithAuthorAndVotesForUser(ctx context.Context, arg TopPostsWithAuthorAndVotesForUserParams) ([]TopPostsWithAuthorAndVotesForUserRow, error) {
+	rows, err := q.db.Query(ctx, topPostsWithAuthorAndVotesForUser, arg.UserID, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []TopPostsWithAuthorAndVotesForUserRow
+	for rows.Next() {
+		var i TopPostsWithAuthorAndVotesForUserRow
+		if err := rows.Scan(
+			&i.Post.ID,
+			&i.Post.Title,
+			&i.Post.Url,
+			&i.Post.AuthorID,
+			&i.Post.Score,
+			&i.Post.CommentsCount,
+			&i.Post.CreatedAt,
+			&i.Post.DbCreatedAt,
+			&i.Post.DbUpdatedAt,
+			&i.User.ID,
+			&i.User.Username,
+			&i.User.Role,
+			&i.User.DbCreatedAt,
+			&i.User.DbUpdatedAt,
+			&i.VoteValue,
 		); err != nil {
 			return nil, err
 		}

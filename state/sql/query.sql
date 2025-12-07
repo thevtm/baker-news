@@ -49,6 +49,14 @@ SELECT * FROM posts
   ORDER BY created_at DESC
   LIMIT $1;
 
+-- TODO: Look into performance of this query, maybe add a multicolumn index
+-- TODO: I ran into a bug where using `sqlc.embed` with a `LEFT JOIN` didn't work as expected (https://github.com/sqlc-dev/sqlc/issues/3269)
+-- name: TopPostsWithAuthorAndVotesForUser :many
+SELECT sqlc.embed(posts), sqlc.embed(author), post_votes.value AS vote_value FROM posts
+  JOIN users author ON posts.author_id = author.id
+  LEFT JOIN post_votes ON posts.id = post_votes.post_id AND post_votes.user_id = $1
+  ORDER BY score DESC
+  LIMIT $2;
 
 --------------------------------------------------------------------------------
 -- Comment Queries

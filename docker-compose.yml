@@ -14,6 +14,7 @@ services:
     volumes:
       - ./docker-compose/postgres/data:/var/lib/postgresql/data
 
+  # Didn't like using it TBH
   # atlas:
   #   image: arigaio/atlas:0.28.1-distroless
   #   command: >
@@ -133,21 +134,33 @@ services:
     networks:
       - std-network
 
-  ############################
-  # GoNB - GO Notebook Kernel
-  ############################
-  gonb:
-    image: "janpfeifer/gonb_jupyterlab:v0.10.6"
-    entrypoint: ""
-    command: ["tini", "-g", "--", "/notebooks/docker-compose/gonb/autostart.sh"]
-    # environment:
-    #   - NB_USER=${USER}
-    ports:
-      - "58888:8888"
-    volumes:
-      - ./:/notebooks
-    networks:
-      - std-network
+  # ############################
+  # # GoNB - GO Notebook Kernel
+  # ############################
+  # Doesn't work that well
+  # gonb:
+  #   image: "janpfeifer/gonb_jupyterlab:v0.10.6"
+  #   entrypoint: ""
+  #   command: ["tini", "-g", "--", "/notebooks/docker-compose/gonb/autostart.sh"]
+  #   # environment:
+  #   #   - NB_USER=${USER}
+  #   # ports:
+  #   #   - "58888:8888"
+  #   volumes:
+  #     - ./:/notebooks
+  #   networks:
+  #     - std-network
+
+  # ############################
+  # # GopherNotes - Notebook
+  # ############################
+  # Doesn't work that well
+  # gophernotes:
+  #   image: "gopherdata/gophernotes"
+  #   ports:
+  #     - "58888:8888"
+  #   networks:
+  #     - std-network
 
 
 ############################

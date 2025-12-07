@@ -1,18 +1,20 @@
 package post_page
 
-import "strconv"
-import "github.com/thevtm/baker-news/ui/base_page"
+import (
+  "fmt"
+  "github.com/thevtm/baker-news/ui/base_page"
+)
 
-import ("github.com/thevtm/baker-news/models")
+import ("github.com/thevtm/baker-news/state")
 
-templ Post(post models.Post) {
-  <h1>{ strconv.Itoa(post.Score) } - { post.Title }</h1>
+templ Post(post state.Post) {
+  <h1>{ fmt.Sprintf("%d", post.Score) } - { post.Title }</h1>
 }
 
-templ PostMain(post models.Post) {
+templ PostMain(post state.Post) {
   @Post(post)
 }
 
-templ PostPage(post models.Post) {
+templ PostPage(post state.Post) {
   @base_page.BasePage(Post(post))
 }
