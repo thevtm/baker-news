@@ -1,19 +1,23 @@
 // $ go test -v --benchmem --bench . ./scratch/go-components-benchmark_test.go
-// === RUN   TestStatic
-// --- PASS: TestStatic (0.00s)
 // goos: linux
 // goarch: amd64
 // cpu: Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz
-// BenchmarkStaticGC
-// BenchmarkStaticGC-12           	 3509049	       328.2 ns/op	     104 B/op	       7 allocs/op
-// BenchmarkStaticGCNode
-// BenchmarkStaticGCNode-12       	 5702686	       208.7 ns/op	      40 B/op	       4 allocs/op
-// BenchmarkStaticGCNodeRaw
-// BenchmarkStaticGCNodeRaw-12    	31493150	        38.95 ns/op	      24 B/op	       1 allocs/op
-// BenchmarkStaticPrintf
-// BenchmarkStaticPrintf-12       	26211787	        39.53 ns/op	       0 B/op	       0 allocs/op
+// BenchmarkStaticSmall
+// BenchmarkStaticSmall-12          	 3317254	       328.2 ns/op	     104 B/op	       7 allocs/op
+// BenchmarkStaticSmallToRaw
+// BenchmarkStaticSmallToRaw-12     	 7103900	       176.9 ns/op	      88 B/op	       4 allocs/op
+// BenchmarkDynamicSmall
+// BenchmarkDynamicSmall-12         	 3636391	       338.7 ns/op	      96 B/op	       7 allocs/op
+// BenchmarkDynamicSmallToRaw
+// BenchmarkDynamicSmallToRaw-12    	 5991890	       204.1 ns/op	      72 B/op	       4 allocs/op
+// BenchmarkStaticLarge
+// BenchmarkStaticLarge-12          	    2236	    694947 ns/op	  206976 B/op	   10810 allocs/op
+// BenchmarkStaticLargeCache
+// BenchmarkStaticLargeCache-12     	    3601	    328425 ns/op	   39576 B/op	    5030 allocs/op
+// BenchmarkStaticLargeToRaw
+// BenchmarkStaticLargeToRaw-12     	  284622	      4338 ns/op	   37070 B/op	       4 allocs/op
 // PASS
-// ok  	command-line-arguments	5.258s
+// ok  	command-line-arguments	10.835s
 
 package main
 
@@ -138,7 +142,26 @@ func BenchmarkStaticLargeToRaw(b *testing.B) {
 	raw_str := buf.String()
 
 	component := func() gc.Node {
-		return gc.Raw(fmt.Sprint(raw_str))
+		return gc.Raw(raw_str)
+	}
+
+	buf = new(bytes.Buffer)
+
+	for i := 0; i < b.N; i++ {
+		component().Render(buf)
+		buf.Reset()
+	}
+}
+
+func BenchmarkStaticLargeToRawCache(b *testing.B) {
+	node := StaticLarge()
+
+	buf := new(bytes.Buffer)
+	node.Render(buf)
+	raw_str := buf.String()
+
+	component := func() gc.Node {
+		return gc.Raw(raw_str)
 	}
 
 	buf = new(bytes.Buffer)
