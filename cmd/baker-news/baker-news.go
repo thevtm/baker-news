@@ -6,16 +6,14 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"strconv"
+	"runtime"
 	"strings"
 
-	"github.com/a-h/templ"
 	"github.com/jackc/pgx/v5"
 	"github.com/samber/lo"
+	"github.com/thevtm/baker-news/app"
+	"github.com/thevtm/baker-news/commands"
 	"github.com/thevtm/baker-news/state"
-	"github.com/thevtm/baker-news/ui/post_page"
-	"github.com/thevtm/baker-news/ui/posts_page"
-	"github.com/thevtm/baker-news/ui/ui_gallery_page"
 )
 
 const PORT = 8080
@@ -26,11 +24,26 @@ const ContextKeyRequestId ContextKey = "request_id"
 
 var request_id_inc = 0
 
+var wd string
+var wd_len int
+
+func init() {
+	currentDir := lo.Must(os.Getwd())
+	wd = currentDir
+	wd_len = len(wd)
+}
+
 type ContextHandler struct {
 	slog.Handler
 }
 
 func (h *ContextHandler) Handle(ctx context.Context, r slog.Record) error {
+	// Add the caller path:line to the log record
+	if _, filename, line, ok := runtime.Caller(3); ok {
+		r.AddAttrs(slog.String("source", fmt.Sprintf("%s:%d", filename[wd_len:], line)))
+	}
+
+	// Add the request_id to the log record
 	if request_id, ok := ctx.Value(ContextKeyRequestId).(int); ok {
 		r.AddAttrs(slog.Int(string(ContextKeyRequestId), request_id))
 	}
@@ -169,72 +182,10 @@ func main() {
 	defer conn.Close(ctx)
 
 	queries := state.New(conn)
+	cmds := commands.New(queries)
 
-	// Required due to `x/net/trace: registered routes conflict with "GET /"`
-	// See https://github.com/golang/go/issues/69951
-	mux := http.NewServeMux()
-
-	mux.HandleFunc("GET /", RequestIdMiddleware(LoggingMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		is_htmx_request := r.Header.Get("HX-Request") == "true"
-		htmx_target := r.Header.Get("HX-Target")
-
-		// posts := lo.Must1(queries.TopPosts(ctx, 30))
-		query_params := &state.TopPostsWithAuthorAndVotesForUserParams{
-			Limit:  30,
-			UserID: 1545,
-		}
-		posts, err := queries.TopPostsWithAuthorAndVotesForUser(ctx, *query_params)
-
-		slog.InfoContext(r.Context(), "Top Posts retrieved", slog.Int("count", len(posts)))
-
-		if err != nil {
-			slog.ErrorContext(r.Context(), "Failed to retrieve Top Posts", slog.Any("error", err))
-			http.Error(w, "Failed to retrieve Top Posts", http.StatusInternalServerError)
-			return
-		}
-
-		if is_htmx_request && htmx_target == "main" {
-			posts_page.PostsMain(&posts).Render(r.Context(), w)
-			return
-		}
-
-		posts_page.PostsPage(&posts).Render(r.Context(), w)
-	})))
-
-	mux.HandleFunc("GET /post/{post_id}", RequestIdMiddleware(LoggingMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		post_id_str := r.PathValue("post_id")
-		post_id, err := strconv.ParseInt(post_id_str, 10, 64)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Invalid post_id \"%s\"", post_id_str), http.StatusBadRequest)
-			return
-		}
-
-		post, err := queries.GetPost(r.Context(), post_id)
-		if err != nil {
-			slog.ErrorContext(r.Context(), "Failed to retrieve Post", slog.Int64("post_id", post_id))
-			http.Error(w, "Post not found", http.StatusNotFound)
-			return
-		}
-
-		is_htmx_request := r.Header.Get("HX-Request") == "true"
-		htmx_target := r.Header.Get("HX-Target")
-
-		if is_htmx_request && htmx_target == "main" {
-			post_page.PostMain(post).Render(r.Context(), w)
-			return
-		}
-
-		post_page.PostPage(post).Render(r.Context(), w)
-	})))
-
-	// index_page_component := posts_page.PostsPage(posts)
-	// mux.Handle("GET /", templ.Handler(index_page_component))
-
-	// post_page_component := post_page.PostPage(posts[0])
-	// mux.Handle("GET /posts/:post_id", templ.Handler(post_page_component))
-
-	ui_gallery_page_component := ui_gallery_page.UiGalleryPage()
-	mux.Handle("GET /ui-gallery", templ.Handler(ui_gallery_page_component))
+	app := app.NewApp(queries, cmds)
+	mux := app.MakeServer()
 
 	slog.Info("Server started!", "PORT", PORT)
 	err := http.ListenAndServe(fmt.Sprintf(":%d", PORT), mux)
@@ -242,3 +193,87 @@ func main() {
 		slog.Error("Server error", "error", err)
 	}
 }
+
+// func old_main() {
+// 	db_uri, command_nil_found := os.LookupEnv("DATABASE_URI")
+// 	if !command_nil_found {
+// 		panic("DATABASE_URI env var is not set")
+// 	}
+// 	ctx := context.Background()
+// 	conn := lo.Must1(pgx.Connect(ctx, db_uri))
+// 	defer conn.Close(ctx)
+
+// 	queries := state.New(conn)
+
+// 	// Required due to `x/net/trace: registered routes conflict with "GET /"`
+// 	// See https://github.com/golang/go/issues/69951
+// 	mux := http.NewServeMux()
+
+// 	mux.HandleFunc("GET /", RequestIdMiddleware(LoggingMiddleware(func(w http.ResponseWriter, r *http.Request) {
+// 		is_htmx_request := r.Header.Get("HX-Request") == "true"
+// 		htmx_target := r.Header.Get("HX-Target")
+
+// 		// posts := lo.Must1(queries.TopPosts(ctx, 30))
+// 		query_params := &state.TopPostsWithAuthorAndVotesForUserParams{
+// 			Limit:  30,
+// 			UserID: 1545,
+// 		}
+// 		posts, err := queries.TopPostsWithAuthorAndVotesForUser(ctx, *query_params)
+
+// 		slog.InfoContext(r.Context(), "Top Posts retrieved", slog.Int("count", len(posts)))
+
+// 		if err != nil {
+// 			slog.ErrorContext(r.Context(), "Failed to retrieve Top Posts", slog.Any("error", err))
+// 			http.Error(w, "Failed to retrieve Top Posts", http.StatusInternalServerError)
+// 			return
+// 		}
+
+// 		if is_htmx_request && htmx_target == "main" {
+// 			posts_page.PostsMain(&posts).Render(r.Context(), w)
+// 			return
+// 		}
+
+// 		posts_page.PostsPage(&posts).Render(r.Context(), w)
+// 	})))
+
+// 	mux.HandleFunc("GET /post/{post_id}", RequestIdMiddleware(LoggingMiddleware(func(w http.ResponseWriter, r *http.Request) {
+// 		post_id_str := r.PathValue("post_id")
+// 		post_id, err := strconv.ParseInt(post_id_str, 10, 64)
+// 		if err != nil {
+// 			http.Error(w, fmt.Sprintf("Invalid post_id \"%s\"", post_id_str), http.StatusBadRequest)
+// 			return
+// 		}
+
+// 		post, err := queries.GetPost(r.Context(), post_id)
+// 		if err != nil {
+// 			slog.ErrorContext(r.Context(), "Failed to retrieve Post", slog.Int64("post_id", post_id))
+// 			http.Error(w, "Post not found", http.StatusNotFound)
+// 			return
+// 		}
+
+// 		is_htmx_request := r.Header.Get("HX-Request") == "true"
+// 		htmx_target := r.Header.Get("HX-Target")
+
+// 		if is_htmx_request && htmx_target == "main" {
+// 			post_page.PostMain(post).Render(r.Context(), w)
+// 			return
+// 		}
+
+// 		post_page.PostPage(post).Render(r.Context(), w)
+// 	})))
+
+// 	// index_page_component := posts_page.PostsPage(posts)
+// 	// mux.Handle("GET /", templ.Handler(index_page_component))
+
+// 	// post_page_component := post_page.PostPage(posts[0])
+// 	// mux.Handle("GET /posts/:post_id", templ.Handler(post_page_component))
+
+// 	ui_gallery_page_component := ui_gallery_page.UiGalleryPage()
+// 	mux.Handle("GET /ui-gallery", templ.Handler(ui_gallery_page_component))
+
+// 	slog.Info("Server started!", "PORT", PORT)
+// 	err := http.ListenAndServe(fmt.Sprintf(":%d", PORT), mux)
+// 	if err != nil {
+// 		slog.Error("Server error", "error", err)
+// 	}
+// }

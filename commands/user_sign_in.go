@@ -8,42 +8,17 @@ import (
 	"github.com/thevtm/baker-news/state"
 )
 
-var ErrUserSignInCommandUserNotFound = NewErrCommandValidationFailed("user not found")
-var ErrUserSignInCommandUsernameTooShort = NewErrCommandValidationFailed("username is too short")
-var ErrUserSignInCommandUsernameTooLong = NewErrCommandValidationFailed("username is too long")
+var ErrUserSignInUserNotFound = NewErrCommandValidationFailed("user not found")
 
-type UserSignInCommand struct {
-	Username string
-}
-
-func NewUserSignInCommand(username string) (*UserSignInCommand, error) {
-	if len(username) < 5 {
-		return nil, ErrUserSignInCommandUsernameTooShort
-	}
-
-	if len(username) > 20 {
-		return nil, ErrUserSignInCommandUsernameTooLong
-	}
-
-	cmd := UserSignInCommand{
-		Username: username,
-	}
-
-	return &cmd, nil
-}
-
-func (s *UserSignInCommand) Execute(ctx context.Context, queries *state.Queries) (state.User, error) {
-	username := s.Username
+func (c *Commands) UserSignIn(ctx context.Context, username string) (state.User, bool, error) {
+	queries := c.queries
+	var user state.User
 
 	user, err := queries.GetUserByUsername(ctx, username)
 
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return state.User{}, ErrUserSignInCommandUserNotFound
-		}
-
-		return state.User{}, err
+	if errors.Is(err, pgx.ErrNoRows) {
+		return user, false, nil
 	}
 
-	return user, nil
+	return user, err == nil, nil
 }

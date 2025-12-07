@@ -4,54 +4,44 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/thevtm/baker-news/app"
+	"github.com/thevtm/baker-news/app/htmx"
+	"github.com/thevtm/baker-news/state"
 	"github.com/thevtm/baker-news/ui/posts_page"
 )
 
-type TopPosts struct {
-	http.Handler
-	app *app.App
+type TopPostsHandler struct {
+	queries *state.Queries
 }
 
-func NewTopPosts() *TopPosts {
-	return &TopPosts{}
+func NewTopPosts(queries *state.Queries) *TopPostsHandler {
+	return &TopPostsHandler{queries: queries}
 }
 
-type HTMXHeaders struct {
-	HX_Request string
-	HX_Target  string
-}
-
-func NewHTMXHeaders(header *http.Header) *HTMXHeaders {
-	return &HTMXHeaders{
-		HX_Request: header.Get("HX-Request"),
-		HX_Target:  header.Get("HX-Target"),
-	}
-}
-
-func (h *HTMXHeaders) IsHTMXRequest() bool {
-	return h.HX_Request == "true"
-}
-
-func (p *TopPosts) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	ctx, queries := r.Context(), p.app.Queries
+func (p *TopPostsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	ctx, queries := r.Context(), p.queries
 
 	// 1. Retrieve top posts
-	posts, err := queries.TopPosts(ctx, 100)
+	query_params := &state.TopPostsWithAuthorAndVotesForUserParams{
+		Limit:  30,
+		UserID: 1545,
+	}
+	posts, err := queries.TopPostsWithAuthorAndVotesForUser(ctx, *query_params)
+
+	slog.DebugContext(r.Context(), "Top Posts retrieved", slog.Int("count", len(posts)))
 
 	if err != nil {
-		slog.ErrorContext(ctx, "Failed to retrieve Top Posts", slog.Any("error", err))
+		slog.ErrorContext(r.Context(), "Failed to retrieve Top Posts", slog.Any("error", err))
 		http.Error(w, "Failed to retrieve Top Posts", http.StatusInternalServerError)
 		return
 	}
 
 	// 2. Render the page
-	htmx_headers := NewHTMXHeaders(&r.Header)
+	htmx_headers := htmx.NewHTMXHeaders(r.Header)
 
 	if htmx_headers.IsHTMXRequest() && htmx_headers.HX_Target == "main" {
-		posts_page.PostsMain(posts).Render(r.Context(), w)
+		posts_page.PostsMain(&posts).Render(r.Context(), w)
 		return
 	}
 
-	posts_page.PostsPage(posts).Render(r.Context(), w)
+	posts_page.PostsPage(&posts).Render(r.Context(), w)
 }

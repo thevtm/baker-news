@@ -4,12 +4,12 @@ type ErrCommandValidationFailed struct {
 	msg string
 }
 
-func NewErrCommandValidationFailed(msg string) ErrCommandValidationFailed {
-	return ErrCommandValidationFailed{
+func NewErrCommandValidationFailed(msg string) error {
+	return &ErrCommandValidationFailed{
 		msg: msg,
 	}
 }
 
-func (e ErrCommandValidationFailed) Error() string {
+func (e *ErrCommandValidationFailed) Error() string {
 	return e.msg
 }
