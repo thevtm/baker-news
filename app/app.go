@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/thevtm/baker-news/app/posts"
-	signin "github.com/thevtm/baker-news/app/sign-in"
+	signin "github.com/thevtm/baker-news/app/sign_in"
 	"github.com/thevtm/baker-news/commands"
 	"github.com/thevtm/baker-news/state"
 )
@@ -30,6 +30,15 @@ func (a *App) MakeServer() *http.ServeMux {
 
 	mux.Handle("GET /", posts_handler)
 	mux.Handle("GET /top", posts_handler)
+
+	// Post Vote
+	var post_vote_handler http.Handler = posts.NewPostListVoteHandler(a.Commands)
+	post_vote_handler = NewLoggingMiddleware(post_vote_handler)
+	post_vote_handler = signin.NewAuthMiddlewareHandler(post_vote_handler, a.Queries)
+	post_vote_handler = NewRequestIDMiddleware(post_vote_handler, &request_id_inc)
+
+	mux.Handle("POST /", post_vote_handler)
+	mux.Handle("POST /top", post_vote_handler)
 
 	// Sign In
 	var sign_in_handler http.Handler = signin.NewUserSignInHandler(a.Queries)

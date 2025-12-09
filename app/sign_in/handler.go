@@ -1,4 +1,4 @@
-package signin
+package sign_in
 
 import (
 	"github.com/thevtm/baker-news/state"
