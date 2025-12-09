@@ -19,11 +19,6 @@ func NewPostListVoteHandler(commands *commands.Commands) *PostListVoteHandler {
 	return &PostListVoteHandler{Commands: commands}
 }
 
-type PostListVoteRequestBody struct {
-	PostID    int64           `json:"post_id"`
-	VoteValue state.VoteValue `json:"vote_value"`
-}
-
 func (p *PostListVoteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx, commands := r.Context(), p.Commands
 
