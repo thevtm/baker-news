@@ -1,0 +1,67 @@
+package shared_components
+
+import (
+  "fmt"
+  "net/url"
+
+  "github.com/samber/lo"
+  "github.com/thevtm/baker-news/state"
+)
+
+func PostPageURL(post *state.Post) string {
+  return fmt.Sprintf("/post/%d", post.ID)
+}
+
+func voteBoxID(postID int64) string {
+  return fmt.Sprintf("vote-box-%d", postID)
+}
+
+templ PostVoteButton(post_id int64, vote_value state.VoteValue, active bool) {
+  {{ post_vote_value := lo.If(active, state.VoteValueNone).Else(vote_value) }}
+  {{ vote_box_id := voteBoxID(post_id) }}
+
+  <button class={ lo.If(active, "").Else("grayscale") }
+    hx-post="./"
+    hx-target={ fmt.Sprintf("#%s", vote_box_id) }
+    hx-vals={ fmt.Sprintf(`{"post_id": %d, "vote_value": "%s"}`, post_id, post_vote_value) }>
+    { lo.If(vote_value == state.VoteValueUp, "🔼").Else("🔽") }
+  </button>
+}
+
+templ PostVoteBoxContents(post_id int64, vote_value state.VoteValue) {
+  @PostVoteButton(post_id, state.VoteValueUp, vote_value == state.VoteValueUp)
+  @PostVoteButton(post_id, state.VoteValueDown, vote_value == state.VoteValueDown)
+}
+
+templ Post(post *state.Post, author *state.User, vote_value state.VoteValue) {
+{{ url, _ := url.Parse(post.Url) }}
+
+  <div class="flex my-1">
+    <div id={ voteBoxID(post.ID) } class="flex flex-col mx-2">
+      @PostVoteBoxContents(post.ID, vote_value)
+    </div>
+
+    <div class="flex flex-col text-black">
+
+      <div>
+        <a href={ templ.SafeURL(post.Url) }>
+          { post.Title }
+        </a>
+
+        if url != nil {
+          <a href={ templ.SafeURL(fmt.Sprintf("%s://%s", url.Scheme, url.Host)) }
+            class="pl-1 text-xs text-gray-500 self-end hover:underline">
+            ({ url.Host })
+          </a>
+        }
+      </div>
+
+      <div class="flex text-xs text-gray-500">
+        <span class="post-score">{ fmt.Sprint(post.Score) }</span>&nbsp;points by { fmt.Sprint(author.Username) }
+        <span class="mx-1">|</span>
+        <a class="hover:underline" href={ templ.SafeURL(PostPageURL(post)) } hx-get={ PostPageURL(post) } hx-target="main" hx-push-url="true">{ fmt.Sprint(post.CommentsCount) } comments</a>
+      </div>
+
+    </div>
+  </div>
+}

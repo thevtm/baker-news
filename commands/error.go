@@ -1,15 +1,15 @@
 package commands
 
-type ErrCommandValidationFailed struct {
+type CommandValidationError struct {
 	msg string
 }
 
-func NewErrCommandValidationFailed(msg string) error {
-	return &ErrCommandValidationFailed{
+func NewCommandValidationError(msg string) error {
+	return &CommandValidationError{
 		msg: msg,
 	}
 }
 
-func (e *ErrCommandValidationFailed) Error() string {
+func (e *CommandValidationError) Error() string {
 	return e.msg
 }

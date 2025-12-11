@@ -45,6 +45,59 @@ func (q *Queries) CommentsForPost(ctx context.Context, postID int64) ([]Comment,
 	return items, nil
 }
 
+const commentsForPostWithAuthorAndVotesForUser = `-- name: CommentsForPostWithAuthorAndVotesForUser :many
+SELECT comments.id, comments.post_id, comments.author_id, comments.parent_comment_id, comments.content, comments.score, comments.db_created_at, comments.db_updated_at, author.id, author.username, author.role, author.db_created_at, author.db_updated_at, comment_votes.value AS vote_value FROM comments
+  JOIN users author ON comments.author_id = author.id
+  LEFT JOIN comment_votes ON comments.id = comment_votes.comment_id AND comment_votes.user_id = $1
+  WHERE comments.post_id = $2
+`
+
+type CommentsForPostWithAuthorAndVotesForUserParams struct {
+	UserID int64
+	PostID int64
+}
+
+type CommentsForPostWithAuthorAndVotesForUserRow struct {
+	Comment   Comment
+	User      User
+	VoteValue NullVoteValue
+}
+
+func (q *Queries) CommentsForPostWithAuthorAndVotesForUser(ctx context.Context, arg CommentsForPostWithAuthorAndVotesForUserParams) ([]CommentsForPostWithAuthorAndVotesForUserRow, error) {
+	rows, err := q.db.Query(ctx, commentsForPostWithAuthorAndVotesForUser, arg.UserID, arg.PostID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []CommentsForPostWithAuthorAndVotesForUserRow
+	for rows.Next() {
+		var i CommentsForPostWithAuthorAndVotesForUserRow
+		if err := rows.Scan(
+			&i.Comment.ID,
+			&i.Comment.PostID,
+			&i.Comment.AuthorID,
+			&i.Comment.ParentCommentID,
+			&i.Comment.Content,
+			&i.Comment.Score,
+			&i.Comment.DbCreatedAt,
+			&i.Comment.DbUpdatedAt,
+			&i.User.ID,
+			&i.User.Username,
+			&i.User.Role,
+			&i.User.DbCreatedAt,
+			&i.User.DbUpdatedAt,
+			&i.VoteValue,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const createComment = `-- name: CreateComment :one
 WITH updated_posts AS (
   UPDATE posts
@@ -265,6 +318,47 @@ func (q *Queries) GetPost(ctx context.Context, id int64) (Post, error) {
 		&i.CreatedAt,
 		&i.DbCreatedAt,
 		&i.DbUpdatedAt,
+	)
+	return i, err
+}
+
+const getPostWithAuthorAndUserVote = `-- name: GetPostWithAuthorAndUserVote :one
+SELECT posts.id, posts.title, posts.url, posts.author_id, posts.score, posts.comments_count, posts.created_at, posts.db_created_at, posts.db_updated_at, author.id, author.username, author.role, author.db_created_at, author.db_updated_at, post_votes.value AS vote_value FROM posts
+  JOIN users author ON posts.author_id = author.id
+  LEFT JOIN post_votes ON posts.id = post_votes.post_id AND post_votes.user_id = $1
+  WHERE posts.id = $2
+`
+
+type GetPostWithAuthorAndUserVoteParams struct {
+	UserID int64
+	PostID int64
+}
+
+type GetPostWithAuthorAndUserVoteRow struct {
+	Post      Post
+	User      User
+	VoteValue NullVoteValue
+}
+
+func (q *Queries) GetPostWithAuthorAndUserVote(ctx context.Context, arg GetPostWithAuthorAndUserVoteParams) (GetPostWithAuthorAndUserVoteRow, error) {
+	row := q.db.QueryRow(ctx, getPostWithAuthorAndUserVote, arg.UserID, arg.PostID)
+	var i GetPostWithAuthorAndUserVoteRow
+	err := row.Scan(
+		&i.Post.ID,
+		&i.Post.Title,
+		&i.Post.Url,
+		&i.Post.AuthorID,
+		&i.Post.Score,
+		&i.Post.CommentsCount,
+		&i.Post.CreatedAt,
+		&i.Post.DbCreatedAt,
+		&i.Post.DbUpdatedAt,
+		&i.User.ID,
+		&i.User.Username,
+		&i.User.Role,
+		&i.User.DbCreatedAt,
+		&i.User.DbUpdatedAt,
+		&i.VoteValue,
 	)
 	return i, err
 }

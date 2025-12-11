@@ -8,7 +8,7 @@ import (
 	"github.com/thevtm/baker-news/state"
 )
 
-var ErrUserSignInUserNotFound = NewErrCommandValidationFailed("user not found")
+var ErrUserSignInUserNotFound = NewCommandValidationError("user not found")
 
 func (c *Commands) UserSignIn(ctx context.Context, username string) (state.User, bool, error) {
 	queries := c.queries

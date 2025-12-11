@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/thevtm/baker-news/app/htmx"
+	"github.com/thevtm/baker-news/app/shared_components"
 	"github.com/thevtm/baker-news/app/sign_in"
 	"github.com/thevtm/baker-news/commands"
 	"github.com/thevtm/baker-news/state"
@@ -69,5 +70,5 @@ func (p *PostListVoteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	)
 
 	// 4. Render the response
-	PostVoteBoxContents(post_vote.PostID, post_vote.Value).Render(ctx, w)
+	shared_components.PostVoteBoxContents(post_vote.PostID, post_vote.Value).Render(ctx, w)
 }

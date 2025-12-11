@@ -6,8 +6,8 @@ import (
 	"github.com/thevtm/baker-news/state"
 )
 
-var ErrVoteCommentCommandUserNotAllowed = NewErrCommandValidationFailed("user is not allowed to vote")
-var ErrVoteCommentCommandInvalidVoteValue = NewErrCommandValidationFailed("invalid vote value")
+var ErrVoteCommentCommandUserNotAllowed = NewCommandValidationError("user is not allowed to vote")
+var ErrVoteCommentCommandInvalidVoteValue = NewCommandValidationError("invalid vote value")
 
 type VoteCommentCommand struct {
 	user    *state.User
