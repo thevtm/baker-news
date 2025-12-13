@@ -8,7 +8,7 @@ package ui_gallery_page
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "github.com/thevtm/baker-news/ui/shared_components"
+import "github.com/thevtm/baker-news/ui/post"
 
 func UiGalleryPage() templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
@@ -35,7 +35,7 @@ func UiGalleryPage() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = shared_components.Hello("Bob").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = post.Hello("Bob").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

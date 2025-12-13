@@ -1,4 +1,4 @@
-package shared_components
+package post_block
 
 import (
 	"io"

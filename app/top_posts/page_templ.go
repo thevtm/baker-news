@@ -10,7 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"github.com/samber/lo"
-	"github.com/thevtm/baker-news/app/shared_components"
+	"github.com/thevtm/baker-news/app/post_block"
 	"github.com/thevtm/baker-news/app/template_page"
 	"github.com/thevtm/baker-news/state"
 )
@@ -42,7 +42,7 @@ func PostsList(post_rows *[]state.TopPostsWithAuthorAndVotesForUserRow) templ.Co
 		}
 		for _, post_row := range *post_rows {
 			vote_value := lo.If(post_row.VoteValue.Valid, post_row.VoteValue.VoteValue).Else(state.VoteValueNone)
-			templ_7745c5c3_Err = shared_components.Post(&post_row.Post, &post_row.User, vote_value).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = post_block.Post(&post_row.Post, &post_row.User, vote_value).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

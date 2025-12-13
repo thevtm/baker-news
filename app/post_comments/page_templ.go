@@ -9,7 +9,7 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
-	"github.com/thevtm/baker-news/app/shared_components"
+	"github.com/thevtm/baker-news/app/post_block"
 	"github.com/thevtm/baker-news/app/template_page"
 	"github.com/thevtm/baker-news/state"
 )
@@ -39,7 +39,7 @@ func PostMain(post *state.Post, author *state.User, post_vote_value state.VoteVa
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = shared_components.Post(post, author, post_vote_value).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = post_block.Post(post, author, post_vote_value).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
