@@ -1,4 +1,4 @@
-package posts
+package top_posts
 
 import (
 	"log/slog"
