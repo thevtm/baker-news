@@ -6,7 +6,7 @@ import (
 	"github.com/thevtm/baker-news/app/auth"
 	"github.com/thevtm/baker-news/app/post_block"
 	"github.com/thevtm/baker-news/app/post_comments"
-	"github.com/thevtm/baker-news/app/top_posts"
+	"github.com/thevtm/baker-news/app/top_posts_page"
 	"github.com/thevtm/baker-news/commands"
 	"github.com/thevtm/baker-news/state"
 )
@@ -25,7 +25,7 @@ func (a *App) MakeServer() *http.ServeMux {
 	mux := http.NewServeMux()
 
 	// Post List
-	var posts_handler http.Handler = top_posts.NewTopPosts(a.Queries)
+	var posts_handler http.Handler = top_posts_page.NewTopPosts(a.Queries)
 	posts_handler = NewLoggingMiddleware(posts_handler)
 	posts_handler = auth.NewAuthMiddlewareHandler(posts_handler, a.Queries)
 	posts_handler = NewRequestIDMiddleware(posts_handler, &request_id_inc)
