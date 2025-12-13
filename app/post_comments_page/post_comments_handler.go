@@ -1,4 +1,4 @@
-package post_comments
+package post_comments_page
 
 import (
 	"fmt"

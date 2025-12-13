@@ -5,7 +5,7 @@ import (
 
 	"github.com/thevtm/baker-news/app/auth"
 	"github.com/thevtm/baker-news/app/post_block"
-	"github.com/thevtm/baker-news/app/post_comments"
+	"github.com/thevtm/baker-news/app/post_comments_page"
 	"github.com/thevtm/baker-news/app/top_posts_page"
 	"github.com/thevtm/baker-news/commands"
 	"github.com/thevtm/baker-news/state"
@@ -42,7 +42,7 @@ func (a *App) MakeServer() *http.ServeMux {
 	mux.Handle("POST /post/vote", post_vote_handler)
 
 	// Post Comments
-	var post_comments_handler http.Handler = post_comments.NewPostCommentsHandler(a.Queries)
+	var post_comments_handler http.Handler = post_comments_page.NewPostCommentsHandler(a.Queries)
 	post_comments_handler = NewLoggingMiddleware(post_comments_handler)
 	post_comments_handler = auth.NewAuthMiddlewareHandler(post_comments_handler, a.Queries)
 	post_comments_handler = NewRequestIDMiddleware(post_comments_handler, &request_id_inc)
