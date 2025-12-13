@@ -1,4 +1,4 @@
-package sign_in
+package auth
 
 import (
 	"context"

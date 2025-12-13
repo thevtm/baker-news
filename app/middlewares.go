@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/thevtm/baker-news/app/auth"
 	app_ctx "github.com/thevtm/baker-news/app/context"
-	signin "github.com/thevtm/baker-news/app/sign_in"
 )
 
 ////////////////////////////////////////
@@ -50,7 +50,7 @@ func NewLoggingMiddleware(handler http.Handler) *LoggingMiddleware {
 
 func (m *LoggingMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Auth Context
-	auth_ctx := signin.GetAuthContext(r.Context())
+	auth_ctx := auth.GetAuthContext(r.Context())
 	auth_attrs := []any{
 		slog.Int64("user_id", auth_ctx.User.ID),
 		slog.String("user_role", string(auth_ctx.User.Role)),
