@@ -67,14 +67,12 @@ templ CommentNode(comment_node *PostCommentNode) {
   {{ author := comment_node.Author }}
   {{ vote_value := comment_node.VoteValue }}
 
-  <div>
-    @Comment(comment, author, vote_value)
+  @Comment(comment, author, vote_value)
 
-    <div class="pl-8">
-      for _, child := range comment_node.Children {
-        @CommentNode(child)
-      }
-    </div>
+  <div class="pl-8">
+    for _, child := range comment_node.Children {
+      @CommentNode(child)
+    }
   </div>
 }
 
