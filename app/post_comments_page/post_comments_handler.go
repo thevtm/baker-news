@@ -4,13 +4,66 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"slices"
 	"strconv"
 
+	"github.com/negrel/assert"
 	"github.com/samber/lo"
 	"github.com/thevtm/baker-news/app/auth"
 	"github.com/thevtm/baker-news/app/htmx"
 	"github.com/thevtm/baker-news/state"
+	"golang.org/x/exp/constraints"
 )
+
+type PostCommentNode struct {
+	Comment   *state.Comment
+	Author    *state.User
+	VoteValue state.VoteValue
+	Children  []*PostCommentNode
+}
+
+func NewPostCommentNode(comment *state.Comment, author *state.User, vote_value state.VoteValue) *PostCommentNode {
+	return &PostCommentNode{
+		Comment:   comment,
+		Author:    author,
+		VoteValue: vote_value,
+		Children:  make([]*PostCommentNode, 0),
+	}
+}
+
+func (p *PostCommentNode) AddChild(child *PostCommentNode) {
+	p.Children = append(p.Children, child)
+	slices.SortFunc(p.Children, func(a, b *PostCommentNode) int {
+		return -1 * Compare(a.Comment.Score, b.Comment.Score)
+	})
+}
+
+func Biosjdi(comments_rows *[]state.CommentsForPostWithAuthorAndVotesForUserRow) []*PostCommentNode {
+	roots := make([]*PostCommentNode, 0)
+	node_map := make(map[int64]*PostCommentNode)
+
+	// 1. Find root nodes (nodes are ordered by ID)
+	for _, row := range *comments_rows {
+		vote_value := lo.If(row.VoteValue.Valid, row.VoteValue.VoteValue).Else(state.VoteValueNone)
+
+		node := NewPostCommentNode(&row.Comment, &row.User, vote_value)
+		node_map[row.Comment.ID] = node
+
+		if row.Comment.ParentCommentID.Valid {
+			parent := node_map[row.Comment.ParentCommentID.Int64]
+			assert.NotNil(parent, "Parent comment not found")
+			parent.AddChild(node)
+		} else {
+			roots = append(roots, node)
+		}
+	}
+
+	slices.SortFunc(roots, func(a, b *PostCommentNode) int {
+		return -1 * Compare(a.Comment.Score, b.Comment.Score)
+	})
+
+	return roots
+}
 
 type PostCommentsHandler struct {
 	Queries *state.Queries
@@ -39,11 +92,10 @@ func (p *PostCommentsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// 2. Retrieve post
-	args := &state.GetPostWithAuthorAndUserVoteParams{
+	post_agg, err := queries.GetPostWithAuthorAndUserVote(ctx, state.GetPostWithAuthorAndUserVoteParams{
 		PostID: post_id,
 		UserID: user.ID,
-	}
-	pav, err := queries.GetPostWithAuthorAndUserVote(ctx, *args)
+	})
 
 	if err != nil {
 		slog.ErrorContext(r.Context(), "Failed to retrieve Post",
@@ -54,17 +106,45 @@ func (p *PostCommentsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	post := pav.Post
-	author := pav.User
-	post_user_vote := lo.If(pav.VoteValue.Valid, pav.VoteValue.VoteValue).Else(state.VoteValueNone)
+	post := post_agg.Post
+	author := post_agg.User
+	post_user_vote := lo.If(post_agg.VoteValue.Valid, post_agg.VoteValue.VoteValue).Else(state.VoteValueNone)
+
+	// 3. Retrieve comments_agg
+	comments_agg, err := queries.CommentsForPostWithAuthorAndVotesForUser(ctx, state.CommentsForPostWithAuthorAndVotesForUserParams{
+		PostID: post_id,
+		UserID: user.ID,
+	})
+
+	if err != nil {
+		slog.ErrorContext(r.Context(), "Failed to retrieve Comments",
+			slog.Int64("post_id", post_id),
+			slog.Any("error", err),
+		)
+		http.Error(w, "Comments not found", http.StatusNotFound)
+		return
+	}
+
+	comments_nodes := Biosjdi(&comments_agg)
+	slog.DebugContext(ctx, "Comments retrieved", slog.Int("roots_count", len(comments_nodes)))
 
 	// 3. Render the page
 	htmx_headers := htmx.ParseHTMXHeaders(r.Header)
 
 	if htmx_headers.IsHTMXRequest() && htmx_headers.HXTarget == "main" {
-		PostMain(&post, &author, post_user_vote).Render(r.Context(), w)
+		PostMain(&post, &author, post_user_vote, &comments_nodes).Render(r.Context(), w)
 		return
 	}
 
-	PostPage(&user, &post, &author, post_user_vote).Render(r.Context(), w)
+	PostPage(&user, &post, &author, post_user_vote, &comments_nodes).Render(r.Context(), w)
+}
+
+func Compare[T constraints.Ordered](a, b T) int {
+	if a < b {
+		return -1
+	} else if a > b {
+		return 1
+	}
+
+	return 0
 }

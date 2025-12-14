@@ -50,6 +50,7 @@ SELECT comments.id, comments.post_id, comments.author_id, comments.parent_commen
   JOIN users author ON comments.author_id = author.id
   LEFT JOIN comment_votes ON comments.id = comment_votes.comment_id AND comment_votes.user_id = $1
   WHERE comments.post_id = $2
+  ORDER BY comments.id ASC
 `
 
 type CommentsForPostWithAuthorAndVotesForUserParams struct {
@@ -527,6 +528,39 @@ func (q *Queries) NoneVotePost(ctx context.Context, arg NoneVotePostParams) (Pos
 		&i.Value,
 		&i.DbCreatedAt,
 		&i.DbUpdatedAt,
+	)
+	return i, err
+}
+
+const postWithAuthor = `-- name: PostWithAuthor :one
+SELECT posts.id, posts.title, posts.url, posts.author_id, posts.score, posts.comments_count, posts.created_at, posts.db_created_at, posts.db_updated_at, author.id, author.username, author.role, author.db_created_at, author.db_updated_at FROM posts
+  JOIN users author ON posts.author_id = author.id
+  WHERE posts.id = $1
+`
+
+type PostWithAuthorRow struct {
+	Post Post
+	User User
+}
+
+func (q *Queries) PostWithAuthor(ctx context.Context, postID int64) (PostWithAuthorRow, error) {
+	row := q.db.QueryRow(ctx, postWithAuthor, postID)
+	var i PostWithAuthorRow
+	err := row.Scan(
+		&i.Post.ID,
+		&i.Post.Title,
+		&i.Post.Url,
+		&i.Post.AuthorID,
+		&i.Post.Score,
+		&i.Post.CommentsCount,
+		&i.Post.CreatedAt,
+		&i.Post.DbCreatedAt,
+		&i.Post.DbUpdatedAt,
+		&i.User.ID,
+		&i.User.Username,
+		&i.User.Role,
+		&i.User.DbCreatedAt,
+		&i.User.DbUpdatedAt,
 	)
 	return i, err
 }

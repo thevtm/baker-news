@@ -1,0 +1,33 @@
+package components
+
+import (
+  "github.com/samber/lo"
+)
+
+templ VoteIconUp() {
+  🔼
+}
+
+templ VoteIconDown() {
+  🔽
+}
+
+type VoteButtonParams struct {
+  HxPost string
+  HxTarget string
+  HxVals string
+  HxSwap string
+  Active bool
+  Icon templ.Component
+}
+
+templ VoteButton(params VoteButtonParams) {
+  <button class={ lo.If(params.Active, "").Else("grayscale") }
+    hx-post={ params.HxPost }
+    hx-target={ params.HxTarget }
+    hx-swap={ params.HxSwap }
+    hx-vals={ params.HxVals }>
+    @params.Icon
+  </button>
+}
+

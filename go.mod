@@ -9,6 +9,8 @@ require (
 	github.com/negrel/assert v0.2.0
 	github.com/redis/go-redis/v9 v9.7.0
 	github.com/samber/lo v1.47.0
+	github.com/xeonx/timeago v1.0.0-rc5
+	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c
 	maragu.dev/gomponents v1.0.0
 )
 

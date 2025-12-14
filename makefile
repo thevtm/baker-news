@@ -201,7 +201,7 @@ templ/generate:
 .PHONY: build
 build: templ/generate $(SQLC_TARGETS)
 	# Include additional build steps, like TypeScript, SCSS or Tailwind compilation here...
-	go build -o=/tmp/bin/${binary_name} ${main_package_path}
+	go build -tags=assert -o=/tmp/bin/${binary_name} ${main_package_path}
 
 ## run: run the  application
 .PHONY: run

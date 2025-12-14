@@ -12,15 +12,16 @@ import (
 )
 
 type PostListVoteHandler struct {
+	Queries  *state.Queries
 	Commands *commands.Commands
 }
 
-func NewPostListVoteHandler(commands *commands.Commands) *PostListVoteHandler {
-	return &PostListVoteHandler{Commands: commands}
+func NewPostListVoteHandler(queries *state.Queries, commands *commands.Commands) *PostListVoteHandler {
+	return &PostListVoteHandler{Queries: queries, Commands: commands}
 }
 
 func (p *PostListVoteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	ctx, commands := r.Context(), p.Commands
+	ctx, commands, queries := r.Context(), p.Commands, p.Queries
 
 	user := auth.GetAuthContext(ctx).User
 
@@ -69,5 +70,19 @@ func (p *PostListVoteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	)
 
 	// 4. Render the response
-	PostVoteBoxContents(post_vote.PostID, post_vote.Value).Render(ctx, w)
+	row, err := queries.PostWithAuthor(ctx, post_id)
+
+	if err != nil {
+		slog.ErrorContext(ctx, "Failed to retrieve Post",
+			slog.Int64("post_id", post_vote.PostID),
+			slog.Any("error", err),
+		)
+		http.Error(w, "Post not found", http.StatusNotFound)
+		return
+	}
+
+	post := row.Post
+	author := row.User
+
+	Post(&post, &author, vote_value).Render(ctx, w)
 }
