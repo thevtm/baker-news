@@ -12,7 +12,7 @@ import (
 )
 
 const commentsForPost = `-- name: CommentsForPost :many
-SELECT id, post_id, author_id, parent_comment_id, content, score, db_created_at, db_updated_at FROM comments
+SELECT id, post_id, author_id, parent_comment_id, content, score, db_created_at, db_updated_at, created_at FROM comments
   WHERE post_id = $1
 `
 
@@ -34,6 +34,7 @@ func (q *Queries) CommentsForPost(ctx context.Context, postID int64) ([]Comment,
 			&i.Score,
 			&i.DbCreatedAt,
 			&i.DbUpdatedAt,
+			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -46,7 +47,7 @@ func (q *Queries) CommentsForPost(ctx context.Context, postID int64) ([]Comment,
 }
 
 const commentsForPostWithAuthorAndVotesForUser = `-- name: CommentsForPostWithAuthorAndVotesForUser :many
-SELECT comments.id, comments.post_id, comments.author_id, comments.parent_comment_id, comments.content, comments.score, comments.db_created_at, comments.db_updated_at, author.id, author.username, author.role, author.db_created_at, author.db_updated_at, comment_votes.value AS vote_value FROM comments
+SELECT comments.id, comments.post_id, comments.author_id, comments.parent_comment_id, comments.content, comments.score, comments.db_created_at, comments.db_updated_at, comments.created_at, author.id, author.username, author.role, author.db_created_at, author.db_updated_at, comment_votes.value AS vote_value FROM comments
   JOIN users author ON comments.author_id = author.id
   LEFT JOIN comment_votes ON comments.id = comment_votes.comment_id AND comment_votes.user_id = $1
   WHERE comments.post_id = $2
@@ -82,6 +83,7 @@ func (q *Queries) CommentsForPostWithAuthorAndVotesForUser(ctx context.Context, 
 			&i.Comment.Score,
 			&i.Comment.DbCreatedAt,
 			&i.Comment.DbUpdatedAt,
+			&i.Comment.CreatedAt,
 			&i.User.ID,
 			&i.User.Username,
 			&i.User.Role,
@@ -111,7 +113,7 @@ INSERT INTO comments (
   ) VALUES (
     $1, $2, $3, $4, 1
   )
-  RETURNING id, post_id, author_id, parent_comment_id, content, score, db_created_at, db_updated_at
+  RETURNING id, post_id, author_id, parent_comment_id, content, score, db_created_at, db_updated_at, created_at
 `
 
 type CreateCommentParams struct {
@@ -138,6 +140,7 @@ func (q *Queries) CreateComment(ctx context.Context, arg CreateCommentParams) (C
 		&i.Score,
 		&i.DbCreatedAt,
 		&i.DbUpdatedAt,
+		&i.CreatedAt,
 	)
 	return i, err
 }
@@ -274,7 +277,7 @@ func (q *Queries) DownVotePost(ctx context.Context, arg DownVotePostParams) (Pos
 
 const getComment = `-- name: GetComment :one
 
-SELECT id, post_id, author_id, parent_comment_id, content, score, db_created_at, db_updated_at FROM comments
+SELECT id, post_id, author_id, parent_comment_id, content, score, db_created_at, db_updated_at, created_at FROM comments
   WHERE id = $1 LIMIT 1
 `
 
@@ -293,6 +296,7 @@ func (q *Queries) GetComment(ctx context.Context, id int64) (Comment, error) {
 		&i.Score,
 		&i.DbCreatedAt,
 		&i.DbUpdatedAt,
+		&i.CreatedAt,
 	)
 	return i, err
 }

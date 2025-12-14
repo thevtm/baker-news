@@ -7,35 +7,72 @@ import (
   "github.com/thevtm/baker-news/state"
 	"github.com/thevtm/baker-news/app/template_page"
 	"github.com/thevtm/baker-news/app/post_block"
+	"github.com/thevtm/baker-news/app/components"
+	"github.com/xeonx/timeago"
 )
 
 func voteBoxID(postID int64) string {
   return fmt.Sprintf("comment-vote-box-%d", postID)
 }
 
-templ CommentVoteButton(comment_id int64, vote_value state.VoteValue, active bool) {
-  {{ post_vote_value := lo.If(active, state.VoteValueNone).Else(vote_value) }}
-  {{ vote_box_id := voteBoxID(comment_id) }}
 
-  <button class={ lo.If(active, "").Else("grayscale") }
-    hx-post="/post/comment/vote"
-    hx-target={ fmt.Sprintf("#%s", vote_box_id) }
-    hx-vals={ fmt.Sprintf(`{"comment_id": %d, "vote_value": "%s"}`, comment_id, post_vote_value) }>
-    { lo.If(vote_value == state.VoteValueUp, "🔼").Else("🔽") }
-  </button>
+templ Comment(comment *state.Comment, author *state.User, vote_value state.VoteValue) {
+  {{ comment_block_id := fmt.Sprintf("post-block-%d", comment.ID) }}
+
+  <div id={comment_block_id} class="flex my-1">
+    <div class="flex flex-col mx-2">
+      {{ up := vote_value == state.VoteValueUp }}
+      @components.VoteButton(components.VoteButtonParams{
+        HxPost: "/post/comment/vote",
+        HxTarget: "#" + comment_block_id,
+        HxSwap: "outerHTML",
+        HxVals: fmt.Sprintf(`{"comment_id": %d, "vote_value": "%s"}`, comment.ID,
+          lo.If(up, state.VoteValueNone).Else(state.VoteValueUp)),
+        Active: up,
+        Icon: components.VoteIconUp(),
+      })
+
+      {{ down := vote_value == state.VoteValueDown }}
+      @components.VoteButton(components.VoteButtonParams{
+        HxPost: "/post/comment/vote",
+        HxTarget: "#" + comment_block_id,
+        HxSwap: "outerHTML",
+        HxVals: fmt.Sprintf(`{"comment_id": %d, "vote_value": "%s"}`, comment.ID,
+          lo.If(down, state.VoteValueNone).Else(state.VoteValueDown)),
+        Active: down,
+        Icon: components.VoteIconDown(),
+      })
+    </div>
+
+    <div class="flex flex-col text-black">
+
+      <div class="flex text-xs text-gray-500">
+        <span class="post-score">{ fmt.Sprint(comment.Score) }</span>&nbsp;points by { fmt.Sprint(author.Username) }
+        { timeago.English.Format(comment.CreatedAt.Time) }
+        <span class="mx-1">|</span>
+        <a class="hover:underline" href="/post/comment/edit">edit</a>
+      </div>
+
+      <div class="text-sm">
+        { fmt.Sprint(comment.Content) }
+      </div>
+
+    </div>
+  </div>
 }
 
-templ Comment(comment_node *PostCommentNode) {
+
+templ CommentNode(comment_node *PostCommentNode) {
   {{ comment := comment_node.Comment }}
   {{ author := comment_node.Author }}
   {{ vote_value := comment_node.VoteValue }}
 
   <div>
-    { fmt.Sprintf("[%d]%s %s %s", comment.Score, vote_value, author.Username, comment.Content) }
+    @Comment(comment, author, vote_value)
 
-    <div class="pl-2">
+    <div class="pl-8">
       for _, child := range comment_node.Children {
-        @Comment(child)
+        @CommentNode(child)
       }
     </div>
   </div>
@@ -53,7 +90,7 @@ templ PostMain(post *state.Post, author *state.User, post_vote_value state.VoteV
 
     <div class="mx-8 my-2">
       for _, comment_node := range *comment_roots {
-        @Comment(comment_node)
+        @CommentNode(comment_node)
       }
     </div>
   </div>

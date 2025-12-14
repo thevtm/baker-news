@@ -373,7 +373,8 @@ CREATE TABLE public.comments (
     content text NOT NULL,
     score integer NOT NULL,
     db_created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    db_updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+    db_updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 
