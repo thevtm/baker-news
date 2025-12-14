@@ -20,8 +20,8 @@ templ SignInMain(error_message string, redirect_to string) {
 
         <input type="hidden" name="redirect_to" value={redirect_to}>
 
-        <input class="m-2 bg-gray-100" type="text" id="username" name="username" placeholder="Username" required>
-        <input class="m-2 bg-gray-100" type="password" id="password" name="password" placeholder="Password">
+        <input id="sign-in-username" class="m-2 bg-gray-100" type="text" id="username" name="username" placeholder="Username" required hx-preserve>
+        <input id="sign-in-password" class="m-2 bg-gray-100" type="password" id="password" name="password" placeholder="Password">
 
         <button class="py-1 px-2 bg-gray-300 self-center" type="submit">Submit</button>
       </form>
