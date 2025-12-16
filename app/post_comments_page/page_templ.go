@@ -10,6 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/samber/lo"
 	"github.com/thevtm/baker-news/app/components"
@@ -18,6 +19,29 @@ import (
 	"github.com/thevtm/baker-news/state"
 	"github.com/xeonx/timeago"
 )
+
+type PostCommentNode struct {
+	Comment   *state.Comment
+	Author    *state.User
+	VoteValue state.VoteValue
+	Children  []*PostCommentNode
+}
+
+func NewPostCommentNode(comment *state.Comment, author *state.User, vote_value state.VoteValue) *PostCommentNode {
+	return &PostCommentNode{
+		Comment:   comment,
+		Author:    author,
+		VoteValue: vote_value,
+		Children:  make([]*PostCommentNode, 0),
+	}
+}
+
+func (p *PostCommentNode) AddChild(child *PostCommentNode) {
+	p.Children = append(p.Children, child)
+	slices.SortFunc(p.Children, func(a, b *PostCommentNode) int {
+		return -1 * Compare(a.Comment.Score, b.Comment.Score)
+	})
+}
 
 func voteBoxID(postID int64) string {
 	return fmt.Sprintf("comment-vote-box-%d", postID)
@@ -52,7 +76,7 @@ func Comment(comment *state.Comment, author *state.User, vote_value state.VoteVa
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(comment_block_id)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `app/post_comments_page/page.templ`, Line: 22, Col: 27}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `app/post_comments_page/page.templ`, Line: 46, Col: 27}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -95,7 +119,7 @@ func Comment(comment *state.Comment, author *state.User, vote_value state.VoteVa
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprint(comment.Score))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `app/post_comments_page/page.templ`, Line: 50, Col: 60}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `app/post_comments_page/page.templ`, Line: 74, Col: 60}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -108,7 +132,7 @@ func Comment(comment *state.Comment, author *state.User, vote_value state.VoteVa
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprint(author.Username))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `app/post_comments_page/page.templ`, Line: 50, Col: 114}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `app/post_comments_page/page.templ`, Line: 74, Col: 114}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -121,20 +145,20 @@ func Comment(comment *state.Comment, author *state.User, vote_value state.VoteVa
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(timeago.English.Format(comment.CreatedAt.Time))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `app/post_comments_page/page.templ`, Line: 51, Col: 56}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `app/post_comments_page/page.templ`, Line: 75, Col: 56}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" <span class=\"mx-1\">|</span> <a class=\"hover:underline\" href=\"/post/comment/edit\">edit</a></div><div class=\"text-sm\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" <span class=\"mx-1\">|</span> <a class=\"hover:underline\" href=\"#\" hx-get=\"/post/comment/edit\">edit</a> <span class=\"mx-1\">|</span> <a class=\"hover:underline\" href=\"#\" hx-get=\"/post/comment/reply\">reply</a></div><div class=\"text-sm\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprint(comment.Content))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `app/post_comments_page/page.templ`, Line: 57, Col: 37}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `app/post_comments_page/page.templ`, Line: 83, Col: 37}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
@@ -225,20 +249,20 @@ func PostMain(post *state.Post, author *state.User, post_vote_value state.VoteVa
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form class=\"mx-8 my-2\" hx-post=\"/post/comment/add\"><input type=\"hidden\" name=\"post_id\" value=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form class=\"mx-8 my-2 mb-6\" hx-post=\"/post/comment/add\" hx-target=\"#comments\" hx-swap=\"afterbegin\"><input type=\"hidden\" name=\"post_id\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var9 string
 		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprint(post.ID))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `app/post_comments_page/page.templ`, Line: 86, Col: 69}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `app/post_comments_page/page.templ`, Line: 112, Col: 69}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"> <textarea class=\"my-2 block w-full\" name=\"content\" rows=\"8\" wrap=\"virtual\"></textarea> <button class=\"py-1 px-2 bg-gray-300\" type=\"submit\">Add Comment</button></form><div class=\"mx-8 my-2\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"> <textarea _=\"on htmx:afterRequest from closest &lt;form/&gt; set my value to &#39;&#39;\" class=\"my-2 block w-full\" name=\"content\" rows=\"8\" wrap=\"virtual\"></textarea> <button class=\"py-1 px-2 bg-gray-300\" type=\"submit\">Add Comment</button></form><div id=\"comments\" class=\"my-2\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
