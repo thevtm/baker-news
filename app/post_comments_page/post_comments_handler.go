@@ -15,7 +15,7 @@ import (
 	"golang.org/x/exp/constraints"
 )
 
-func Biosjdi(comments_rows *[]state.CommentsForPostWithAuthorAndVotesForUserRow) []*PostCommentNode {
+func BuildPostCommentTree(comments_rows *[]state.CommentsForPostWithAuthorAndVotesForUserRow) []*PostCommentNode {
 	roots := make([]*PostCommentNode, 0)
 	node_map := make(map[int64]*PostCommentNode)
 
@@ -102,7 +102,7 @@ func (p *PostCommentsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	comments_nodes := Biosjdi(&comments_agg)
+	comments_nodes := BuildPostCommentTree(&comments_agg)
 	slog.DebugContext(ctx, "Comments retrieved", slog.Int("roots_count", len(comments_nodes)))
 
 	// 3. Render the page
