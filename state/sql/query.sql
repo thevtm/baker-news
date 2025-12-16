@@ -120,6 +120,11 @@ UPDATE comments
   SET content = $2
   WHERE id = $1;
 
+-- name: CommentWithAuthor :one
+SELECT sqlc.embed(comments), sqlc.embed(author) FROM comments
+  JOIN users author ON comments.author_id = author.id
+  WHERE comments.id = $1;
+
 -- name: CommentsForPostWithAuthorAndVotesForUser :many
 SELECT sqlc.embed(comments), sqlc.embed(author), comment_votes.value AS vote_value FROM comments
   JOIN users author ON comments.author_id = author.id

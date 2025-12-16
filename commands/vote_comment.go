@@ -9,30 +9,12 @@ import (
 var ErrVoteCommentCommandUserNotAllowed = NewCommandValidationError("user is not allowed to vote")
 var ErrVoteCommentCommandInvalidVoteValue = NewCommandValidationError("invalid vote value")
 
-type VoteCommentCommand struct {
-	user    *state.User
-	comment *state.Comment
-	value   state.VoteValue
-}
+func (c *Commands) UserVoteComment(ctx context.Context, user *state.User, comment_id int64, value state.VoteValue) (state.CommentVote, error) {
+	queries := c.queries
 
-func NewVoteCommentCommand(user *state.User, comment *state.Comment, value state.VoteValue) (*VoteCommentCommand, error) {
-	if user.Role != state.UserRoleUser {
-		return nil, ErrVoteCommentCommandUserNotAllowed
+	if !user.IsUser() {
+		return state.CommentVote{}, ErrVoteCommentCommandUserNotAllowed
 	}
-
-	cmd := VoteCommentCommand{
-		user:    user,
-		comment: comment,
-		value:   value,
-	}
-
-	return &cmd, nil
-}
-
-func (s *VoteCommentCommand) Execute(ctx context.Context, queries *state.Queries) (state.CommentVote, error) {
-	user := s.user
-	comment_id := s.comment.ID
-	value := s.value
 
 	if value == state.VoteValueUp {
 		arg := state.UpVoteCommentParams{
