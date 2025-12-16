@@ -39,11 +39,18 @@ func voteBoxID(postID int64) string {
   return fmt.Sprintf("comment-vote-box-%d", postID)
 }
 
+func comment_node_children_container_id(commentID int64) string {
+  return fmt.Sprintf("comment-children-container-%d", commentID)
+}
+
 
 templ Comment(comment *state.Comment, author *state.User, vote_value state.VoteValue) {
-  {{ comment_block_id := fmt.Sprintf("post-block-%d", comment.ID) }}
+  {{ comment_block_id := fmt.Sprintf("comment-block-%d", comment.ID) }}
+  {{ reply_form_id := fmt.Sprintf("comment-reply-form-%d", comment.ID) }}
 
   <div id={comment_block_id} class="flex my-1">
+
+    // Vote Buttons
     <div class="flex flex-col mx-2">
       {{ up := vote_value == state.VoteValueUp }}
       @components.VoteButton(components.VoteButtonParams{
@@ -68,20 +75,31 @@ templ Comment(comment *state.Comment, author *state.User, vote_value state.VoteV
       })
     </div>
 
+    // Comment Content
     <div class="flex flex-col text-black">
-
       <div class="flex text-xs text-gray-500">
         <span class="post-score">{ fmt.Sprint(comment.Score) }</span>&nbsp;points by { fmt.Sprint(author.Username) }
         { timeago.English.Format(comment.CreatedAt.Time) }
         <span class="mx-1">|</span>
-        <a class="hover:underline" href="#" hx-get="/post/comment/reply">reply</a>
+        <span _={fmt.Sprintf("on click toggle .hidden on #%s", reply_form_id)} class="hover:underline hover:cursor-pointer">reply</span>
       </div>
 
       <div class="text-sm">
         { fmt.Sprint(comment.Content) }
       </div>
-
     </div>
+
+  </div>
+
+  // Reply Form
+  <div id={reply_form_id} class="hidden"
+      _="on htmx:afterRequest add .hidden">
+    <form class="mx-8 my-2 mb-6" hx-post="/post/comment/add" hx-target={"#" + comment_node_children_container_id(comment.ID)} hx-swap="afterbegin">
+      <input type="hidden" name="parent_comment_id" value={ fmt.Sprint(comment.ID) }>
+      <textarea class="my-2 block w-full" name="content" rows="8" wrap="virtual"
+        _="on htmx:afterRequest from closest <form/> set my value to ''"/>
+      <button class="py-1 px-2 bg-gray-300" type="submit">Reply</button>
+    </form>
   </div>
 }
 
@@ -93,13 +111,11 @@ templ CommentNode(comment_node *PostCommentNode) {
 
   @Comment(comment, author, vote_value)
 
-  if len(comment_node.Children) > 0 {
-    <div class="pl-8">
-      for _, child := range comment_node.Children {
-        @CommentNode(child)
-      }
-    </div>
-  }
+  <div id={comment_node_children_container_id(comment.ID)} class="pl-8">
+    for _, child := range comment_node.Children {
+      @CommentNode(child)
+    }
+  </div>
 }
 
 templ PostMain(post *state.Post, author *state.User, post_vote_value state.VoteValue, comment_roots *[]*PostCommentNode) {
