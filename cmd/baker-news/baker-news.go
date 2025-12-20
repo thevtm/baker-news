@@ -189,8 +189,8 @@ func main() {
 		panic(err)
 	}
 
-	slog.Info("Dapr client initialized")
 	defer client.Close()
+	slog.Info("Dapr client initialized")
 
 	// 3. Set up app
 	queries := state.New(conn)
