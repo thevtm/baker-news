@@ -9,14 +9,14 @@ import (
 	"runtime"
 	"strings"
 
+	dapr "github.com/dapr/go-sdk/client"
 	"github.com/jackc/pgx/v5"
 	"github.com/samber/lo"
 	"github.com/thevtm/baker-news/app"
 	"github.com/thevtm/baker-news/commands"
+	"github.com/thevtm/baker-news/events"
 	"github.com/thevtm/baker-news/state"
 )
-
-const PORT = 8080
 
 type ContextKey string
 
@@ -173,6 +173,7 @@ func LoggingMiddleware(handler http.HandlerFunc) http.HandlerFunc {
 }
 
 func main() {
+	// 1. Set up the database connection
 	db_uri, command_nil_found := os.LookupEnv("DATABASE_URI")
 	if !command_nil_found {
 		panic("DATABASE_URI env var is not set")
@@ -181,14 +182,31 @@ func main() {
 	conn := lo.Must1(pgx.Connect(ctx, db_uri))
 	defer conn.Close(ctx)
 
-	queries := state.New(conn)
-	cmds := commands.New(queries)
+	// 2. Set up the Dapr client
+	client, err := dapr.NewClient()
 
-	app := app.NewApp(queries, cmds)
+	if err != nil {
+		panic(err)
+	}
+
+	slog.Info("Dapr client initialized")
+	defer client.Close()
+
+	// 3. Set up app
+	queries := state.New(conn)
+	events := events.New(client, "pubsub")
+	cmds := commands.New(queries, events)
+
+	app := app.New(queries, cmds, events)
+
+	// 4. Set up and start the server
+	const PORT = 8080
 	mux := app.MakeServer()
 
 	slog.Info("Server started!", "PORT", PORT)
-	err := http.ListenAndServe(fmt.Sprintf(":%d", PORT), mux)
+
+	address := fmt.Sprintf(":%d", PORT)
+	err = http.ListenAndServe(address, mux)
 	if err != nil {
 		slog.Error("Server error", "error", err)
 	}
