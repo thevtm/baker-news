@@ -15,14 +15,6 @@ var err_loc = reflect.TypeOf(UserVotedPostEventData{}).Name()
 
 type UserVotedPostEventData = state.PostVote
 
-// type UserVotedPostEventData struct {
-// 	PostVoteID int64           `json:"post_vote_id"`
-// 	UserID     int64           `json:"user_id"`
-// 	PostID     int64           `json:"post_id"`
-// 	VoteValue  state.VoteValue `json:"vote_value"`
-// 	Timestamp  time.Time       `json:"timestamp"`
-// }
-
 func (e *Events) PublishUserVotedPostEvent(ctx context.Context, data *UserVotedPostEventData) error {
 	event := NewEvent(UserVotedPostEventDataType, data)
 	return e.Publish(ctx, PostEventsTopic, event)

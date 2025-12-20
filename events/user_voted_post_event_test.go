@@ -11,14 +11,6 @@ import (
 )
 
 func TestUserPostedEventJSONMarshalAndUnmarshal(t *testing.T) {
-	// event_data := UserVotedPostEventData{
-	// 	PostVoteID: 0,
-	// 	PostID:     1,
-	// 	UserID:     2,
-	// 	VoteValue:  state.VoteValueUp,
-	// 	Timestamp:  time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
-	// }
-
 	timestamp := pgtype.Timestamptz{
 		Time:             time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 		Valid:            true,
