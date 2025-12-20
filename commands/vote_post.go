@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/thevtm/baker-news/events"
 	"github.com/thevtm/baker-news/state"
 )
 
@@ -56,15 +55,15 @@ func (c *Commands) UserVotePost(ctx context.Context, user *state.User, post_id i
 	}
 
 	// 3. Publish event
-	event_data := events.UserVotedPostEventData{
-		PostVoteID: post_vote.ID,
-		UserID:     user.ID,
-		PostID:     post_id,
-		VoteValue:  vote_value,
-		Timestamp:  post_vote.DbCreatedAt.Time,
-	}
+	// event_data := events.UserVotedPostEventData{
+	// 	PostVoteID: post_vote.ID,
+	// 	UserID:     user.ID,
+	// 	PostID:     post_id,
+	// 	VoteValue:  vote_value,
+	// 	Timestamp:  post_vote.DbCreatedAt.Time,
+	// }
 
-	err = c.Events.PublishUserVotedPostEvent(ctx, &event_data)
+	err = c.Events.PublishUserVotedPostEvent(ctx, &post_vote)
 
 	if err != nil {
 		return state.PostVote{}, fmt.Errorf("failed to publish event: %w", err)
