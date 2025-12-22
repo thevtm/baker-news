@@ -16,6 +16,7 @@ import (
 	"github.com/thevtm/baker-news/commands"
 	"github.com/thevtm/baker-news/events"
 	"github.com/thevtm/baker-news/state"
+	"github.com/thevtm/baker-news/worker"
 )
 
 type ContextKey string
@@ -182,22 +183,28 @@ func main() {
 	conn := lo.Must1(pgx.Connect(ctx, db_uri))
 	defer conn.Close(ctx)
 
-	// 2. Set up the Dapr client
-	client, err := dapr.NewClient()
+	// 2. Set up the Dapr dapr_client
+	dapr_client, err := dapr.NewClient()
 
 	if err != nil {
 		panic(err)
 	}
 
-	defer client.Close()
+	defer dapr_client.Close()
 	slog.Info("Dapr client initialized")
 
 	// 3. Set up app
 	queries := state.New(conn)
-	events := events.New(client, "pubsub")
+	events := events.New(dapr_client, "pubsub")
 	commands := commands.New(queries, events)
 
 	app := app.New(queries, commands, events)
+
+	// 4. Worker
+	worker := worker.New(dapr_client, "pubsub")
+	worker.Start()
+
+	defer worker.Stop()
 
 	// 4. Set up and start the server
 	const PORT = 8080

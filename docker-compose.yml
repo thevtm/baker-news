@@ -84,7 +84,7 @@ services:
   # Dapr scheduler service
   ############################
   dapr-scheduler:
-    image: "daprio/dapr:1.14.4"
+    image: "daprio/dapr:1.14.3"
     command: ["./scheduler", "--port", "50007", "--etcd-data-dir=/var/lock/dapr/scheduler"]
     ports:
       - "50007:50007"
@@ -97,7 +97,7 @@ services:
   # Dapr placement service
   ############################
   dapr-placement:
-    image: "daprio/dapr:1.14.4"
+    image: "daprio/dapr:1.14.3"
     command: ["./placement", "--port", "50006"]
     ports:
       - "50006:50006"
@@ -113,13 +113,16 @@ services:
   # Dapr sidecar
   ############################
   dapr-sidecar:
-    image: "daprio/daprd:1.14.4"
+    image: "daprio/daprd:1.14.3"
     command: [
       "./daprd",
       "--app-id", "baker-news",
+      "--app-channel-address", "host.docker.internal",
       "--app-port", "8080",
       "--placement-host-address", "dapr-placement:50006", # Dapr's placement service can be reach via the docker DNS entry
-      "--resources-path", "./components"
+      "--resources-path", "./components",
+      "--log-level", "debug",
+      "--enable-api-logging", "true",
     ]
     ports:
       - "3500:3500" # HTTP port
@@ -129,6 +132,8 @@ services:
         - ./docker-compose/dapr/components/:/components
     networks:
       - std-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   ############################
   # Dapr dashboard
