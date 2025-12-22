@@ -147,3 +147,23 @@ type User struct {
 	DbCreatedAt pgtype.Timestamptz
 	DbUpdatedAt pgtype.Timestamptz
 }
+
+type VoteCountsAggregate struct {
+	ID                   int32
+	Interval             pgtype.Timestamp
+	PostUpVoteCount      int32
+	PostDownVoteCount    int32
+	PostNoneVoteCount    int32
+	CommentUpVoteCount   int32
+	CommentDownVoteCount int32
+	CommentNoneVoteCount int32
+	DbCreatedAt          pgtype.Timestamp
+	DbUpdatedAt          pgtype.Timestamp
+}
+
+type VotingStat struct {
+	Interval    pgtype.Timestamp
+	VotesCount  int32
+	DbCreatedAt pgtype.Timestamp
+	DbUpdatedAt pgtype.Timestamp
+}

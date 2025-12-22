@@ -485,6 +485,56 @@ ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
 
 
 --
+-- Name: vote_counts_aggregate; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.vote_counts_aggregate (
+    id integer NOT NULL,
+    "interval" timestamp without time zone NOT NULL,
+    post_up_vote_count integer DEFAULT 0 NOT NULL,
+    post_down_vote_count integer DEFAULT 0 NOT NULL,
+    post_none_vote_count integer DEFAULT 0 NOT NULL,
+    comment_up_vote_count integer DEFAULT 0 NOT NULL,
+    comment_down_vote_count integer DEFAULT 0 NOT NULL,
+    comment_none_vote_count integer DEFAULT 0 NOT NULL,
+    db_created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    db_updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+--
+-- Name: vote_counts_aggregate_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.vote_counts_aggregate_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: vote_counts_aggregate_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.vote_counts_aggregate_id_seq OWNED BY public.vote_counts_aggregate.id;
+
+
+--
+-- Name: voting_stats; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.voting_stats (
+    "interval" timestamp without time zone NOT NULL,
+    votes_count integer DEFAULT 0 NOT NULL,
+    db_created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    db_updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+--
 -- Name: comment_votes id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -517,6 +567,13 @@ ALTER TABLE ONLY public.posts ALTER COLUMN id SET DEFAULT nextval('public.posts_
 --
 
 ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
+
+
+--
+-- Name: vote_counts_aggregate id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.vote_counts_aggregate ALTER COLUMN id SET DEFAULT nextval('public.vote_counts_aggregate_id_seq'::regclass);
 
 
 --
@@ -584,10 +641,26 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: comment_votes_user_id_idx; Type: INDEX; Schema: public; Owner: -
+-- Name: vote_counts_aggregate vote_counts_aggregate_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-CREATE INDEX comment_votes_user_id_idx ON public.comment_votes USING btree (user_id);
+ALTER TABLE ONLY public.vote_counts_aggregate
+    ADD CONSTRAINT vote_counts_aggregate_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: voting_stats voting_stats_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.voting_stats
+    ADD CONSTRAINT voting_stats_pkey PRIMARY KEY ("interval");
+
+
+--
+-- Name: comment_votes_comment_id_and_user_id_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX comment_votes_comment_id_and_user_id_idx ON public.comment_votes USING btree (comment_id, user_id);
 
 
 --
@@ -605,10 +678,17 @@ CREATE INDEX comments_post_id_idx ON public.comments USING btree (post_id);
 
 
 --
--- Name: post_votes_user_id_idx; Type: INDEX; Schema: public; Owner: -
+-- Name: idx_vote_counts_aggregate_interval; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX post_votes_user_id_idx ON public.post_votes USING btree (user_id);
+CREATE UNIQUE INDEX idx_vote_counts_aggregate_interval ON public.vote_counts_aggregate USING btree ("interval" DESC);
+
+
+--
+-- Name: post_votes_post_id_and_user_id_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX post_votes_post_id_and_user_id_idx ON public.post_votes USING btree (post_id, user_id);
 
 
 --
@@ -672,6 +752,20 @@ CREATE TRIGGER set_db_updated_at BEFORE UPDATE ON public.posts FOR EACH ROW EXEC
 --
 
 CREATE TRIGGER set_db_updated_at BEFORE UPDATE ON public.users FOR EACH ROW EXECUTE FUNCTION public.update_db_updated_at_column();
+
+
+--
+-- Name: vote_counts_aggregate set_db_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER set_db_updated_at BEFORE UPDATE ON public.vote_counts_aggregate FOR EACH ROW EXECUTE FUNCTION public.update_db_updated_at_column();
+
+
+--
+-- Name: voting_stats set_db_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER set_db_updated_at BEFORE UPDATE ON public.voting_stats FOR EACH ROW EXECUTE FUNCTION public.update_db_updated_at_column();
 
 
 --

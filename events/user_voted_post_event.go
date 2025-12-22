@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"time"
 
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/thevtm/baker-news/state"
 )
 
@@ -15,14 +15,14 @@ const UserVotedPostEventDataType = "user_voted_post"
 var err_loc = reflect.TypeOf(UserVotedPostEventData{}).Name()
 
 type UserVotedPostEventData struct {
-	PostVoteID int64              `json:"post_vote_id"`
-	PostID     int64              `json:"post_id"`
-	UserID     int64              `json:"user_id"`
-	VoteType   state.VoteValue    `json:"vote_type"`
-	Timestamp  pgtype.Timestamptz `json:"timestamp"`
+	PostVoteID int64           `json:"post_vote_id"`
+	PostID     int64           `json:"post_id"`
+	UserID     int64           `json:"user_id"`
+	VoteType   state.VoteValue `json:"vote_type"`
+	Timestamp  time.Time       `json:"timestamp"`
 }
 
-func NewUserVotedPostEventData(post_vote_id, post_id, user_id int64, vote_type state.VoteValue, timestamp pgtype.Timestamptz) UserVotedPostEventData {
+func NewUserVotedPostEventData(post_vote_id, post_id, user_id int64, vote_type state.VoteValue, timestamp time.Time) UserVotedPostEventData {
 	return UserVotedPostEventData{
 		PostVoteID: post_vote_id,
 		PostID:     post_id,

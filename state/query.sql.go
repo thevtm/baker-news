@@ -442,6 +442,70 @@ func (q *Queries) GetUserByUsername(ctx context.Context, lower string) (User, er
 	return i, err
 }
 
+const getVoteCountsAggregateByInterval = `-- name: GetVoteCountsAggregateByInterval :one
+
+SELECT id, interval, post_up_vote_count, post_down_vote_count, post_none_vote_count, comment_up_vote_count, comment_down_vote_count, comment_none_vote_count, db_created_at, db_updated_at FROM vote_counts_aggregate
+  WHERE interval = $1
+  LIMIT 1
+`
+
+// ------------------------------------------------------------------------------
+// Vote Counts Aggregate Queries
+// ------------------------------------------------------------------------------
+func (q *Queries) GetVoteCountsAggregateByInterval(ctx context.Context, interval pgtype.Timestamp) (VoteCountsAggregate, error) {
+	row := q.db.QueryRow(ctx, getVoteCountsAggregateByInterval, interval)
+	var i VoteCountsAggregate
+	err := row.Scan(
+		&i.ID,
+		&i.Interval,
+		&i.PostUpVoteCount,
+		&i.PostDownVoteCount,
+		&i.PostNoneVoteCount,
+		&i.CommentUpVoteCount,
+		&i.CommentDownVoteCount,
+		&i.CommentNoneVoteCount,
+		&i.DbCreatedAt,
+		&i.DbUpdatedAt,
+	)
+	return i, err
+}
+
+const incrementVoteCountsAggregateDownVote = `-- name: IncrementVoteCountsAggregateDownVote :exec
+INSERT INTO vote_counts_aggregate (interval, post_down_vote_count)
+  VALUES ($1, 1)
+  ON CONFLICT (interval) DO UPDATE
+    SET post_down_vote_count = vote_counts_aggregate.post_down_vote_count + 1
+`
+
+func (q *Queries) IncrementVoteCountsAggregateDownVote(ctx context.Context, interval pgtype.Timestamp) error {
+	_, err := q.db.Exec(ctx, incrementVoteCountsAggregateDownVote, interval)
+	return err
+}
+
+const incrementVoteCountsAggregateNoneVote = `-- name: IncrementVoteCountsAggregateNoneVote :exec
+INSERT INTO vote_counts_aggregate (interval, post_none_vote_count)
+  VALUES ($1, 1)
+  ON CONFLICT (interval) DO UPDATE
+    SET post_none_vote_count = vote_counts_aggregate.post_none_vote_count + 1
+`
+
+func (q *Queries) IncrementVoteCountsAggregateNoneVote(ctx context.Context, interval pgtype.Timestamp) error {
+	_, err := q.db.Exec(ctx, incrementVoteCountsAggregateNoneVote, interval)
+	return err
+}
+
+const incrementVoteCountsAggregateUpVote = `-- name: IncrementVoteCountsAggregateUpVote :exec
+INSERT INTO vote_counts_aggregate (interval, post_up_vote_count)
+  VALUES ($1, 1)
+  ON CONFLICT (interval) DO UPDATE
+    SET post_up_vote_count = vote_counts_aggregate.post_up_vote_count + 1
+`
+
+func (q *Queries) IncrementVoteCountsAggregateUpVote(ctx context.Context, interval pgtype.Timestamp) error {
+	_, err := q.db.Exec(ctx, incrementVoteCountsAggregateUpVote, interval)
+	return err
+}
+
 const isUsernameTaken = `-- name: IsUsernameTaken :one
 SELECT EXISTS (
   SELECT 1 FROM users

@@ -154,3 +154,30 @@ SELECT * FROM down_vote_comment($1, $2);
 
 -- name: NoneVoteComment :one
 SELECT * FROM none_vote_comment($1, $2);
+
+--------------------------------------------------------------------------------
+-- Vote Counts Aggregate Queries
+--------------------------------------------------------------------------------
+
+-- name: GetVoteCountsAggregateByInterval :one
+SELECT * FROM vote_counts_aggregate
+  WHERE interval = $1
+  LIMIT 1;
+
+-- name: IncrementVoteCountsAggregateUpVote :exec
+INSERT INTO vote_counts_aggregate (interval, post_up_vote_count)
+  VALUES ($1, 1)
+  ON CONFLICT (interval) DO UPDATE
+    SET post_up_vote_count = vote_counts_aggregate.post_up_vote_count + 1;
+
+-- name: IncrementVoteCountsAggregateDownVote :exec
+INSERT INTO vote_counts_aggregate (interval, post_down_vote_count)
+  VALUES ($1, 1)
+  ON CONFLICT (interval) DO UPDATE
+    SET post_down_vote_count = vote_counts_aggregate.post_down_vote_count + 1;
+
+-- name: IncrementVoteCountsAggregateNoneVote :exec
+INSERT INTO vote_counts_aggregate (interval, post_none_vote_count)
+  VALUES ($1, 1)
+  ON CONFLICT (interval) DO UPDATE
+    SET post_none_vote_count = vote_counts_aggregate.post_none_vote_count + 1;
