@@ -9,6 +9,7 @@ import (
 	"github.com/thevtm/baker-news/app/post_block"
 	"github.com/thevtm/baker-news/app/post_comments_page"
 	"github.com/thevtm/baker-news/app/top_posts_page"
+	"github.com/thevtm/baker-news/app/web_console"
 	"github.com/thevtm/baker-news/commands"
 	"github.com/thevtm/baker-news/events"
 	"github.com/thevtm/baker-news/state"
@@ -94,7 +95,7 @@ func (a *App) MakeServer() *http.ServeMux {
 	mux.Handle("GET /sign-out", sign_out_handler)
 	mux.Handle("POST /sign-out", sign_out_handler)
 
-	// Foobar
+	// HTTP Dapr PubSub Endpoint
 	mux.HandleFunc("POST /dapr/pubsub/user-voted-event", func(w http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)
 
@@ -108,6 +109,21 @@ func (a *App) MakeServer() *http.ServeMux {
 
 		w.WriteHeader(http.StatusOK)
 	})
+
+	// Web Console
+	var web_console_handler http.Handler = web_console.NewWebConsoleHandler(a.Queries, a.Commands)
+	web_console_handler = NewLoggingMiddleware(web_console_handler)
+	web_console_handler = auth.NewAuthMiddlewareHandler(web_console_handler, a.Queries)
+	web_console_handler = NewRequestIDMiddleware(web_console_handler, &request_id_inc)
+
+	mux.Handle("POST /web-console", web_console_handler)
+
+	var web_console_page_handler http.Handler = web_console.NewWebConsolePageHandler(a.Queries)
+	web_console_page_handler = NewLoggingMiddleware(web_console_page_handler)
+	web_console_page_handler = auth.NewAuthMiddlewareHandler(web_console_page_handler, a.Queries)
+	web_console_page_handler = NewRequestIDMiddleware(web_console_page_handler, &request_id_inc)
+
+	mux.Handle("GET /web-console", web_console_page_handler)
 
 	return mux
 }
