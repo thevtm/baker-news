@@ -108,6 +108,7 @@ type Comment struct {
 	DbCreatedAt     pgtype.Timestamptz
 	DbUpdatedAt     pgtype.Timestamptz
 	CreatedAt       pgtype.Timestamptz
+	DeletedAt       pgtype.Timestamptz
 }
 
 type CommentVote struct {
@@ -129,6 +130,7 @@ type Post struct {
 	CreatedAt     pgtype.Timestamptz
 	DbCreatedAt   pgtype.Timestamptz
 	DbUpdatedAt   pgtype.Timestamptz
+	DeletedAt     pgtype.Timestamptz
 }
 
 type PostVote struct {
@@ -159,11 +161,4 @@ type VoteCountsAggregate struct {
 	CommentNoneVoteCount int32
 	DbCreatedAt          pgtype.Timestamp
 	DbUpdatedAt          pgtype.Timestamp
-}
-
-type VotingStat struct {
-	Interval    pgtype.Timestamp
-	VotesCount  int32
-	DbCreatedAt pgtype.Timestamp
-	DbUpdatedAt pgtype.Timestamp
 }

@@ -47,7 +47,8 @@ INSERT INTO posts (
   RETURNING *;
 
 -- name: DeletePost :exec
-DELETE FROM posts
+UPDATE posts
+  SET deleted_at = NOW()
   WHERE id = $1;
 
 -- name: TopPosts :many
@@ -77,6 +78,7 @@ SELECT sqlc.embed(posts), sqlc.embed(author), post_votes.value AS vote_value FRO
 SELECT sqlc.embed(posts), sqlc.embed(author), post_votes.value AS vote_value FROM posts
   JOIN users author ON posts.author_id = author.id
   LEFT JOIN post_votes ON posts.id = post_votes.post_id AND post_votes.user_id = $1
+  WHERE posts.deleted_at IS NULL
   ORDER BY score DESC
   LIMIT $2;
 
@@ -108,7 +110,8 @@ WITH updated_posts AS (
     SET comments_count = comments_count - 1
     WHERE id = (SELECT post_id FROM comments WHERE id = $1)
 )
-DELETE FROM comments
+UPDATE comments
+  SET deleted_at = NOW()
   WHERE comments.id = $1;
 
 -- name: CommentsForPost :many
@@ -129,7 +132,7 @@ SELECT sqlc.embed(comments), sqlc.embed(author) FROM comments
 SELECT sqlc.embed(comments), sqlc.embed(author), comment_votes.value AS vote_value FROM comments
   JOIN users author ON comments.author_id = author.id
   LEFT JOIN comment_votes ON comments.id = comment_votes.comment_id AND comment_votes.user_id = $1
-  WHERE comments.post_id = $2
+  WHERE comments.post_id = $2 AND comments.deleted_at IS NULL
   ORDER BY comments.id ASC;
 
 

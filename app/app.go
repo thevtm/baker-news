@@ -8,7 +8,7 @@ import (
 	"github.com/thevtm/baker-news/app/auth"
 	"github.com/thevtm/baker-news/app/post_block"
 	"github.com/thevtm/baker-news/app/post_comments_page"
-	"github.com/thevtm/baker-news/app/top_posts_page"
+	"github.com/thevtm/baker-news/app/posts_list_page"
 	"github.com/thevtm/baker-news/app/web_console"
 	"github.com/thevtm/baker-news/commands"
 	"github.com/thevtm/baker-news/events"
@@ -30,7 +30,7 @@ func (a *App) MakeServer() *http.ServeMux {
 	mux := http.NewServeMux()
 
 	// Post List
-	var posts_handler http.Handler = top_posts_page.NewTopPosts(a.Queries)
+	var posts_handler http.Handler = posts_list_page.NewTopPosts(a.Queries)
 	posts_handler = NewLoggingMiddleware(posts_handler)
 	posts_handler = auth.NewAuthMiddlewareHandler(posts_handler, a.Queries)
 	posts_handler = NewRequestIDMiddleware(posts_handler, &request_id_inc)
@@ -45,6 +45,14 @@ func (a *App) MakeServer() *http.ServeMux {
 	post_vote_handler = NewRequestIDMiddleware(post_vote_handler, &request_id_inc)
 
 	mux.Handle("POST /post/vote", post_vote_handler)
+
+	// Post Delete
+	var post_delete_handler http.Handler = post_block.NewPostDeleteHandler(a.Queries, a.Commands)
+	post_delete_handler = NewLoggingMiddleware(post_delete_handler)
+	post_delete_handler = auth.NewAuthMiddlewareHandler(post_delete_handler, a.Queries)
+	post_delete_handler = NewRequestIDMiddleware(post_delete_handler, &request_id_inc)
+
+	mux.Handle("POST /post/delete", post_delete_handler)
 
 	// Post Comments
 	var post_comments_handler http.Handler = post_comments_page.NewPostCommentsHandler(a.Queries)
@@ -63,7 +71,7 @@ func (a *App) MakeServer() *http.ServeMux {
 	mux.Handle("POST /post/comment/vote", post_comment_vote_handler)
 
 	// Post Comment Add
-	var post_comment_add_handler http.Handler = post_comments_page.NewPostCommentAddHandler(a.Queries, a.Commands)
+	var post_comment_add_handler http.Handler = post_comments_page.NewPostSubmitCommentHandler(a.Queries, a.Commands)
 	post_comment_add_handler = NewLoggingMiddleware(post_comment_add_handler)
 	post_comment_add_handler = auth.NewAuthMiddlewareHandler(post_comment_add_handler, a.Queries)
 	post_comment_add_handler = NewRequestIDMiddleware(post_comment_add_handler, &request_id_inc)

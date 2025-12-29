@@ -374,7 +374,8 @@ CREATE TABLE public.comments (
     score integer NOT NULL,
     db_created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     db_updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    deleted_at timestamp with time zone
 );
 
 
@@ -429,7 +430,8 @@ CREATE TABLE public.posts (
     comments_count integer NOT NULL,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     db_created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    db_updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+    db_updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    deleted_at timestamp with time zone
 );
 
 
@@ -520,18 +522,6 @@ CREATE SEQUENCE public.vote_counts_aggregate_id_seq
 --
 
 ALTER SEQUENCE public.vote_counts_aggregate_id_seq OWNED BY public.vote_counts_aggregate.id;
-
-
---
--- Name: voting_stats; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.voting_stats (
-    "interval" timestamp without time zone NOT NULL,
-    votes_count integer DEFAULT 0 NOT NULL,
-    db_created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    db_updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
-);
 
 
 --
@@ -649,14 +639,6 @@ ALTER TABLE ONLY public.vote_counts_aggregate
 
 
 --
--- Name: voting_stats voting_stats_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.voting_stats
-    ADD CONSTRAINT voting_stats_pkey PRIMARY KEY ("interval");
-
-
---
 -- Name: comment_votes_comment_id_and_user_id_idx; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -759,13 +741,6 @@ CREATE TRIGGER set_db_updated_at BEFORE UPDATE ON public.users FOR EACH ROW EXEC
 --
 
 CREATE TRIGGER set_db_updated_at BEFORE UPDATE ON public.vote_counts_aggregate FOR EACH ROW EXECUTE FUNCTION public.update_db_updated_at_column();
-
-
---
--- Name: voting_stats set_db_updated_at; Type: TRIGGER; Schema: public; Owner: -
---
-
-CREATE TRIGGER set_db_updated_at BEFORE UPDATE ON public.voting_stats FOR EACH ROW EXECUTE FUNCTION public.update_db_updated_at_column();
 
 
 --

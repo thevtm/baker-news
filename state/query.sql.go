@@ -12,7 +12,7 @@ import (
 )
 
 const commentWithAuthor = `-- name: CommentWithAuthor :one
-SELECT comments.id, comments.post_id, comments.author_id, comments.parent_comment_id, comments.content, comments.score, comments.db_created_at, comments.db_updated_at, comments.created_at, author.id, author.username, author.role, author.db_created_at, author.db_updated_at FROM comments
+SELECT comments.id, comments.post_id, comments.author_id, comments.parent_comment_id, comments.content, comments.score, comments.db_created_at, comments.db_updated_at, comments.created_at, comments.deleted_at, author.id, author.username, author.role, author.db_created_at, author.db_updated_at FROM comments
   JOIN users author ON comments.author_id = author.id
   WHERE comments.id = $1
 `
@@ -35,6 +35,7 @@ func (q *Queries) CommentWithAuthor(ctx context.Context, id int64) (CommentWithA
 		&i.Comment.DbCreatedAt,
 		&i.Comment.DbUpdatedAt,
 		&i.Comment.CreatedAt,
+		&i.Comment.DeletedAt,
 		&i.User.ID,
 		&i.User.Username,
 		&i.User.Role,
@@ -45,7 +46,7 @@ func (q *Queries) CommentWithAuthor(ctx context.Context, id int64) (CommentWithA
 }
 
 const commentsForPost = `-- name: CommentsForPost :many
-SELECT id, post_id, author_id, parent_comment_id, content, score, db_created_at, db_updated_at, created_at FROM comments
+SELECT id, post_id, author_id, parent_comment_id, content, score, db_created_at, db_updated_at, created_at, deleted_at FROM comments
   WHERE post_id = $1
 `
 
@@ -68,6 +69,7 @@ func (q *Queries) CommentsForPost(ctx context.Context, postID int64) ([]Comment,
 			&i.DbCreatedAt,
 			&i.DbUpdatedAt,
 			&i.CreatedAt,
+			&i.DeletedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -80,10 +82,10 @@ func (q *Queries) CommentsForPost(ctx context.Context, postID int64) ([]Comment,
 }
 
 const commentsForPostWithAuthorAndVotesForUser = `-- name: CommentsForPostWithAuthorAndVotesForUser :many
-SELECT comments.id, comments.post_id, comments.author_id, comments.parent_comment_id, comments.content, comments.score, comments.db_created_at, comments.db_updated_at, comments.created_at, author.id, author.username, author.role, author.db_created_at, author.db_updated_at, comment_votes.value AS vote_value FROM comments
+SELECT comments.id, comments.post_id, comments.author_id, comments.parent_comment_id, comments.content, comments.score, comments.db_created_at, comments.db_updated_at, comments.created_at, comments.deleted_at, author.id, author.username, author.role, author.db_created_at, author.db_updated_at, comment_votes.value AS vote_value FROM comments
   JOIN users author ON comments.author_id = author.id
   LEFT JOIN comment_votes ON comments.id = comment_votes.comment_id AND comment_votes.user_id = $1
-  WHERE comments.post_id = $2
+  WHERE comments.post_id = $2 AND comments.deleted_at IS NULL
   ORDER BY comments.id ASC
 `
 
@@ -117,6 +119,7 @@ func (q *Queries) CommentsForPostWithAuthorAndVotesForUser(ctx context.Context, 
 			&i.Comment.DbCreatedAt,
 			&i.Comment.DbUpdatedAt,
 			&i.Comment.CreatedAt,
+			&i.Comment.DeletedAt,
 			&i.User.ID,
 			&i.User.Username,
 			&i.User.Role,
@@ -146,7 +149,7 @@ INSERT INTO comments (
   ) VALUES (
     $1, $2, $3, $4, 1
   )
-  RETURNING id, post_id, author_id, parent_comment_id, content, score, db_created_at, db_updated_at, created_at
+  RETURNING id, post_id, author_id, parent_comment_id, content, score, db_created_at, db_updated_at, created_at, deleted_at
 `
 
 type CreateCommentParams struct {
@@ -174,6 +177,7 @@ func (q *Queries) CreateComment(ctx context.Context, arg CreateCommentParams) (C
 		&i.DbCreatedAt,
 		&i.DbUpdatedAt,
 		&i.CreatedAt,
+		&i.DeletedAt,
 	)
 	return i, err
 }
@@ -184,7 +188,7 @@ INSERT INTO posts (
   ) VALUES (
     $1, $2, $3, 1, 0
   )
-  RETURNING id, title, url, author_id, score, comments_count, created_at, db_created_at, db_updated_at
+  RETURNING id, title, url, author_id, score, comments_count, created_at, db_created_at, db_updated_at, deleted_at
 `
 
 type CreatePostParams struct {
@@ -206,6 +210,7 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, e
 		&i.CreatedAt,
 		&i.DbCreatedAt,
 		&i.DbUpdatedAt,
+		&i.DeletedAt,
 	)
 	return i, err
 }
@@ -243,7 +248,8 @@ WITH updated_posts AS (
     SET comments_count = comments_count - 1
     WHERE id = (SELECT post_id FROM comments WHERE id = $1)
 )
-DELETE FROM comments
+UPDATE comments
+  SET deleted_at = NOW()
   WHERE comments.id = $1
 `
 
@@ -253,7 +259,8 @@ func (q *Queries) DeleteComment(ctx context.Context, id int64) error {
 }
 
 const deletePost = `-- name: DeletePost :exec
-DELETE FROM posts
+UPDATE posts
+  SET deleted_at = NOW()
   WHERE id = $1
 `
 
@@ -310,7 +317,7 @@ func (q *Queries) DownVotePost(ctx context.Context, arg DownVotePostParams) (Pos
 
 const getComment = `-- name: GetComment :one
 
-SELECT id, post_id, author_id, parent_comment_id, content, score, db_created_at, db_updated_at, created_at FROM comments
+SELECT id, post_id, author_id, parent_comment_id, content, score, db_created_at, db_updated_at, created_at, deleted_at FROM comments
   WHERE id = $1 LIMIT 1
 `
 
@@ -330,13 +337,14 @@ func (q *Queries) GetComment(ctx context.Context, id int64) (Comment, error) {
 		&i.DbCreatedAt,
 		&i.DbUpdatedAt,
 		&i.CreatedAt,
+		&i.DeletedAt,
 	)
 	return i, err
 }
 
 const getPost = `-- name: GetPost :one
 
-SELECT id, title, url, author_id, score, comments_count, created_at, db_created_at, db_updated_at FROM posts
+SELECT id, title, url, author_id, score, comments_count, created_at, db_created_at, db_updated_at, deleted_at FROM posts
   WHERE id = $1 LIMIT 1
 `
 
@@ -356,12 +364,13 @@ func (q *Queries) GetPost(ctx context.Context, id int64) (Post, error) {
 		&i.CreatedAt,
 		&i.DbCreatedAt,
 		&i.DbUpdatedAt,
+		&i.DeletedAt,
 	)
 	return i, err
 }
 
 const getPostWithAuthorAndUserVote = `-- name: GetPostWithAuthorAndUserVote :one
-SELECT posts.id, posts.title, posts.url, posts.author_id, posts.score, posts.comments_count, posts.created_at, posts.db_created_at, posts.db_updated_at, author.id, author.username, author.role, author.db_created_at, author.db_updated_at, post_votes.value AS vote_value FROM posts
+SELECT posts.id, posts.title, posts.url, posts.author_id, posts.score, posts.comments_count, posts.created_at, posts.db_created_at, posts.db_updated_at, posts.deleted_at, author.id, author.username, author.role, author.db_created_at, author.db_updated_at, post_votes.value AS vote_value FROM posts
   JOIN users author ON posts.author_id = author.id
   LEFT JOIN post_votes ON posts.id = post_votes.post_id AND post_votes.user_id = $1
   WHERE posts.id = $2
@@ -391,6 +400,7 @@ func (q *Queries) GetPostWithAuthorAndUserVote(ctx context.Context, arg GetPostW
 		&i.Post.CreatedAt,
 		&i.Post.DbCreatedAt,
 		&i.Post.DbUpdatedAt,
+		&i.Post.DeletedAt,
 		&i.User.ID,
 		&i.User.Username,
 		&i.User.Role,
@@ -521,7 +531,7 @@ func (q *Queries) IsUsernameTaken(ctx context.Context, lower string) (bool, erro
 }
 
 const latestPosts = `-- name: LatestPosts :many
-SELECT id, title, url, author_id, score, comments_count, created_at, db_created_at, db_updated_at FROM posts
+SELECT id, title, url, author_id, score, comments_count, created_at, db_created_at, db_updated_at, deleted_at FROM posts
   ORDER BY created_at DESC
   LIMIT $1
 `
@@ -545,6 +555,7 @@ func (q *Queries) LatestPosts(ctx context.Context, limit int64) ([]Post, error) 
 			&i.CreatedAt,
 			&i.DbCreatedAt,
 			&i.DbUpdatedAt,
+			&i.DeletedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -634,7 +645,7 @@ func (q *Queries) NoneVotePost(ctx context.Context, arg NoneVotePostParams) (Pos
 }
 
 const postWithAuthor = `-- name: PostWithAuthor :one
-SELECT posts.id, posts.title, posts.url, posts.author_id, posts.score, posts.comments_count, posts.created_at, posts.db_created_at, posts.db_updated_at, author.id, author.username, author.role, author.db_created_at, author.db_updated_at FROM posts
+SELECT posts.id, posts.title, posts.url, posts.author_id, posts.score, posts.comments_count, posts.created_at, posts.db_created_at, posts.db_updated_at, posts.deleted_at, author.id, author.username, author.role, author.db_created_at, author.db_updated_at FROM posts
   JOIN users author ON posts.author_id = author.id
   WHERE posts.id = $1
 `
@@ -657,6 +668,7 @@ func (q *Queries) PostWithAuthor(ctx context.Context, postID int64) (PostWithAut
 		&i.Post.CreatedAt,
 		&i.Post.DbCreatedAt,
 		&i.Post.DbUpdatedAt,
+		&i.Post.DeletedAt,
 		&i.User.ID,
 		&i.User.Username,
 		&i.User.Role,
@@ -667,7 +679,7 @@ func (q *Queries) PostWithAuthor(ctx context.Context, postID int64) (PostWithAut
 }
 
 const topPosts = `-- name: TopPosts :many
-SELECT id, title, url, author_id, score, comments_count, created_at, db_created_at, db_updated_at FROM posts
+SELECT id, title, url, author_id, score, comments_count, created_at, db_created_at, db_updated_at, deleted_at FROM posts
   ORDER BY score DESC
   LIMIT $1
 `
@@ -691,6 +703,7 @@ func (q *Queries) TopPosts(ctx context.Context, limit int64) ([]Post, error) {
 			&i.CreatedAt,
 			&i.DbCreatedAt,
 			&i.DbUpdatedAt,
+			&i.DeletedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -703,9 +716,10 @@ func (q *Queries) TopPosts(ctx context.Context, limit int64) ([]Post, error) {
 }
 
 const topPostsWithAuthorAndVotesForUser = `-- name: TopPostsWithAuthorAndVotesForUser :many
-SELECT posts.id, posts.title, posts.url, posts.author_id, posts.score, posts.comments_count, posts.created_at, posts.db_created_at, posts.db_updated_at, author.id, author.username, author.role, author.db_created_at, author.db_updated_at, post_votes.value AS vote_value FROM posts
+SELECT posts.id, posts.title, posts.url, posts.author_id, posts.score, posts.comments_count, posts.created_at, posts.db_created_at, posts.db_updated_at, posts.deleted_at, author.id, author.username, author.role, author.db_created_at, author.db_updated_at, post_votes.value AS vote_value FROM posts
   JOIN users author ON posts.author_id = author.id
   LEFT JOIN post_votes ON posts.id = post_votes.post_id AND post_votes.user_id = $1
+  WHERE posts.deleted_at IS NULL
   ORDER BY score DESC
   LIMIT $2
 `
@@ -742,6 +756,7 @@ func (q *Queries) TopPostsWithAuthorAndVotesForUser(ctx context.Context, arg Top
 			&i.Post.CreatedAt,
 			&i.Post.DbCreatedAt,
 			&i.Post.DbUpdatedAt,
+			&i.Post.DeletedAt,
 			&i.User.ID,
 			&i.User.Username,
 			&i.User.Role,
