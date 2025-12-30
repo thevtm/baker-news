@@ -12,7 +12,7 @@ var ErrVoteCommentCommandInvalidVoteValue = NewCommandValidationError("invalid v
 func (c *Commands) UserVoteComment(ctx context.Context, user *state.User, comment_id int64, value state.VoteValue) (state.CommentVote, error) {
 	queries := c.queries
 
-	if !user.IsUser() {
+	if user.IsGuest() {
 		return state.CommentVote{}, ErrVoteCommentCommandUserNotAllowed
 	}
 

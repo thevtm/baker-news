@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/rand/v2"
 	"os"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jaswdr/faker/v2"
@@ -30,6 +31,7 @@ func main() {
 	num_root_comments := flag.Int("num_root_comments", 10, "Number of root comments to seed")
 	num_child_comments := flag.Int("num_child_comments", 10, "Number of child comments to seed")
 	num_comment_votes := flag.Int("num_comment_votes", 100, "Number of comment votes to seed")
+	interval_between_commands := flag.Duration("interval_between_commands", time.Millisecond*250, "Interval between commands in milliseconds")
 	flag.Parse()
 
 	fmt.Printf("Seeding %d users, %d posts, %d post votes\n", *num_users, *num_posts, *num_post_votes)
@@ -45,8 +47,8 @@ func main() {
 	queries := state.New(conn)
 	seeder := seed.CreateSeeder(queries, &f)
 
-	tx := lo.Must(conn.Begin(ctx))
-	defer tx.Rollback(ctx)
+	// tx := lo.Must(conn.Begin(ctx))
+	// defer tx.Rollback(ctx)
 
 	new_users := make([]*state.User, 0)
 	new_posts := make([]*state.Post, 0)
@@ -159,13 +161,15 @@ func main() {
 	assert.True(commands[1] == &create_fake_post_command, "Second command is not create_fake_post_command")
 	assert.True(commands[2] == &create_fake_root_comment_command, "Third command is not create_fake_root_comment_command")
 
-	for _, command := range commands {
+	for i, command := range commands {
 		(*command)()
+		fmt.Printf("Progress: %d/%d\n", i+1, total_commands)
+		time.Sleep(*interval_between_commands)
 	}
 
 	fmt.Println("")
 
-	tx.Commit(ctx)
+	// tx.Commit(ctx)
 
 	fmt.Println("Database seeded.")
 }
