@@ -1,5 +1,9 @@
 # baker-news
 
+<div align="center">
+  <img src="https://github.com/thevtm/baker-news/blob/master/docs/screenshots/Screen Shot 2025-01-04 at 22.01.39.png?raw=true"/>
+</div>
+
 A hacker news clone that I made while learning Go.
 
 ## Acknowledgements
