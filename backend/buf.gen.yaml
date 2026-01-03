@@ -1,0 +1,7 @@
+version: v2
+plugins:
+  - local: ["deno", "run", "npm:@bufbuild/protoc-gen-es"]
+    out: proto/gen
+    # Also generate any imported dependencies
+    include_imports: true
+    opt: target=ts
