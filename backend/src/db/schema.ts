@@ -1,6 +1,7 @@
 import { integer, pgTable, varchar, timestamp, pgEnum, uniqueIndex, index } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { utils } from "./index.ts";
+
+import * as db_utils from "./utils.ts";
 
 /* COMMON */
 
@@ -21,13 +22,13 @@ export function enumToPgEnum<T extends { [key: string]: string }>(myEnum: T): [T
 
 /* ENUMS */
 
-export enum Roles {
+export enum UserRoles {
   GUEST = "guest",
   USER = "user",
   ADMIN = "admin",
 }
 
-export const roles = pgEnum("roles", enumToPgEnum(Roles));
+export const user_roles = pgEnum("user_roles", enumToPgEnum(UserRoles));
 
 export enum VoteType {
   NO_VOTE = "no_vote",
@@ -37,6 +38,12 @@ export enum VoteType {
 
 export const voteTypes = pgEnum("vote_types", enumToPgEnum(VoteType));
 
+export const vote_types_values_map = new Map<VoteType, number>([
+  [VoteType.NO_VOTE, 0],
+  [VoteType.UP_VOTE, 1],
+  [VoteType.DOWN_VOTE, -1],
+]);
+
 /* SCHEMA */
 
 export const users = pgTable(
@@ -44,11 +51,11 @@ export const users = pgTable(
   {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
     username: varchar({ length: 255 }).notNull(),
-    role: roles().notNull(),
+    role: user_roles().notNull(),
 
     ...timestamps,
   },
-  (table) => [uniqueIndex("users_username_idx").on(utils.lower(table.username))]
+  (table) => [uniqueIndex("users_username_idx").on(db_utils.sql_lower(table.username))]
 );
 
 export const posts = pgTable("posts", {
@@ -95,13 +102,6 @@ export const comments = pgTable(
     index("comments_parent_comment_idx").on(table.parentCommentId),
   ]
 );
-
-export const commentsRelations = relations(comments, ({ one }) => ({
-  parentComment: one(comments, {
-    fields: [comments.parentCommentId],
-    references: [comments.id],
-  }),
-}));
 
 export const postVotes = pgTable(
   "post_votes",
@@ -150,3 +150,35 @@ export const commentVotes = pgTable(
     index("comment_votes_user_comment_idx").on(table.userId, table.commentId),
   ]
 );
+
+/* RELATIONS */
+
+export const usersRelations = relations(users, ({ one, many }) => ({
+  posts: many(posts),
+  comments: many(comments),
+  postVotes: many(postVotes),
+  commentVotes: many(commentVotes),
+}));
+
+export const postsRelations = relations(posts, ({ one, many }) => ({
+  author: one(users, { fields: [posts.authorId], references: [users.id] }),
+  comments: many(comments),
+  votes: many(postVotes),
+}));
+
+export const commentsRelations = relations(comments, ({ one, many }) => ({
+  post: one(posts, { fields: [comments.postId], references: [posts.id] }),
+  parentComment: one(comments, { fields: [comments.parentCommentId], references: [comments.id] }),
+  author: one(users, { fields: [comments.authorId], references: [users.id] }),
+  votes: many(commentVotes),
+}));
+
+export const postVotesRelations = relations(postVotes, ({ one }) => ({
+  user: one(users, { fields: [postVotes.userId], references: [users.id] }),
+  post: one(posts, { fields: [postVotes.postId], references: [posts.id] }),
+}));
+
+export const commentVotesRelations = relations(commentVotes, ({ one }) => ({
+  user: one(users, { fields: [commentVotes.userId], references: [users.id] }),
+  comment: one(comments, { fields: [commentVotes.commentId], references: [comments.id] }),
+}));
