@@ -1,0 +1,78 @@
+syntax = "proto3";
+package BakerNews;
+
+import "google/protobuf/timestamp.proto";
+
+enum UserRole {
+  USER_ROLE_UNSPECIFIED = 0;
+  USER_ROLE_GUEST = 1;
+  USER_ROLE_ADMIN = 2;
+  USER_ROLE_USER = 3;
+}
+
+enum VoteType {
+  VOTE_TYPE_UNSPECIFIED = 0;
+  VOTE_TYPE_NO_VOTE = 1;
+  VOTE_TYPE_UP_VOTE = 2;
+  VOTE_TYPE_DOWN_VOTE = 3;
+}
+
+message User {
+  int32 id = 1;
+  string username = 2;
+  UserRole role = 3;
+
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+}
+
+message Post {
+  int32 id = 1;
+  User author = 2;
+
+  string title = 3;
+  string url = 4;
+
+  int32 score = 5;
+  int32 comment_count = 6;
+
+  optional CommentList comments_list = 7;
+
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+}
+
+message Comment {
+  int32 id = 1;
+  optional Post post = 2;
+  User author = 3;
+  optional Comment parent_comment = 4;
+
+  string content = 5;
+
+  int32 score = 6;
+  int32 comment_count = 7;
+
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+}
+
+message ErrorResponse { string message = 1; }
+
+message PostList { repeated Post Posts = 1; }
+message CommentList { repeated Comment Comments = 1; }
+
+// Get Post
+message GetPostRequest { int32 id = 1; }
+message GetPostSuccessfulResponse { Post Post = 1; }
+message GetPostResponse { oneof result { GetPostSuccessfulResponse success = 1; ErrorResponse error = 2; } }
+
+// Get Post List
+message GetPostListRequest { }
+message GetPostListSuccessfulResponse { PostList Post_list = 1; }
+message GetPostListResponse { oneof result { GetPostListSuccessfulResponse success = 1; ErrorResponse error = 2; } }
+
+service BakerNewsService {
+  rpc GetPostList(GetPostListRequest) returns (GetPostListResponse) {}
+  rpc GetPost(GetPostRequest) returns (GetPostResponse) {}
+}
