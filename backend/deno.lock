@@ -1,71 +1,102 @@
 {
   "version": "4",
   "specifiers": {
-    "jsr:@std/assert@1": "1.0.11",
-    "jsr:@std/internal@^1.0.5": "1.0.5",
-    "jsr:@std/path@*": "1.0.8",
-    "npm:@bufbuild/buf@*": "1.50.0",
-    "npm:@bufbuild/buf@^1.50.0": "1.50.0",
-    "npm:@bufbuild/protobuf@^2.2.3": "2.2.3",
-    "npm:@bufbuild/protoc-gen-es@*": "2.2.3_@bufbuild+protobuf@2.2.3",
-    "npm:@bufbuild/protoc-gen-es@^2.2.3": "2.2.3_@bufbuild+protobuf@2.2.3",
-    "npm:@connectrpc/connect-fastify@^2.0.2": "2.0.2_@bufbuild+protobuf@2.2.3_@connectrpc+connect@2.0.2__@bufbuild+protobuf@2.2.3_@connectrpc+connect-node@2.0.2__@bufbuild+protobuf@2.2.3__@connectrpc+connect@2.0.2___@bufbuild+protobuf@2.2.3_fastify@5.2.1",
-    "npm:@connectrpc/connect@^2.0.2": "2.0.2_@bufbuild+protobuf@2.2.3",
+    "jsr:@std/assert@1": "1.0.12",
+    "jsr:@std/assert@^1.0.12": "1.0.12",
+    "jsr:@std/async@^1.0.12": "1.0.12",
+    "jsr:@std/data-structures@^1.0.6": "1.0.6",
+    "jsr:@std/expect@*": "1.0.15",
+    "jsr:@std/fs@^1.0.16": "1.0.16",
+    "jsr:@std/internal@^1.0.6": "1.0.6",
+    "jsr:@std/path@^1.0.8": "1.0.8",
+    "jsr:@std/testing@^1.0.11": "1.0.11",
+    "npm:@bufbuild/buf@^1.51.0": "1.52.1",
+    "npm:@bufbuild/protobuf@^2.2.5": "2.2.5",
+    "npm:@bufbuild/protoc-gen-es@^2.2.5": "2.2.5_@bufbuild+protobuf@2.2.5",
+    "npm:@connectrpc/connect-fastify@^2.0.2": "2.0.2_@bufbuild+protobuf@2.2.5_@connectrpc+connect@2.0.2__@bufbuild+protobuf@2.2.5_@connectrpc+connect-node@2.0.2__@bufbuild+protobuf@2.2.5__@connectrpc+connect@2.0.2___@bufbuild+protobuf@2.2.5_fastify@5.3.2",
+    "npm:@connectrpc/connect@^2.0.2": "2.0.2_@bufbuild+protobuf@2.2.5",
     "npm:@faker-js/faker@^9.6.0": "9.6.0",
     "npm:@types/lodash@^4.17.16": "4.17.16",
-    "npm:@types/node@*": "22.12.0",
     "npm:@types/pg@^8.11.11": "8.11.11",
     "npm:@types/schluessel@^1.0.2": "1.0.2",
-    "npm:drizzle-kit@*": "0.30.6_esbuild@0.19.12",
     "npm:drizzle-kit@~0.30.6": "0.30.6_esbuild@0.19.12",
-    "npm:drizzle-orm@0.41": "0.41.0_pg@8.14.1",
-    "npm:fastify@^5.2.1": "5.2.1",
+    "npm:drizzle-orm@0.41": "0.41.0_@types+pg@8.11.11_pg@8.14.1",
+    "npm:fastify@^5.2.1": "5.3.2",
     "npm:lodash@^4.17.21": "4.17.21",
     "npm:pg@^8.14.1": "8.14.1",
-    "npm:schluessel@*": "1.0.4",
     "npm:schluessel@^1.0.4": "1.0.4",
     "npm:typescript@~5.6.2": "5.6.3",
     "npm:zod@^3.24.2": "3.24.2",
     "npm:zx@^8.5.2": "8.5.2"
   },
   "jsr": {
-    "@std/assert@1.0.11": {
-      "integrity": "2461ef3c368fe88bc60e186e7744a93112f16fd110022e113a0849e94d1c83c1",
+    "@std/assert@1.0.12": {
+      "integrity": "08009f0926dda9cbd8bef3a35d3b6a4b964b0ab5c3e140a4e0351fbf34af5b9a",
       "dependencies": [
         "jsr:@std/internal"
       ]
     },
-    "@std/internal@1.0.5": {
-      "integrity": "54a546004f769c1ac9e025abd15a76b6671ddc9687e2313b67376125650dc7ba"
+    "@std/async@1.0.12": {
+      "integrity": "d1bfcec459e8012846fe4e38dfc4241ab23240ecda3d8d6dfcf6d81a632e803d"
+    },
+    "@std/data-structures@1.0.6": {
+      "integrity": "76a7fd8080c66604c0496220a791860492ab21a04a63a969c0b9a0609bbbb760"
+    },
+    "@std/expect@1.0.15": {
+      "integrity": "eca360007b5a7f13dbfa1294224baee7fb98dcd460d8461fe64eeae302902945",
+      "dependencies": [
+        "jsr:@std/assert@^1.0.12",
+        "jsr:@std/internal"
+      ]
+    },
+    "@std/fs@1.0.16": {
+      "integrity": "81878f62b6eeda0bf546197fc3daa5327c132fee1273f6113f940784a468b036",
+      "dependencies": [
+        "jsr:@std/path"
+      ]
+    },
+    "@std/internal@1.0.6": {
+      "integrity": "9533b128f230f73bd209408bb07a4b12f8d4255ab2a4d22a1fd6d87304aca9a4"
     },
     "@std/path@1.0.8": {
       "integrity": "548fa456bb6a04d3c1a1e7477986b6cffbce95102d0bb447c67c4ee70e0364be"
+    },
+    "@std/testing@1.0.11": {
+      "integrity": "12b3db12d34f0f385a26248933bde766c0f8c5ad8b6ab34d4d38f528ab852f48",
+      "dependencies": [
+        "jsr:@std/assert@^1.0.12",
+        "jsr:@std/async",
+        "jsr:@std/data-structures",
+        "jsr:@std/fs",
+        "jsr:@std/internal",
+        "jsr:@std/path"
+      ]
     }
   },
   "npm": {
-    "@bufbuild/buf-darwin-arm64@1.50.0": {
-      "integrity": "sha512-ldj1s0hMhZlz0N4+fqs9jGqC7jKAcsfLNp8kM+G+6XTPh8GWA/U1sYRdHhAlv1+3STfWhGxAhrNGRRVvvimALQ=="
+    "@bufbuild/buf-darwin-arm64@1.52.1": {
+      "integrity": "sha512-c2iCRSvhrQVCe91xQNKhwy4ES3AN0kWP1oXnCe+bzReOrBsLef9gVoxKbDv5Ywkv+epfqhuAVbltpN37P4s9mQ=="
     },
-    "@bufbuild/buf-darwin-x64@1.50.0": {
-      "integrity": "sha512-0ODFAnDVr0UOIUHGrI3vA3Cycec186BP5PFOuW6bALxBVN52Lqjjj+/+bVhvbBQlYo3rkxOtxEdoWGHZJrHhHA=="
+    "@bufbuild/buf-darwin-x64@1.52.1": {
+      "integrity": "sha512-2v742rgJBCe8E1H/u8ObUH4oeev5jCMP9TKPRy3iQZBFB2lXXgvKQCmSP2Du6Sc7bC3L4QxSbLfhJRobdjUR3Q=="
     },
-    "@bufbuild/buf-linux-aarch64@1.50.0": {
-      "integrity": "sha512-Dp0YzLOW7O+C8bAm6/Q2HSrTYpDs2SxQXx+dBNxUotMpzx+uaUvqXb3EGr7s07ro+FsT0sFjzKTBcuCwkj+guQ=="
+    "@bufbuild/buf-linux-aarch64@1.52.1": {
+      "integrity": "sha512-bnfDsmsnPlgNBueTzIemBuL4WxcASR7T+RIeTjur+VILN7kN6Pd8gUiNIQbZSvKwRdKGDRJXCfn404w+5Djo5A=="
     },
-    "@bufbuild/buf-linux-armv7@1.50.0": {
-      "integrity": "sha512-EMYRKSJ4kZo+OiHvMTYM+O27lf/okaf+bk1agRUTmBccp+qoGEC0R3DB/powFf/FURkUF7vKUS4T0GC/4n8OVA=="
+    "@bufbuild/buf-linux-armv7@1.52.1": {
+      "integrity": "sha512-+BvlP9FZu83dOoy2+fIw9/CuTq3TwDUXqfMU14b0CRDlx6eJsTbFMsYyNCQYdp9yJsLy3keEHKlBQkYdfd1wpQ=="
     },
-    "@bufbuild/buf-linux-x64@1.50.0": {
-      "integrity": "sha512-1G6ZQLXYoCXl8ZmCivUuknc6BiMz2bMtfpzYurFhj9wCIQTZsgepTBoiXHTcEdu2fjYAFxRGo4o+ZALU1umY0g=="
+    "@bufbuild/buf-linux-x64@1.52.1": {
+      "integrity": "sha512-MIf62fmcV1FbBzojPfQAuE1BRspkgc6w5SDYdgimd85a9FYOrpUTkt31ZPjEz/swOuneGcDecayYtt6jWEcMGA=="
     },
-    "@bufbuild/buf-win32-arm64@1.50.0": {
-      "integrity": "sha512-KpbI+f0TnGaa4KlPQXCLx8ZWKfO2pMD1kvVjAaktmm9OUoP9HrvZJ11tDEiFEFbrKbapCIhCCC3XWaldEDJWcA=="
+    "@bufbuild/buf-win32-arm64@1.52.1": {
+      "integrity": "sha512-QCKsJlgiEeY8bUipVO2WDQHHrSkmWUU7DAqZrw/ndHNCwg+//jhuwLYEbpbRiA1qG4Va6WzosR5/3VgOetyLuw=="
     },
-    "@bufbuild/buf-win32-x64@1.50.0": {
-      "integrity": "sha512-gA9aVuZYfh3pmWNYxmnK6thlcqyu2ht8haFhdB0w14Rtj200FAsMmzF7CPWvXQrV5g0pqXPwoMjZigT4OJHOXg=="
+    "@bufbuild/buf-win32-x64@1.52.1": {
+      "integrity": "sha512-VzoN16/MbZ/ozLjFp5JKhSAhs9iOEPrp0hbCpO56o/0HXFQ96KNgNEP9vYD/E90DNHWW5sgoFk74zdJLXG8wXw=="
     },
-    "@bufbuild/buf@1.50.0": {
-      "integrity": "sha512-XcdB5/Ls8k1eVcgNwUsRZEhCqiHgsnN+uEk/aDh0urGeiWc/dN6c89ZnAnI9/v0AZWzp6/rowoZhThlTl+D0bw==",
+    "@bufbuild/buf@1.52.1": {
+      "integrity": "sha512-Sflcgagb/9gu3ShUF7jjJmYgMxut+YRNajPtTk20cUq5MIG8cCZeVfA6s6kDj2TG5QuAf49u5akTHPa5ZENr0A==",
       "dependencies": [
         "@bufbuild/buf-darwin-arm64",
         "@bufbuild/buf-darwin-x64",
@@ -76,25 +107,25 @@
         "@bufbuild/buf-win32-x64"
       ]
     },
-    "@bufbuild/protobuf@2.2.3": {
-      "integrity": "sha512-tFQoXHJdkEOSwj5tRIZSPNUuXK3RaR7T1nUrPgbYX1pUbvqqaaZAsfo+NXBPsz5rZMSKVFrgK1WL8Q/MSLvprg=="
+    "@bufbuild/protobuf@2.2.5": {
+      "integrity": "sha512-/g5EzJifw5GF8aren8wZ/G5oMuPoGeS6MQD3ca8ddcvdXR5UELUfdTZITCGNhNXynY/AYl3Z4plmxdj/tRl/hQ=="
     },
-    "@bufbuild/protoc-gen-es@2.2.3_@bufbuild+protobuf@2.2.3": {
-      "integrity": "sha512-hdhIV9NmwXXy24DcbnArauv6L5Dv2PjkO9gz2DUhiZ9HPRpP+rmpT8zo5LohjJiuA7YIQGGKKWSKpRg+xcdLSQ==",
+    "@bufbuild/protoc-gen-es@2.2.5_@bufbuild+protobuf@2.2.5": {
+      "integrity": "sha512-81dI1PLMQXUkvCUH1fKJEZsx+G69LvU/0BOFeqxotFpCFEC/jTu1Ka1ViIEGT5U1r51udRs20kHZTlkR9zwfAA==",
       "dependencies": [
         "@bufbuild/protobuf",
         "@bufbuild/protoplugin"
       ]
     },
-    "@bufbuild/protoplugin@2.2.3_typescript@5.4.5": {
-      "integrity": "sha512-UsV7mj6NJTZrqIYJK+jNFnnj5tOS7wgNXKyMjebFEpf+OX6pfXE+nx+QPjumOfu4GxdVPfEDnKuwISgqlXSQqw==",
+    "@bufbuild/protoplugin@2.2.5_typescript@5.4.5": {
+      "integrity": "sha512-Z68KTDLiidUYoJ8kjs6YfhK8r58W93pOFIfGqlnK1RZQTQRtbH6WRWjSqtuiy4WjJpJZ5qE0lKtFGR+bHU8Vaw==",
       "dependencies": [
         "@bufbuild/protobuf",
         "@typescript/vfs",
         "typescript@5.4.5"
       ]
     },
-    "@connectrpc/connect-fastify@2.0.2_@bufbuild+protobuf@2.2.3_@connectrpc+connect@2.0.2__@bufbuild+protobuf@2.2.3_@connectrpc+connect-node@2.0.2__@bufbuild+protobuf@2.2.3__@connectrpc+connect@2.0.2___@bufbuild+protobuf@2.2.3_fastify@5.2.1": {
+    "@connectrpc/connect-fastify@2.0.2_@bufbuild+protobuf@2.2.5_@connectrpc+connect@2.0.2__@bufbuild+protobuf@2.2.5_@connectrpc+connect-node@2.0.2__@bufbuild+protobuf@2.2.5__@connectrpc+connect@2.0.2___@bufbuild+protobuf@2.2.5_fastify@5.3.2": {
       "integrity": "sha512-rOobWfWc09+Ws4x+tfZFd12UBezMInq+V5chqbgGuGgajZXyEPRfu8ePo0IiKltWptOq7oPAyaEbadpgcZsnBg==",
       "dependencies": [
         "@bufbuild/protobuf",
@@ -103,14 +134,14 @@
         "fastify"
       ]
     },
-    "@connectrpc/connect-node@2.0.2_@bufbuild+protobuf@2.2.3_@connectrpc+connect@2.0.2__@bufbuild+protobuf@2.2.3": {
+    "@connectrpc/connect-node@2.0.2_@bufbuild+protobuf@2.2.5_@connectrpc+connect@2.0.2__@bufbuild+protobuf@2.2.5": {
       "integrity": "sha512-33Ut3SRkb6SugpwVCtXXRvUrOdtiyG6z6d5+eijBOLOI75sw1tDCwcs0o/9WL3rUj1M08dLUrPmJB47fjpv6EA==",
       "dependencies": [
         "@bufbuild/protobuf",
         "@connectrpc/connect"
       ]
     },
-    "@connectrpc/connect@2.0.2_@bufbuild+protobuf@2.2.3": {
+    "@connectrpc/connect@2.0.2_@bufbuild+protobuf@2.2.5": {
       "integrity": "sha512-xZuylIUNvNlH52e/4eQsZvY4QZyDJRtEFEDnn/yBrv5Xi5ZZI/p8X+GAHH35ucVaBvv9u7OzHZo8+tEh1EFTxA==",
       "dependencies": [
         "@bufbuild/protobuf"
@@ -279,11 +310,11 @@
         "fast-uri"
       ]
     },
-    "@fastify/error@4.0.0": {
-      "integrity": "sha512-OO/SA8As24JtT1usTUTKgGH7uLvhfwZPwlptRi2Dp5P4KKmJI3gvsZ8MIHnNwDs4sLf/aai5LzTyl66xr7qMxA=="
+    "@fastify/error@4.1.0": {
+      "integrity": "sha512-KeFcciOr1eo/YvIXHP65S94jfEEqn1RxTRBT1aJaHxY5FK0/GDXYozsQMMWlZoHgi8i0s+YtrLsgj/JkUUjSkQ=="
     },
-    "@fastify/fast-json-stringify-compiler@5.0.2": {
-      "integrity": "sha512-YdR7gqlLg1xZAQa+SX4sMNzQHY5pC54fu9oC5aYSUqBhyn6fkLkrdtKlpVdCNPlwuUuXA1PjFTEmvMF6ZVXVGw==",
+    "@fastify/fast-json-stringify-compiler@5.0.3": {
+      "integrity": "sha512-uik7yYHkLr6fxd8hJSZ8c+xF4WafPK+XzneQDPU+D10r5X19GW8lJcom2YijX2+qtFF1ENJlHXKFM9ouXNJYgQ==",
       "dependencies": [
         "fast-json-stringify"
       ]
@@ -385,14 +416,15 @@
       "dependencies": [
         "@drizzle-team/brocli",
         "@esbuild-kit/esm-loader",
-        "esbuild@0.19.12",
         "esbuild-register",
+        "esbuild@0.19.12",
         "gel"
       ]
     },
-    "drizzle-orm@0.41.0_pg@8.14.1": {
+    "drizzle-orm@0.41.0_@types+pg@8.11.11_pg@8.14.1": {
       "integrity": "sha512-7A4ZxhHk9gdlXmTdPj/lREtP+3u8KvZ4yEN6MYVxBzZGex5Wtdc+CWSbu7btgF6TB0N+MNPrvW7RKBbxJchs/Q==",
       "dependencies": [
+        "@types/pg",
         "pg"
       ]
     },
@@ -409,15 +441,15 @@
     "esbuild@0.18.20": {
       "integrity": "sha512-ceqxoedUrcayh7Y7ZX6NdbbDzGROiyVBgC4PriJThBKSVPWnnFHZAkfI1lJT8QFkOwH4qOS2SJkS4wvpGl8BpA==",
       "dependencies": [
-        "@esbuild/android-arm@0.18.20",
         "@esbuild/android-arm64@0.18.20",
+        "@esbuild/android-arm@0.18.20",
         "@esbuild/android-x64@0.18.20",
         "@esbuild/darwin-arm64@0.18.20",
         "@esbuild/darwin-x64@0.18.20",
         "@esbuild/freebsd-arm64@0.18.20",
         "@esbuild/freebsd-x64@0.18.20",
-        "@esbuild/linux-arm@0.18.20",
         "@esbuild/linux-arm64@0.18.20",
+        "@esbuild/linux-arm@0.18.20",
         "@esbuild/linux-ia32@0.18.20",
         "@esbuild/linux-loong64@0.18.20",
         "@esbuild/linux-mips64el@0.18.20",
@@ -437,15 +469,15 @@
       "integrity": "sha512-aARqgq8roFBj054KvQr5f1sFu0D65G+miZRCuJyJ0G13Zwx7vRar5Zhn2tkQNzIXcBrNVsv/8stehpj+GAjgbg==",
       "dependencies": [
         "@esbuild/aix-ppc64",
-        "@esbuild/android-arm@0.19.12",
         "@esbuild/android-arm64@0.19.12",
+        "@esbuild/android-arm@0.19.12",
         "@esbuild/android-x64@0.19.12",
         "@esbuild/darwin-arm64@0.19.12",
         "@esbuild/darwin-x64@0.19.12",
         "@esbuild/freebsd-arm64@0.19.12",
         "@esbuild/freebsd-x64@0.19.12",
-        "@esbuild/linux-arm@0.19.12",
         "@esbuild/linux-arm64@0.19.12",
+        "@esbuild/linux-arm@0.19.12",
         "@esbuild/linux-ia32@0.19.12",
         "@esbuild/linux-loong64@0.19.12",
         "@esbuild/linux-mips64el@0.19.12",
@@ -490,8 +522,8 @@
     "fast-uri@3.0.6": {
       "integrity": "sha512-Atfo14OibSv5wAp4VWNsFYE1AchQRTv9cBGWET4pZWHzYshFSS9NQI6I57rdKn9croWVMbYFbLhJ+yJvmZIIHw=="
     },
-    "fastify@5.2.1": {
-      "integrity": "sha512-rslrNBF67eg8/Gyn7P2URV8/6pz8kSAscFL4EThZJ8JBMaXacVdVE4hmUcnPNKERl5o/xTiBSLfdowBRhVF1WA==",
+    "fastify@5.3.2": {
+      "integrity": "sha512-AIPqBgtqBAwkOkrnwesEE+dOyU30dQ4kh7udxeGVR05CRGwubZx+p2H8P0C4cRnQT0+EPK4VGea2DTL2RtWttg==",
       "dependencies": [
         "@fastify/ajv-compiler",
         "@fastify/error",
@@ -503,7 +535,7 @@
         "find-my-way",
         "light-my-request",
         "pino",
-        "process-warning",
+        "process-warning@5.0.0",
         "rfdc",
         "secure-json-parse",
         "semver",
@@ -516,16 +548,16 @@
         "reusify"
       ]
     },
-    "find-my-way@9.2.0": {
-      "integrity": "sha512-d3uCir8Hmg7W1Ywp8nKf2lJJYU9Nwinvo+1D39Dn09nz65UKXIxUh7j7K8zeWhxqe1WrkS7FJyON/Q/3lPoc6w==",
+    "find-my-way@9.3.0": {
+      "integrity": "sha512-eRoFWQw+Yv2tuYlK2pjFS2jGXSxSppAs3hSQjfxVKxM5amECzIgYYc1FEI8ZmhSh/Ig+FrKEz43NLRKJjYCZVg==",
       "dependencies": [
         "fast-deep-equal",
         "fast-querystring",
         "safe-regex2"
       ]
     },
-    "gel@2.0.1": {
-      "integrity": "sha512-gfem3IGvqKqXwEq7XseBogyaRwGsQGuE7Cw/yQsjLGdgiyqX92G1xENPCE0ltunPGcsJIa6XBOTx/PK169mOqw==",
+    "gel@2.0.2": {
+      "integrity": "sha512-XTKpfNR9HZOw+k0Bl04nETZjuP5pypVAXsZADSdwr3EtyygTTe1RqvftU2FjGu7Tp9e576a9b/iIOxWrRBxMiQ==",
       "dependencies": [
         "@petamoriken/float16",
         "debug",
@@ -560,7 +592,7 @@
       "integrity": "sha512-CHYbu8RtboSIoVsHZ6Ye4cj4Aw/yg2oAFimlF7mNvfDV192LR7nDiKtSIfCuLT7KokPSTn/9kfVLm5OGN0A28A==",
       "dependencies": [
         "cookie",
-        "process-warning",
+        "process-warning@4.0.1",
         "set-cookie-parser"
       ]
     },
@@ -653,7 +685,7 @@
         "on-exit-leak-free",
         "pino-abstract-transport",
         "pino-std-serializers",
-        "process-warning",
+        "process-warning@4.0.1",
         "quick-format-unescaped",
         "real-require",
         "safe-stable-stringify",
@@ -697,6 +729,9 @@
     "process-warning@4.0.1": {
       "integrity": "sha512-3c2LzQ3rY9d0hc1emcsHhfT9Jwz0cChib/QN89oME2R451w5fy3f0afAhERFZAwrbDU43wk12d0ORBpDVME50Q=="
     },
+    "process-warning@5.0.0": {
+      "integrity": "sha512-a39t9ApHNx2L4+HBnQKqxxHNs1r7KF+Intd8Q/g1bUh6q0WIp9voPXJ/x0j+ZL45KF1pJd9+q2jLIRMfvEshkA=="
+    },
     "quick-format-unescaped@4.0.4": {
       "integrity": "sha512-tYC1Q1hgyRuHgloV/YXs2w15unPVh8qfu/qCTfhTYamaw7fyhumKa2yGpdSo87vY32rIclj+4fWYQXUMs9EHvg=="
     },
@@ -718,8 +753,8 @@
     "rfdc@1.4.1": {
       "integrity": "sha512-q1b3N5QkRUWUl7iyylaaj3kOpIT0N2i9MqIEQXP73GVsN9cw3fdx8X63cEmWhJGi2PPCF23Ijp7ktmd39rawIA=="
     },
-    "safe-regex2@4.0.1": {
-      "integrity": "sha512-goqsB+bSlOmVX+CiFX2PFc1OV88j5jvBqIM+DgqrucHnUguAUNtiNOs+aTadq2NqsLQ+TQ3UEVG3gtSFcdlkCg==",
+    "safe-regex2@5.0.0": {
+      "integrity": "sha512-YwJwe5a51WlK7KbOJREPdjNrpViQBI3p4T50lfwPuDhZnE3XGVTlGvi+aolc5+RvxDD6bnUmjVsU9n1eboLUYw==",
       "dependencies": [
         "ret"
       ]
@@ -733,8 +768,8 @@
         "app-root-path"
       ]
     },
-    "secure-json-parse@3.0.2": {
-      "integrity": "sha512-H6nS2o8bWfpFEV6U38sOSjS7bTbdgbCGU9wEM6W14P5H0QOsz94KCusifV44GpHDTu2nqZbuDNhTzu+mjDSw1w=="
+    "secure-json-parse@4.0.0": {
+      "integrity": "sha512-dxtLJO6sc35jWidmLxo7ij+Eg48PM/kleBsxpC8QJE0qJICe+KawkDQmvCMZUr9u7WKVHgMW6vy3fQ7zMiFZMA=="
     },
     "semver@7.7.1": {
       "integrity": "sha512-hlq8tAfn0m/61p4BVRcPzIGr6LKiMwo4VM6dGi6pt4qcRkmNzTcWq6eCEjEh+qXjkMDvPlOFFSGwQjoEa6gyMA=="
@@ -800,13 +835,14 @@
   },
   "workspace": {
     "dependencies": [
-      "jsr:@std/assert@1"
+      "jsr:@std/assert@1",
+      "jsr:@std/testing@^1.0.11"
     ],
     "packageJson": {
       "dependencies": [
-        "npm:@bufbuild/buf@^1.50.0",
-        "npm:@bufbuild/protobuf@^2.2.3",
-        "npm:@bufbuild/protoc-gen-es@^2.2.3",
+        "npm:@bufbuild/buf@^1.51.0",
+        "npm:@bufbuild/protobuf@^2.2.5",
+        "npm:@bufbuild/protoc-gen-es@^2.2.5",
         "npm:@connectrpc/connect-fastify@^2.0.2",
         "npm:@connectrpc/connect@^2.0.2",
         "npm:@faker-js/faker@^9.6.0",
