@@ -34,6 +34,10 @@ import {
   VoteCommentResponse,
   VoteCommentResponseSchema,
   VoteCommentSuccessfulResponseSchema,
+  CreateUserRequest,
+  CreateUserResponse,
+  CreateUserResponseSchema,
+  CreateUserSuccessfulResponseSchema,
 } from "./proto/index.ts";
 
 const USER_ROLE_MAP = new Map<schema.UserRoles | undefined, UserRole>([
@@ -60,6 +64,26 @@ export const createRoutes = (db: DBOrTx) => {
 
   return (router: ConnectRouter) =>
     router.service(BakerNewsService, {
+      async createUser(req: CreateUserRequest): Promise<CreateUserResponse> {
+        const { username } = req;
+
+        const create_user_result = await commands.createUser({ username });
+
+        if (create_user_result.success === false) {
+          const error = create(ErrorResponseSchema, { message: create_user_result.error });
+          const response = create(CreateUserResponseSchema, { result: { case: "error", value: error } });
+          return response;
+        }
+
+        const user_data = create_user_result.data!;
+
+        return create(CreateUserResponseSchema, {
+          result: {
+            case: "success",
+            value: create(CreateUserSuccessfulResponseSchema, { id: user_data.id }),
+          },
+        });
+      },
       async getPostList(_req: GetPostListRequest): Promise<GetPostListResponse> {
         const db_posts = await db.query.posts.findMany({
           with: { author: true },

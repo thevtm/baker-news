@@ -1,14 +1,40 @@
 import { expect } from "jsr:@std/expect";
 import { createClient, createRouterTransport } from "npm:@connectrpc/connect";
 
-import { BakerNewsService, GetPostListResponse, GetPostListSuccessfulResponse, VoteType } from "../src/proto/index.ts";
 import { createCommands } from "../src/commands/index.ts";
 import { createQueries } from "../src/queries/index.ts";
+import {
+  BakerNewsService,
+  CreateUserSuccessfulResponse,
+  GetPostListResponse,
+  GetPostListSuccessfulResponse,
+  VoteType,
+} from "../src/proto/index.ts";
 
 import { createRoutes } from "../src/connect.ts";
 
 import { InitializeDatabaseForTests } from "./helpers/db.ts";
 import { disable_leaks_test_options } from "./helpers/disable-leaks-config.ts";
+
+Deno.test("CreateUser", disable_leaks_test_options, async () => {
+  const { db, clear_db } = await InitializeDatabaseForTests();
+
+  const routes = createRoutes(db);
+
+  const transport = createRouterTransport(routes);
+  const client = createClient(BakerNewsService, transport);
+
+  const response = await client.createUser({ username: "test_user" });
+
+  expect(response.result.case).toBe("success");
+  expect(response.result.value).not.toBeNull();
+
+  const value = response.result.value as CreateUserSuccessfulResponse;
+
+  expect(value.id).toBeDefined();
+
+  await clear_db();
+});
 
 Deno.test("GetPostList", disable_leaks_test_options, async () => {
   const { db, clear_db } = await InitializeDatabaseForTests();

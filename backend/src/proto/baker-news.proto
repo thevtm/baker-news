@@ -62,6 +62,14 @@ message ErrorResponse { string message = 1; }
 message PostList { repeated Post Posts = 1; }
 message CommentList { repeated Comment comments = 1; }
 
+// Create User
+message CreateUserRequest {
+  string username = 1;
+}
+
+message CreateUserSuccessfulResponse { int32 id = 1; }
+message CreateUserResponse { oneof result { CreateUserSuccessfulResponse success = 1; ErrorResponse error = 2; } }
+
 // Get Post
 message GetPostRequest { int32 id = 1; }
 message GetPostSuccessfulResponse { Post post = 1; }
@@ -94,6 +102,7 @@ message VoteCommentResponse { oneof result { VoteCommentSuccessfulResponse succe
 
 // Service
 service BakerNewsService {
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {}
   rpc GetPostList(GetPostListRequest) returns (GetPostListResponse) {}
   rpc GetPost(GetPostRequest) returns (GetPostResponse) {}
   rpc VotePost(VotePostRequest) returns (VotePostResponse) {}

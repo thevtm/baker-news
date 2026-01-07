@@ -11,7 +11,7 @@
 - [ ] API
   - [x] get posts
   - [x] get post
-  - [ ] create user
+  - [x] create user
   - [ ] create post
   - [ ] create comment
   - [x] vote post
