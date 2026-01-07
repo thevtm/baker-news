@@ -1,24 +1,26 @@
-import { exit } from "node:process";
-import { db, schema } from "./db/index.ts";
+import { fastify } from "fastify";
+import { fastifyConnectPlugin } from "@connectrpc/connect-fastify";
+
+import { db } from "./db/index.ts";
+import { createRoutes } from "./connect.ts";
 
 async function main() {
-  const user: typeof schema.users.$inferInsert = { name: "John Doe", role: "user" };
+  const routes = createRoutes(db);
 
-  await db.insert(schema.users).values(user);
-  console.log("User inserted:", user);
+  const server = fastify({ logger: true });
+  await server.register(fastifyConnectPlugin, { routes });
 
-  const users = await db.select().from(schema.users);
-  console.log("Users:", users);
+  try {
+    await server.listen({ host: "localhost", port: 8080 });
+  } catch (err) {
+    console.error("Server error:", err);
+    Deno.exit(-1);
+  }
 
-  console.log("Done!");
+  console.log("server is listening at", server.addresses());
 }
 
-main()
-  .then(() => {
-    console.log("Main function executed successfully");
-    exit(0);
-  })
-  .catch((error) => {
-    console.error("Error executing main function:", error);
-    exit(-1);
-  });
+main().catch((err) => {
+  console.error("Error executing main function:", err);
+  Deno.exit(-1);
+});
