@@ -8,7 +8,6 @@ import { createQueries } from "../../src/queries/index.ts";
 
 import { InitializeDatabaseForTests } from "../helpers/db.ts";
 import { disable_leaks_test_options } from "../helpers/disable-leaks-config.ts";
-import exp from "node:constants";
 
 Deno.test("smoke test", disable_leaks_test_options, async () => {
   const { db, clear_db } = await InitializeDatabaseForTests();
