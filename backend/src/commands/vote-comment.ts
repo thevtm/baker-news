@@ -16,7 +16,7 @@ export interface VoteCommentCommandInput {
 }
 
 export interface VoteCommentReturnData {
-  newVoteCount: number;
+  newScore: number;
 }
 
 export type VoteCommentCommandFunction = (
@@ -94,7 +94,7 @@ export function createVoteCommentCommand(db: DBOrTx, queries: Queries): VoteComm
       const new_vote_count = vote_count_result[0].newVoteCount;
       assert(_.isFinite(new_vote_count));
 
-      result = { success: true, data: { newVoteCount: new_vote_count } };
+      result = { success: true, data: { newScore: new_vote_count } };
     });
 
     ////////////////////////////////////////////////////////////////////////////

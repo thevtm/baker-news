@@ -15,7 +15,7 @@ export interface VotePostCommandInput {
 }
 
 export interface VotePostReturnData {
-  newVoteCount: number;
+  newScore: number;
 }
 
 export type VotePostCommandFunction = (input: VotePostCommandInput) => Promise<CommandReturnType<VotePostReturnData>>;
@@ -91,7 +91,7 @@ export function createVotePostCommand(db: DBOrTx, queries: Queries): VotePostCom
       const vote_count = vote_count_result[0].newVoteCount;
       assert(_.isFinite(vote_count));
 
-      result = { success: true, data: { newVoteCount: vote_count } };
+      result = { success: true, data: { newScore: vote_count } };
     });
 
     ////////////////////////////////////////////////////////////////////////////

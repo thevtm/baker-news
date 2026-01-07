@@ -60,19 +60,42 @@ message Comment {
 message ErrorResponse { string message = 1; }
 
 message PostList { repeated Post Posts = 1; }
-message CommentList { repeated Comment Comments = 1; }
+message CommentList { repeated Comment comments = 1; }
 
 // Get Post
 message GetPostRequest { int32 id = 1; }
-message GetPostSuccessfulResponse { Post Post = 1; }
+message GetPostSuccessfulResponse { Post post = 1; }
 message GetPostResponse { oneof result { GetPostSuccessfulResponse success = 1; ErrorResponse error = 2; } }
 
 // Get Post List
 message GetPostListRequest { }
-message GetPostListSuccessfulResponse { PostList Post_list = 1; }
+message GetPostListSuccessfulResponse { PostList post_list = 1; }
 message GetPostListResponse { oneof result { GetPostListSuccessfulResponse success = 1; ErrorResponse error = 2; } }
 
+// Vote Post
+message VotePostRequest {
+  int32 post_id = 1;
+  int32 user_id = 2;
+  VoteType vote_type = 3;
+}
+
+message VotePostSuccessfulResponse { int32 new_score = 1; }
+message VotePostResponse { oneof result { VotePostSuccessfulResponse success = 1; ErrorResponse error = 2; } }
+
+// Vote Comment
+message VoteCommentRequest {
+  int32 comment_id = 1;
+  int32 user_id = 2;
+  VoteType vote_type = 3;
+}
+
+message VoteCommentSuccessfulResponse { int32 new_score = 1; }
+message VoteCommentResponse { oneof result { VoteCommentSuccessfulResponse success = 1; ErrorResponse error = 2; } }
+
+// Service
 service BakerNewsService {
   rpc GetPostList(GetPostListRequest) returns (GetPostListResponse) {}
   rpc GetPost(GetPostRequest) returns (GetPostResponse) {}
+  rpc VotePost(VotePostRequest) returns (VotePostResponse) {}
+  rpc VoteComment(VoteCommentRequest) returns (VoteCommentResponse) {}
 }
