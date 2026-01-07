@@ -23,7 +23,7 @@ export function createCreateUserCommand(db: DBOrTx): CreateUserCommandFunction {
   const username_taken_prepared_query = db
     .select()
     .from(schema.users)
-    .where(eq(utils.lower(schema.users.username), sql.placeholder("username")))
+    .where(eq(utils.sql_lower(schema.users.username), sql.placeholder("username")))
     .limit(1)
     .prepare("username_taken");
 
@@ -57,7 +57,7 @@ export function createCreateUserCommand(db: DBOrTx): CreateUserCommandFunction {
     const { username } = validation_result.data;
 
     // Create the user
-    const user: typeof schema.users.$inferInsert = { username, role: schema.Roles.USER };
+    const user: typeof schema.users.$inferInsert = { username, role: schema.UserRoles.USER };
     const result = await db.insert(schema.users).values(user).returning({ id: schema.users.id });
 
     return { success: true, data: { id: result[0].id } };

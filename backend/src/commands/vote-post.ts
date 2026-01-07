@@ -1,18 +1,17 @@
 import _ from "lodash";
 import { z } from "zod";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
+import { assert } from "@std/assert";
 
 import { schema, DBOrTx } from "../db/index.ts";
 import { Queries } from "../queries/index.ts";
 
 import { CommandReturnType } from "./index.ts";
-import { VoteType, voteTypes } from "../db/schema.ts";
-import { assert } from "@std/assert";
 
 export interface VotePostCommandInput {
   userId: number;
   postId: number;
-  voteType: VoteType;
+  voteType: schema.VoteType;
 }
 
 export interface VotePostReturnData {
@@ -37,7 +36,7 @@ export function createVotePostCommand(db: DBOrTx, queries: Queries): VotePostCom
       .positive("Invalid post ID")
       .refine(async (post_id) => await queries.postExists(post_id), "Post doesn't exist"),
 
-    voteType: z.enum(voteTypes.enumValues),
+    voteType: z.enum(schema.voteTypes.enumValues),
   });
 
   return async (input: VotePostCommandInput) => {
@@ -50,30 +49,55 @@ export function createVotePostCommand(db: DBOrTx, queries: Queries): VotePostCom
 
     const { postId, userId, voteType } = validation_result.data;
 
-    // Check if the user has already voted on the post
-    const existingVote = await db
-      .select()
-      .from(schema.postVotes)
-      .where(and(eq(schema.postVotes.postId, postId), eq(schema.postVotes.userId, userId)))
-      .limit(1);
+    ////////////////////////////////////////////////////////////////////////////
 
-    if (existingVote.length > 0) {
-      await db.update(schema.postVotes).set({ voteType }).where(eq(schema.postVotes.id, existingVote[0].id));
-    } else {
-      const vote: typeof schema.postVotes.$inferInsert = { postId, userId, voteType };
-      await db.insert(schema.postVotes).values(vote);
-    }
+    let result: CommandReturnType<VotePostReturnData> | null = null;
 
-    // Get new vote count
-    const voteCountResult = await db
-      .select({ newVoteCount: schema.posts.score })
-      .from(schema.posts)
-      .where(eq(schema.posts.id, postId));
+    await db.transaction(async (tx) => {
+      // Check if the user has already voted on the post
+      const existing_vote = await tx
+        .select()
+        .from(schema.postVotes)
+        .where(and(eq(schema.postVotes.postId, postId), eq(schema.postVotes.userId, userId)))
+        .limit(1);
 
-    const voteCount = voteCountResult[0]!.newVoteCount;
+      const has_voted = existing_vote.length > 0;
 
-    assert(voteCount !== undefined, "Vote count should not be undefined");
+      // Insert / update the vote
+      if (has_voted) {
+        await tx.update(schema.postVotes).set({ voteType }).where(eq(schema.postVotes.id, existing_vote[0].id));
+      } else {
+        const vote: typeof schema.postVotes.$inferInsert = { postId, userId, voteType };
+        await tx.insert(schema.postVotes).values(vote);
+      }
 
-    return { success: true, data: { newVoteCount: voteCount } };
+      // Update post score
+      const existingVoteValue = has_voted ? schema.vote_types_values_map.get(existing_vote[0].voteType) : 0;
+      assert(existingVoteValue !== undefined);
+
+      const newVoteValue = schema.vote_types_values_map.get(voteType);
+      assert(newVoteValue !== undefined);
+
+      const voteDifference = newVoteValue - existingVoteValue;
+      assert(voteDifference !== undefined);
+
+      const vote_count_result = await tx
+        .update(schema.posts)
+        .set({ score: sql`${schema.posts.score} + ${voteDifference}` })
+        .where(eq(schema.posts.id, postId))
+        .returning({ newVoteCount: schema.posts.score });
+      assert(vote_count_result.length === 1);
+
+      const vote_count = vote_count_result[0].newVoteCount;
+      assert(_.isFinite(vote_count));
+
+      result = { success: true, data: { newVoteCount: vote_count } };
+    });
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    assert(result !== null);
+
+    return result;
   };
 }

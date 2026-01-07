@@ -26,7 +26,7 @@ export function createCreatePostCommand(db: DBOrTx, queries: Queries): CreatePos
   const title_taken_prepared_query = db
     .select()
     .from(schema.posts)
-    .where(eq(utils.lower(schema.posts.title), sql.placeholder("title")))
+    .where(eq(utils.sql_lower(schema.posts.title), sql.placeholder("title")))
     .limit(1)
     .prepare("post_exists");
 
