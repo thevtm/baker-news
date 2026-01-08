@@ -16,6 +16,7 @@
     "npm:@connectrpc/connect-fastify@^2.0.2": "2.0.2_@bufbuild+protobuf@2.2.5_@connectrpc+connect@2.0.2__@bufbuild+protobuf@2.2.5_@connectrpc+connect-node@2.0.2__@bufbuild+protobuf@2.2.5__@connectrpc+connect@2.0.2___@bufbuild+protobuf@2.2.5_fastify@5.3.2",
     "npm:@connectrpc/connect@^2.0.2": "2.0.2_@bufbuild+protobuf@2.2.5",
     "npm:@faker-js/faker@^9.6.0": "9.6.0",
+    "npm:@fastify/cors@^11.0.1": "11.0.1",
     "npm:@types/lodash@^4.17.16": "4.17.16",
     "npm:@types/pg@^8.11.11": "8.11.11",
     "npm:@types/schluessel@^1.0.2": "1.0.2",
@@ -310,6 +311,13 @@
         "fast-uri"
       ]
     },
+    "@fastify/cors@11.0.1": {
+      "integrity": "sha512-dmZaE7M1f4SM8ZZuk5RhSsDJ+ezTgI7v3HHRj8Ow9CneczsPLZV6+2j2uwdaSLn8zhTv6QV0F4ZRcqdalGx1pQ==",
+      "dependencies": [
+        "fastify-plugin",
+        "toad-cache"
+      ]
+    },
     "@fastify/error@4.1.0": {
       "integrity": "sha512-KeFcciOr1eo/YvIXHP65S94jfEEqn1RxTRBT1aJaHxY5FK0/GDXYozsQMMWlZoHgi8i0s+YtrLsgj/JkUUjSkQ=="
     },
@@ -521,6 +529,9 @@
     },
     "fast-uri@3.0.6": {
       "integrity": "sha512-Atfo14OibSv5wAp4VWNsFYE1AchQRTv9cBGWET4pZWHzYshFSS9NQI6I57rdKn9croWVMbYFbLhJ+yJvmZIIHw=="
+    },
+    "fastify-plugin@5.0.1": {
+      "integrity": "sha512-HCxs+YnRaWzCl+cWRYFnHmeRFyR5GVnJTAaCJQiYzQSDwK9MgJdyAsuL3nh0EWRCYMgQ5MeziymvmAhUHYHDUQ=="
     },
     "fastify@5.3.2": {
       "integrity": "sha512-AIPqBgtqBAwkOkrnwesEE+dOyU30dQ4kh7udxeGVR05CRGwubZx+p2H8P0C4cRnQT0+EPK4VGea2DTL2RtWttg==",
@@ -846,6 +857,7 @@
         "npm:@connectrpc/connect-fastify@^2.0.2",
         "npm:@connectrpc/connect@^2.0.2",
         "npm:@faker-js/faker@^9.6.0",
+        "npm:@fastify/cors@^11.0.1",
         "npm:@types/lodash@^4.17.16",
         "npm:@types/pg@^8.11.11",
         "npm:@types/schluessel@^1.0.2",
