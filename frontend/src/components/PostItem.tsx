@@ -45,7 +45,8 @@ const PostItem: React.FC<PostItemProps> = ({ post }) => {
         </div>
 
         <div className={sprinkles({ display: "flex", flexDirection: "row", color: "gray-500" })}>
-          <span className="post-score">{post.votes}</span>&nbsp;points by {post.author.name} {created_at_formatted_date}
+          <span className="post-score">{post.score}</span>&nbsp;points by {post.author.username}{" "}
+          {created_at_formatted_date}
           <span className={sprinkles({ marginX: 1 })}>|</span>
           <a className="hover:underline" href="/delete-post">
             delete

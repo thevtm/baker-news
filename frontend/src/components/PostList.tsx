@@ -8,7 +8,7 @@ import { Post } from "../state";
 import PostItem from "./PostItem";
 
 export interface PostListProps {
-  posts: Post[];
+  posts: readonly Post[];
 }
 
 // container mx-auto bg-orange-100 py-1
