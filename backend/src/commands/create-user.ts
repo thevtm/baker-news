@@ -12,7 +12,7 @@ export interface CreateUserCommandInput {
 }
 
 export interface CreateUserReturnData {
-  id: number;
+  user: typeof schema.users.$inferSelect;
 }
 
 export type CreateUserCommandFunction = (
@@ -58,8 +58,12 @@ export function createCreateUserCommand(db: DBOrTx): CreateUserCommandFunction {
 
     // Create the user
     const user: typeof schema.users.$inferInsert = { username, role: schema.UserRoles.USER };
-    const result = await db.insert(schema.users).values(user).returning({ id: schema.users.id });
+    const result = await db.insert(schema.users).values(user).returning();
 
-    return { success: true, data: { id: result[0].id } };
+    if (result.length !== 1) {
+      return { success: false, error: "Failed to create user" };
+    }
+
+    return { success: true, data: { user: result[0] } };
   };
 }

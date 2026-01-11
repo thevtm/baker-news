@@ -76,11 +76,18 @@ export const createRoutes = (db: DBOrTx) => {
         }
 
         const user_data = create_user_result.data!;
+        const user_proto = create(UserSchema, {
+          id: user_data.user.id,
+          username: user_data.user.username,
+          role: USER_ROLE_MAP.get(user_data.user.role),
+          createdAt: convert_date_to_proto_timestamp(user_data.user.createdAt),
+          updatedAt: convert_date_to_proto_timestamp(user_data.user.updatedAt),
+        });
 
         return create(CreateUserResponseSchema, {
           result: {
             case: "success",
-            value: create(CreateUserSuccessfulResponseSchema, { id: user_data.id }),
+            value: create(CreateUserSuccessfulResponseSchema, { user: user_proto }),
           },
         });
       },

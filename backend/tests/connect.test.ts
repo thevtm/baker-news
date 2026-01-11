@@ -31,7 +31,7 @@ Deno.test("CreateUser", disable_leaks_test_options, async () => {
 
   const value = response.result.value as CreateUserSuccessfulResponse;
 
-  expect(value.id).toBeDefined();
+  expect(value.user).toBeDefined();
 
   await clear_db();
 });
@@ -44,18 +44,19 @@ Deno.test("GetPostList", disable_leaks_test_options, async () => {
 
   const user_data = await commands.createUser({ username: "test_user" });
   expect(user_data.success).toBe(true);
+  const user_id = user_data.data!.user.id;
 
   const post_data_1 = await commands.createPost({
     title: "test_post 1",
     url: "https://example.com",
-    authorId: user_data.data!.id,
+    authorId: user_id,
   });
   expect(post_data_1.success).toBe(true);
 
   const post_data_2 = await commands.createPost({
     title: "test_post 2",
     url: "https://foobar.com",
-    authorId: user_data.data!.id,
+    authorId: user_id,
   });
   expect(post_data_2.success).toBe(true);
 
@@ -90,11 +91,12 @@ Deno.test("VotePost", disable_leaks_test_options, async () => {
 
   const user_data = await commands.createUser({ username: "test_user" });
   expect(user_data.success).toBe(true);
+  const user_id = user_data.data!.user.id;
 
   const post_data = await commands.createPost({
     title: "test_post",
     url: "https://example.com",
-    authorId: user_data.data!.id,
+    authorId: user_id,
   });
   expect(post_data.success).toBe(true);
 
@@ -105,7 +107,7 @@ Deno.test("VotePost", disable_leaks_test_options, async () => {
 
   // Vote for the post
   const vote_response = await client.votePost({
-    userId: user_data.data!.id,
+    userId: user_id,
     postId: post_data.data!.id,
     voteType: VoteType.UP_VOTE,
   });
@@ -131,17 +133,18 @@ Deno.test("VoteComment", disable_leaks_test_options, async () => {
 
   const user_data = await commands.createUser({ username: "test_user" });
   expect(user_data.success).toBe(true);
+  const user_id = user_data.data!.user.id;
 
   const post_data = await commands.createPost({
     title: "test_post",
     url: "https://example.com",
-    authorId: user_data.data!.id,
+    authorId: user_id,
   });
   expect(post_data.success).toBe(true);
 
   const comment_data = await commands.createComment({
     postId: post_data.data!.id,
-    authorId: user_data.data!.id,
+    authorId: user_id,
     content: "test_comment",
   });
   expect(comment_data.success).toBe(true);
@@ -153,7 +156,7 @@ Deno.test("VoteComment", disable_leaks_test_options, async () => {
 
   // Vote for the comment
   const vote_response = await client.voteComment({
-    userId: user_data.data!.id,
+    userId: user_id,
     commentId: comment_data.data!.id,
     voteType: VoteType.DOWN_VOTE,
   });

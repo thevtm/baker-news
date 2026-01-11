@@ -67,7 +67,7 @@ message CreateUserRequest {
   string username = 1;
 }
 
-message CreateUserSuccessfulResponse { int32 id = 1; }
+message CreateUserSuccessfulResponse { User user = 1; }
 message CreateUserResponse { oneof result { CreateUserSuccessfulResponse success = 1; ErrorResponse error = 2; } }
 
 // Get Post

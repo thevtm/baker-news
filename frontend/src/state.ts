@@ -96,14 +96,16 @@ export async function userFSM(store: Store, api_client: APIClient, desired_state
       }
 
       invariant(random_user_response.result.case === "success");
-      invariant(random_user_response.result.value!.id !== undefined);
+      invariant(random_user_response.result.value!.user !== undefined);
 
-      const user_id = random_user_response.result.value!.id;
+      const user_api = random_user_response.result.value!.user;
+
+      invariant(user_api.username === random_username);
 
       const user: User = {
-        id: user_id,
-        username: random_username,
-        role: UserRole.User,
+        id: user_api.id,
+        username: user_api.username,
+        role: convertUserRole(user_api.role),
       };
 
       store.user = user;

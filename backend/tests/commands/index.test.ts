@@ -19,9 +19,9 @@ Deno.test("smoke test", disable_leaks_test_options, async () => {
   const create_user_command_result = await commands.createUser({ username: "testuser" });
 
   expect(create_user_command_result.success).toBe(true);
-  expect(create_user_command_result.data?.id).toBeDefined();
+  expect(create_user_command_result.data?.user).toBeDefined();
 
-  const user_id = create_user_command_result.data!.id;
+  const user_id = create_user_command_result.data!.user!.id;
 
   const users_query = await db.query.users.findMany();
 
