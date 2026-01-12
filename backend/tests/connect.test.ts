@@ -8,6 +8,7 @@ import {
   CreateUserSuccessfulResponse,
   GetPostListResponse,
   GetPostListSuccessfulResponse,
+  VotePostSuccessfulResponse,
   VoteType,
 } from "../src/proto/index.ts";
 
@@ -15,6 +16,7 @@ import { createRoutes } from "../src/connect.ts";
 
 import { InitializeDatabaseForTests } from "./helpers/db.ts";
 import { disable_leaks_test_options } from "./helpers/disable-leaks-config.ts";
+import { schema } from "../src/db/index.ts";
 
 Deno.test("CreateUser", disable_leaks_test_options, async () => {
   const { db, clear_db } = await InitializeDatabaseForTests();
@@ -60,11 +62,18 @@ Deno.test("GetPostList", disable_leaks_test_options, async () => {
   });
   expect(post_data_2.success).toBe(true);
 
+  const vote_post_1 = await commands.votePost({
+    userId: user_id,
+    postId: post_data_1.data!.id,
+    voteType: schema.VoteType.UP_VOTE,
+  });
+  expect(vote_post_1.success).toBe(true);
+
   const routes = createRoutes(db);
 
   const transport = createRouterTransport(routes);
   const client = createClient(BakerNewsService, transport);
-  const response = (await client.getPostList({})) as GetPostListResponse;
+  const response = (await client.getPostList({ userId: user_id })) as GetPostListResponse;
 
   expect(response.result.case).toBe("success");
 
@@ -75,10 +84,20 @@ Deno.test("GetPostList", disable_leaks_test_options, async () => {
   expect(post_list.Posts[0].title).toBe("test_post 1");
   expect(post_list.Posts[0].url).toBe("https://example.com");
   expect(post_list.Posts[0].author!.username).toBe("test_user");
+  expect(post_list.Posts[0].score).toBe(1);
+
+  expect(post_list.Posts[0].vote).toBeDefined();
+  expect(post_list.Posts[0].vote!.postId).toBe(post_data_1.data!.id);
+  expect(post_list.Posts[0].vote!.userId).toBe(user_id);
+  expect(post_list.Posts[0].vote!.voteType).toBe(VoteType.UP_VOTE);
+  expect(post_list.Posts[0].vote!.createdAt).toBeDefined();
+  expect(post_list.Posts[0].vote!.updatedAt).toBeDefined();
 
   expect(post_list.Posts[1].title).toBe("test_post 2");
   expect(post_list.Posts[1].url).toBe("https://foobar.com");
   expect(post_list.Posts[1].author!.username).toBe("test_user");
+  expect(post_list.Posts[1].score).toBe(0);
+  expect(post_list.Posts[1].vote).toBeUndefined();
 
   await clear_db();
 });
@@ -99,6 +118,7 @@ Deno.test("VotePost", disable_leaks_test_options, async () => {
     authorId: user_id,
   });
   expect(post_data.success).toBe(true);
+  const post_id = post_data.data!.id;
 
   const routes = createRoutes(db);
 
@@ -108,15 +128,26 @@ Deno.test("VotePost", disable_leaks_test_options, async () => {
   // Vote for the post
   const vote_response = await client.votePost({
     userId: user_id,
-    postId: post_data.data!.id,
+    postId: post_id,
     voteType: VoteType.UP_VOTE,
   });
 
   expect(vote_response.result.case).toBe("success");
+  expect(vote_response.result.value).not.toBeNull();
+
+  const value = vote_response.result.value as VotePostSuccessfulResponse;
+
+  expect(value.newScore).toBe(1);
+  expect(value.vote).toBeDefined();
+  expect(value.vote!.postId).toBe(post_id);
+  expect(value.vote!.userId).toBe(user_id);
+  expect(value.vote!.voteType).toBe(VoteType.UP_VOTE);
+  expect(value.vote!.createdAt).toBeDefined();
+  expect(value.vote!.updatedAt).toBeDefined();
 
   // Check the updated score
   const updated_post = await db.query.posts.findFirst({
-    where: (posts, { eq }) => eq(posts.id, post_data.data!.id),
+    where: (posts, { eq }) => eq(posts.id, post_id),
   });
 
   expect(updated_post).not.toBeNull();

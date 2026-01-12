@@ -36,6 +36,8 @@ message Post {
   int32 score = 5;
   int32 comment_count = 6;
 
+  optional PostVote vote = 10;
+
   optional CommentList comments_list = 7;
 
   google.protobuf.Timestamp created_at = 8;
@@ -57,6 +59,16 @@ message Comment {
   google.protobuf.Timestamp updated_at = 9;
 }
 
+message PostVote {
+  int32 id = 1;
+  int32 post_id = 2;
+  int32 user_id = 3;
+  VoteType vote_type = 4;
+
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}
+
 message ErrorResponse { string message = 1; }
 
 message PostList { repeated Post Posts = 1; }
@@ -76,7 +88,7 @@ message GetPostSuccessfulResponse { Post post = 1; }
 message GetPostResponse { oneof result { GetPostSuccessfulResponse success = 1; ErrorResponse error = 2; } }
 
 // Get Post List
-message GetPostListRequest { }
+message GetPostListRequest { int32 user_id = 1; }
 message GetPostListSuccessfulResponse { PostList post_list = 1; }
 message GetPostListResponse { oneof result { GetPostListSuccessfulResponse success = 1; ErrorResponse error = 2; } }
 
@@ -87,7 +99,10 @@ message VotePostRequest {
   VoteType vote_type = 3;
 }
 
-message VotePostSuccessfulResponse { int32 new_score = 1; }
+message VotePostSuccessfulResponse {
+  int32 new_score = 1;
+  PostVote vote = 2;
+}
 message VotePostResponse { oneof result { VotePostSuccessfulResponse success = 1; ErrorResponse error = 2; } }
 
 // Vote Comment

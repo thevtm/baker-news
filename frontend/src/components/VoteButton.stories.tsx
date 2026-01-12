@@ -12,7 +12,7 @@ type Story = StoryObj<typeof VoteButton>;
 
 export const Up: Story = {
   args: {
-    voteType: VoteType.Up,
+    voteType: VoteType.UpVote,
     active: true,
     onClick: () => {},
   },
@@ -20,7 +20,7 @@ export const Up: Story = {
 
 export const Down: Story = {
   args: {
-    voteType: VoteType.Down,
+    voteType: VoteType.DownVote,
     active: false,
     onClick: () => {},
   },

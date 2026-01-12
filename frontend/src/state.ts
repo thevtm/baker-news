@@ -1,13 +1,27 @@
 import { proxy } from "valtio";
 import invariant from "tiny-invariant";
 
+import { UserRole as ProtoUserRole, VoteType as ProtoVoteType } from "../../backend/src/proto";
+
 import { APIClient, convertDate } from "./api-client";
-import { UserRole as UserRoleProto } from "../../backend/src/proto";
 
 export enum VoteType {
-  Up,
-  Down,
+  UpVote,
+  DownVote,
+  NoVote,
 }
+
+export const PROTO_TO_STATE_VOTE_TYPE_MAP = new Map<ProtoVoteType, VoteType>([
+  [ProtoVoteType.UP_VOTE, VoteType.UpVote],
+  [ProtoVoteType.DOWN_VOTE, VoteType.DownVote],
+  [ProtoVoteType.NO_VOTE, VoteType.NoVote],
+]);
+
+export const STATE_TO_PROTO_VOTE_TYPE_MAP = new Map<VoteType, ProtoVoteType>([
+  [VoteType.UpVote, ProtoVoteType.UP_VOTE],
+  [VoteType.DownVote, ProtoVoteType.DOWN_VOTE],
+  [VoteType.NoVote, ProtoVoteType.NO_VOTE],
+]);
 
 export enum UserRole {
   Admin,
@@ -27,6 +41,7 @@ export type Post = {
   author: User;
   score: number;
   commentsCount: number;
+  vote?: PostVote;
   createdAt: Date;
 };
 
@@ -38,6 +53,15 @@ export type Comment = {
   createdAt: Date;
   postId: number;
   parentId?: number;
+};
+
+export type PostVote = {
+  id: number;
+  userId: number;
+  postId: number;
+  voteType: VoteType;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 export type NavigationState = { page: "posts" } | { page: "post"; post_id: number };
@@ -62,11 +86,11 @@ export function createStore(): Store {
   });
 }
 
-function convertUserRole(role: UserRoleProto): UserRole {
+function convertUserRole(role: ProtoUserRole): UserRole {
   switch (role) {
-    case UserRoleProto.ADMIN:
+    case ProtoUserRole.ADMIN:
       return UserRole.Admin;
-    case UserRoleProto.USER:
+    case ProtoUserRole.USER:
       return UserRole.User;
     default:
       throw new Error(`Unknown role: ${role}`);
@@ -114,6 +138,8 @@ export async function userFSM(store: Store, api_client: APIClient, desired_state
 
     store.userDataState = "loading";
   }
+
+  throw new Error(`Invalid state transition: ${current_state} => ${desired_state}`);
 }
 
 export async function postsFSM(store: Store, api_client: APIClient, desired_state: DataLinkState) {
@@ -123,7 +149,7 @@ export async function postsFSM(store: Store, api_client: APIClient, desired_stat
 
   // Initial | Stopped => Loading
   if ((current_state === "initial" || current_state === "stopped") && desired_state === "loading") {
-    const posts_response = await api_client.getPostList({});
+    const posts_response = await api_client.getPostList({ userId: store.user?.id });
 
     if (posts_response.result.case === "error") {
       store.dataLinkState = "error";
@@ -137,6 +163,19 @@ export async function postsFSM(store: Store, api_client: APIClient, desired_stat
     store.posts = [];
 
     for (const post of posts) {
+      let vote: PostVote | undefined = undefined;
+
+      if (post.vote !== undefined) {
+        vote = {
+          id: post.vote.id,
+          userId: post.vote.userId,
+          postId: post.vote.postId,
+          voteType: PROTO_TO_STATE_VOTE_TYPE_MAP.get(post.vote.voteType)!,
+          createdAt: convertDate(post.vote.createdAt!),
+          updatedAt: convertDate(post.vote.updatedAt!),
+        };
+      }
+
       store.posts.push({
         id: post.id,
         title: post.title,
@@ -148,10 +187,51 @@ export async function postsFSM(store: Store, api_client: APIClient, desired_stat
         },
         score: post.score,
         commentsCount: post.commentCount,
+        vote,
         createdAt: convertDate(post.createdAt!),
       });
     }
 
     store.dataLinkState = "loading";
   }
+
+  throw new Error(`Invalid state transition: ${current_state} => ${desired_state}`);
+}
+
+export async function votePost(store: Store, api_client: APIClient, post_id: number, vote_type: VoteType) {
+  const user = store.user;
+
+  invariant(user !== null, "User must be logged in to vote");
+
+  const vote_response = await api_client.votePost({
+    userId: user.id,
+    postId: post_id,
+    voteType: STATE_TO_PROTO_VOTE_TYPE_MAP.get(vote_type)!,
+  });
+
+  if (vote_response.result.case === "error") {
+    throw new Error(`Failed to vote on post: ${vote_response.result.value.message}`);
+  }
+
+  invariant(vote_response.result.case === "success");
+
+  const vote = vote_response.result.value!.vote;
+  invariant(vote !== undefined);
+
+  const post_vote: PostVote = {
+    id: vote.id,
+    userId: vote.userId,
+    postId: vote.postId,
+    voteType: PROTO_TO_STATE_VOTE_TYPE_MAP.get(vote.voteType)!,
+    createdAt: convertDate(vote.createdAt!),
+    updatedAt: convertDate(vote.updatedAt!),
+  };
+
+  const post_index = store.posts.findIndex((post) => post.id === post_id);
+  invariant(post_index !== -1, "Post not found in store");
+
+  const post = store.posts[post_index];
+
+  post.vote = post_vote;
+  post.score = vote_response.result.value.newScore;
 }

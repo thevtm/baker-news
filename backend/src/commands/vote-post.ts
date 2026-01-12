@@ -16,6 +16,7 @@ export interface VotePostCommandInput {
 
 export interface VotePostReturnData {
   newScore: number;
+  vote: typeof schema.postVotes.$inferSelect;
 }
 
 export type VotePostCommandFunction = (input: VotePostCommandInput) => Promise<CommandReturnType<VotePostReturnData>>;
@@ -64,12 +65,21 @@ export function createVotePostCommand(db: DBOrTx, queries: Queries): VotePostCom
       const has_voted = existing_vote.length > 0;
 
       // Insert / update the vote
+      let vote: typeof schema.postVotes.$inferSelect | null = null;
+
       if (has_voted) {
-        await tx.update(schema.postVotes).set({ voteType }).where(eq(schema.postVotes.id, existing_vote[0].id));
+        const insert_result = await tx
+          .update(schema.postVotes)
+          .set({ voteType })
+          .where(eq(schema.postVotes.id, existing_vote[0].id))
+          .returning();
+        vote = insert_result[0];
       } else {
-        const vote: typeof schema.postVotes.$inferInsert = { postId, userId, voteType };
-        await tx.insert(schema.postVotes).values(vote);
+        const update_result = await tx.insert(schema.postVotes).values({ postId, userId, voteType }).returning();
+        vote = update_result[0];
       }
+
+      assert(vote !== null);
 
       // Update post score
       const existingVoteValue = has_voted ? schema.vote_types_values_map.get(existing_vote[0].voteType) : 0;
@@ -91,7 +101,7 @@ export function createVotePostCommand(db: DBOrTx, queries: Queries): VotePostCom
       const vote_count = vote_count_result[0].newVoteCount;
       assert(_.isFinite(vote_count));
 
-      result = { success: true, data: { newScore: vote_count } };
+      result = { success: true, data: { newScore: vote_count, vote } };
     });
 
     ////////////////////////////////////////////////////////////////////////////

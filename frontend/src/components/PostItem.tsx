@@ -1,8 +1,12 @@
 import React from "react";
 
-import { Post, VoteType } from "../state";
-import { sprinkles } from "../sprinkles.css";
+import { Post, votePost, VoteType } from "../state";
+import { useStore } from "../contexts/store";
+import { useAPIClient } from "../contexts/api-client";
+
 import VoteButton from "./VoteButton";
+
+import { sprinkles } from "../sprinkles.css";
 
 export interface PostItemProps {
   post: Post;
@@ -17,6 +21,9 @@ const formatDateToYYYYMMDD = (date: Date) => {
 };
 
 const PostItem: React.FC<PostItemProps> = ({ post }) => {
+  const store = useStore();
+  const api_client = useAPIClient();
+
   const { createdAt } = post;
 
   const url = new URL(post.url);
@@ -24,12 +31,33 @@ const PostItem: React.FC<PostItemProps> = ({ post }) => {
 
   const created_at_formatted_date = formatDateToYYYYMMDD(createdAt);
 
+  const vote_state: VoteType = post.vote ? post.vote.voteType : VoteType.NoVote;
+
+  const handleVote = async (voteType: VoteType) => {
+    if (store.user === null) return;
+
+    if (vote_state === voteType) {
+      voteType = VoteType.NoVote;
+    }
+
+    await votePost(store, api_client, post.id, voteType);
+  };
+
   return (
     <div className={sprinkles({ display: "flex", paddingY: 1 })}>
       {/* Vote Buttons */}
       <div className={sprinkles({ display: "flex", flexDirection: "column", marginX: 2 })}>
-        <VoteButton voteType={VoteType.Up} active={true} onClick={() => {}} />
-        <VoteButton voteType={VoteType.Down} active={false} onClick={() => {}} />
+        <VoteButton
+          voteType={VoteType.UpVote}
+          active={vote_state === VoteType.UpVote}
+          onClick={() => handleVote(VoteType.UpVote)}
+        />
+
+        <VoteButton
+          voteType={VoteType.DownVote}
+          active={vote_state === VoteType.DownVote}
+          onClick={() => handleVote(VoteType.DownVote)}
+        />
       </div>
 
       <div className={sprinkles({ display: "flex", flexDirection: "column", color: "black" })}>

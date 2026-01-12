@@ -3,8 +3,8 @@ import { VoteType } from "../state";
 import { sprinkles } from "../sprinkles.css";
 
 const voteIcons = {
-  [VoteType.Up]: "🔼",
-  [VoteType.Down]: "🔽",
+  [VoteType.UpVote]: "🔼",
+  [VoteType.DownVote]: "🔽",
 };
 
 type VoteButtonProps = {
@@ -14,11 +14,7 @@ type VoteButtonProps = {
   onClick: MouseEventHandler<HTMLButtonElement>;
 };
 
-const VoteButton: React.FC<VoteButtonProps> = ({
-  onClick,
-  voteType,
-  active,
-}) => {
+const VoteButton: React.FC<VoteButtonProps> = ({ onClick, voteType, active }) => {
   const filter = active ? undefined : "grayscale(100%)";
 
   const style = sprinkles({

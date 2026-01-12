@@ -68,7 +68,21 @@ Deno.test("smoke test", disable_leaks_test_options, async () => {
   expect(comments_query[0].score).toBe(0);
 
   // Vote Post
-  await commands.votePost({ postId: post_id, userId: user_id, voteType: schema.VoteType.UP_VOTE });
+  const vote_post_command_result = await commands.votePost({
+    postId: post_id,
+    userId: user_id,
+    voteType: schema.VoteType.UP_VOTE,
+  });
+
+  expect(vote_post_command_result.success).toBe(true);
+  expect(vote_post_command_result.data?.newScore).toBe(1);
+
+  expect(vote_post_command_result.data?.vote).toBeDefined();
+  expect(vote_post_command_result.data?.vote.postId).toBe(post_id);
+  expect(vote_post_command_result.data?.vote.userId).toBe(user_id);
+  expect(vote_post_command_result.data?.vote.voteType).toBe(schema.VoteType.UP_VOTE);
+  expect(vote_post_command_result.data?.vote.createdAt).toBeDefined();
+  expect(vote_post_command_result.data?.vote.updatedAt).toBeDefined();
 
   const post_votes_query = await db.query.postVotes.findMany({ with: { post: true } });
 

@@ -7,7 +7,7 @@ const StoreContext = createContext<Store | null>(null);
 export const useStore = (): Store => {
   const context = useContext(StoreContext);
   if (!context) {
-    throw new Error("useTheme must be used within a ThemeProvider");
+    throw new Error("useStore must be used within a StoreProvider");
   }
   return context;
 };
