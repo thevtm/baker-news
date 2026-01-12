@@ -3,7 +3,8 @@ import invariant from "tiny-invariant";
 
 import { UserRole as ProtoUserRole, VoteType as ProtoVoteType } from "../../backend/src/proto";
 
-import { APIClient, convertDate } from "./api-client";
+import { APIClient } from "./api-client";
+import { convertDate } from "./proto";
 
 export enum VoteType {
   UpVote,
@@ -45,20 +46,30 @@ export type Post = {
   createdAt: Date;
 };
 
-export type Comment = {
-  id: number;
-  author: User;
-  content: string;
-  votes: number;
-  createdAt: Date;
-  postId: number;
-  parentId?: number;
-};
-
 export type PostVote = {
   id: number;
   userId: number;
   postId: number;
+  voteType: VoteType;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type Comment = {
+  id: number;
+  author: User;
+  content: string;
+  score: number;
+  createdAt: Date;
+  postId: number;
+  parentId?: number;
+  vote?: CommentVote;
+};
+
+export type CommentVote = {
+  id: number;
+  userId: number;
+  commentId: number;
   voteType: VoteType;
   createdAt: Date;
   updatedAt: Date;

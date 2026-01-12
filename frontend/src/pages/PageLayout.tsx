@@ -1,10 +1,9 @@
 import React from "react";
 import cslx from "clsx";
-import { useSnapshot } from "valtio";
+
+import * as proto from "../proto";
 
 import { sprinkles } from "../sprinkles.css";
-import { useStore } from "../contexts/store";
-
 import { container } from "../styles.css";
 
 // container mx-auto bg-orange-800 text-gray-200
@@ -24,13 +23,12 @@ const footer_style = sprinkles({
   background: "orange-200",
 });
 
-export type PageLayoutProps = void;
+export type PageLayoutProps = React.PropsWithChildren<{
+  user: proto.User;
+}>;
 
-const PageLayout: React.FC<React.PropsWithChildren<PageLayoutProps>> = ({ children }) => {
-  const store = useStore();
-  const store_snap = useSnapshot(store);
-
-  const username = store_snap.user?.username ?? "Loading...";
+const PageLayout: React.FC<PageLayoutProps> = ({ user, children }) => {
+  const username = user?.username ?? "Loading...";
 
   const current_year = new Date().getFullYear();
 

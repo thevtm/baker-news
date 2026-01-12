@@ -51,22 +51,13 @@ export const createRoutes = (db: DBOrTx) => {
         }
 
         const user_data = create_user_result.data!;
-        const user_proto = create(proto.UserSchema, {
-          id: user_data.user.id,
-          username: user_data.user.username,
-          role: USER_ROLE_MAP.get(user_data.user.role),
-          createdAt: convert_date_to_proto_timestamp(user_data.user.createdAt),
-          updatedAt: convert_date_to_proto_timestamp(user_data.user.updatedAt),
-        });
+        const user_proto = map_user(user_data.user);
+        const success = create(proto.CreateUserSuccessfulResponseSchema, { user: user_proto });
+        const response = create(proto.CreateUserResponseSchema, { result: { case: "success", value: success } });
 
-        return create(proto.CreateUserResponseSchema, {
-          result: {
-            case: "success",
-            value: create(proto.CreateUserSuccessfulResponseSchema, { user: user_proto }),
-          },
-        });
+        return response;
       },
-      async getPostList(req: proto.GetPostListRequest): Promise<proto.GetPostListResponse> {
+      async getPosts(req: proto.GetPostsRequest): Promise<proto.GetPostsResponse> {
         const { userId } = req;
 
         const db_posts = await db.query.posts.findMany({
@@ -75,59 +66,34 @@ export const createRoutes = (db: DBOrTx) => {
         });
 
         const proto_posts = db_posts.map((db_post) => {
-          const proto_author = create(proto.UserSchema, {
-            id: db_post.author.id,
-            username: db_post.author.username,
-            role: USER_ROLE_MAP.get(db_post.author.role),
-            createdAt: convert_date_to_proto_timestamp(db_post.createdAt),
-            updatedAt: convert_date_to_proto_timestamp(db_post.updatedAt),
-          });
+          const proto_author = map_user(db_post.author);
+          const proto_vote = map_post_vote(db_post.votes);
 
-          assert(db_post.votes.length <= 1, "Post should have at most one vote from the user");
-
-          let proto_vote: proto.PostVote | undefined = undefined;
-
-          if (db_post.votes.length === 1) {
-            const db_vote = db_post.votes[0];
-
-            proto_vote = create(proto.PostVoteSchema, {
-              id: db_vote.userId,
-              postId: db_vote.postId,
-              userId: db_vote.userId,
-              voteType: SCHEMA_TO_PROTO_VOTE_TYPE_MAP.get(db_vote.voteType),
-              createdAt: convert_date_to_proto_timestamp(db_vote.createdAt),
-              updatedAt: convert_date_to_proto_timestamp(db_vote.updatedAt),
-            });
-          }
-
-          const proto_post = create(proto.PostSchema, {
-            id: db_post.id,
-            title: db_post.title,
-            url: db_post.url,
-            score: db_post.score,
-            author: proto_author,
-            commentCount: db_post.commentsCount,
-            commentsList: undefined,
-            vote: proto_vote,
-            createdAt: convert_date_to_proto_timestamp(db_post.createdAt),
-            updatedAt: convert_date_to_proto_timestamp(db_post.updatedAt),
-          });
+          const proto_post = map_post(db_post);
+          proto_post.author = proto_author;
+          proto_post.vote = proto_vote;
 
           return proto_post;
         });
 
-        const postsList = create(proto.PostListSchema, { Posts: proto_posts });
+        const postsList = create(proto.PostListSchema, { posts: proto_posts });
         const success = create(proto.GetPostListSuccessfulResponseSchema, { postList: postsList });
-        const response = create(proto.GetPostListResponseSchema, { result: { case: "success", value: success } });
+        const response = create(proto.GetPostsResponseSchema, { result: { case: "success", value: success } });
 
         return response;
       },
       async getPost(req: proto.GetPostRequest): Promise<proto.GetPostResponse> {
-        const postId = req.id;
+        const { userId, postId } = req;
 
         const db_post = await db.query.posts.findFirst({
           where: (posts, { eq }) => eq(posts.id, postId),
-          with: { author: true, comments: { with: { author: true }, orderBy: [desc(schema.comments.score)] } },
+          with: {
+            author: true,
+            votes: { where: (post_votes, { eq }) => eq(post_votes.userId, userId) },
+            comments: {
+              with: { author: true, votes: { where: (comment_votes, { eq }) => eq(comment_votes.userId, userId) } },
+            },
+          },
         });
 
         if (db_post === undefined) {
@@ -136,51 +102,90 @@ export const createRoutes = (db: DBOrTx) => {
           return response;
         }
 
-        const proto_author = create(proto.UserSchema, {
-          id: db_post.author.id,
-          username: db_post.author.username,
-          role: USER_ROLE_MAP.get(db_post.author.role),
+        // Proto
+        const proto_author = map_user(db_post.author);
+        const proto_vote = map_post_vote(db_post.votes);
+
+        // Comments
+        const proto_comments = db_post.comments.map((db_comment) => {
+          const proto_comment_author = map_user(db_comment.author);
+          const proto_vote = map_comment_vote(db_comment.votes);
+
+          const comment = map_comment(db_comment);
+          comment.author = proto_comment_author;
+          comment.vote = proto_vote;
+
+          return comment;
         });
 
-        const proto_comments = db_post.comments.map((db_comment) => {
+        const proto_comments_list = create(proto.CommentListSchema, { comments: proto_comments });
+
+        const proto_post = map_post(db_post);
+        proto_post.author = proto_author;
+        proto_post.vote = proto_vote;
+        proto_post.comments = proto_comments_list;
+
+        // Response
+        const success = create(proto.GetPostSuccessfulResponseSchema, { post: proto_post });
+        const response = create(proto.GetPostResponseSchema, { result: { case: "success", value: success } });
+
+        return response;
+      },
+      async getCommentList(req: proto.GetCommentListRequest): Promise<proto.GetCommentListResponse> {
+        const { userId, postId } = req;
+
+        const db_comments = await db.query.comments.findMany({
+          where: (comments, { eq }) => eq(comments.postId, postId),
+          with: { author: true, votes: { where: (votes, { eq }) => eq(votes.userId, userId) } },
+          orderBy: [desc(schema.comments.score)],
+        });
+
+        const proto_comments = db_comments.map((db_comment) => {
+          // Author
           const proto_comment_author = create(proto.UserSchema, {
             id: db_comment.author.id,
             username: db_comment.author.username,
             role: USER_ROLE_MAP.get(db_comment.author.role),
           });
 
+          // Vote
+          let proto_vote: proto.CommentVote | undefined = undefined;
+
+          assert(db_comment.votes.length <= 1);
+
+          if (db_comment.votes.length === 1) {
+            const db_vote = db_comment.votes[0];
+
+            proto_vote = create(proto.CommentVoteSchema, {
+              id: db_vote.userId,
+              commentId: db_vote.commentId,
+              userId: db_vote.userId,
+              voteType: SCHEMA_TO_PROTO_VOTE_TYPE_MAP.get(db_vote.voteType),
+              createdAt: convert_date_to_proto_timestamp(db_vote.createdAt),
+              updatedAt: convert_date_to_proto_timestamp(db_vote.updatedAt),
+            });
+          }
+
+          // Comment
           return create(proto.CommentSchema, {
             id: db_comment.id,
             author: proto_comment_author,
+            postId: db_comment.postId,
+            parentCommentId: db_comment.parentCommentId ?? undefined,
             content: db_comment.content,
             score: db_comment.score,
             commentCount: db_comment.commentsCount,
-            post: undefined,
+            vote: proto_vote,
             createdAt: convert_date_to_proto_timestamp(db_comment.createdAt),
             updatedAt: convert_date_to_proto_timestamp(db_comment.updatedAt),
           });
         });
 
-        const proto_comments_list = create(proto.CommentListSchema, { comments: proto_comments });
+        const commentsList = create(proto.CommentListSchema, { comments: proto_comments });
+        const success = create(proto.GetCommentListSuccessfulResponseSchema, { commentList: commentsList });
+        const response = create(proto.GetCommentListResponseSchema, { result: { case: "success", value: success } });
 
-        const proto_post = create(proto.PostSchema, {
-          id: db_post.id,
-          title: db_post.title,
-          url: db_post.url,
-          score: db_post.score,
-          author: proto_author,
-          commentCount: db_post.commentsCount,
-          commentsList: proto_comments_list,
-          createdAt: convert_date_to_proto_timestamp(db_post.createdAt),
-          updatedAt: convert_date_to_proto_timestamp(db_post.updatedAt),
-        });
-
-        return create(proto.GetPostResponseSchema, {
-          result: {
-            case: "success",
-            value: create(proto.GetPostSuccessfulResponseSchema, { post: proto_post }),
-          },
-        });
+        return response;
       },
       async votePost(req: proto.VotePostRequest): Promise<proto.VotePostResponse> {
         const { postId, userId, voteType } = req;
@@ -234,3 +239,81 @@ export const createRoutes = (db: DBOrTx) => {
       },
     });
 };
+
+function map_post(db_post: typeof schema.posts.$inferSelect): proto.Post {
+  return create(proto.PostSchema, {
+    id: db_post.id,
+    title: db_post.title,
+    url: db_post.url,
+    score: db_post.score,
+    commentCount: db_post.commentsCount,
+    comments: undefined,
+    createdAt: convert_date_to_proto_timestamp(db_post.createdAt),
+    updatedAt: convert_date_to_proto_timestamp(db_post.updatedAt),
+  });
+}
+
+function map_post_vote(post_vote: (typeof schema.postVotes.$inferSelect)[]): proto.PostVote | undefined {
+  assert(post_vote.length <= 1);
+
+  let proto_vote: proto.PostVote | undefined = undefined;
+
+  if (post_vote.length === 1) {
+    const db_vote = post_vote[0];
+
+    proto_vote = create(proto.PostVoteSchema, {
+      id: db_vote.userId,
+      postId: db_vote.postId,
+      userId: db_vote.userId,
+      voteType: SCHEMA_TO_PROTO_VOTE_TYPE_MAP.get(db_vote.voteType),
+      createdAt: convert_date_to_proto_timestamp(db_vote.createdAt),
+      updatedAt: convert_date_to_proto_timestamp(db_vote.updatedAt),
+    });
+  }
+
+  return proto_vote;
+}
+
+function map_comment(db_comment: typeof schema.comments.$inferSelect): proto.Comment {
+  return create(proto.CommentSchema, {
+    id: db_comment.id,
+    postId: db_comment.postId,
+    parentCommentId: db_comment.parentCommentId ?? undefined,
+    content: db_comment.content,
+    score: db_comment.score,
+    commentCount: db_comment.commentsCount,
+    createdAt: convert_date_to_proto_timestamp(db_comment.createdAt),
+    updatedAt: convert_date_to_proto_timestamp(db_comment.updatedAt),
+  });
+}
+
+function map_comment_vote(comment_vote: (typeof schema.commentVotes.$inferSelect)[]): proto.CommentVote | undefined {
+  assert(comment_vote.length <= 1);
+
+  let proto_vote: proto.CommentVote | undefined = undefined;
+
+  if (comment_vote.length === 1) {
+    const db_vote = comment_vote[0];
+
+    proto_vote = create(proto.CommentVoteSchema, {
+      id: db_vote.userId,
+      commentId: db_vote.commentId,
+      userId: db_vote.userId,
+      voteType: SCHEMA_TO_PROTO_VOTE_TYPE_MAP.get(db_vote.voteType),
+      createdAt: convert_date_to_proto_timestamp(db_vote.createdAt),
+      updatedAt: convert_date_to_proto_timestamp(db_vote.updatedAt),
+    });
+  }
+
+  return proto_vote;
+}
+
+function map_user(db_user: typeof schema.users.$inferSelect): proto.User {
+  return create(proto.UserSchema, {
+    id: db_user.id,
+    username: db_user.username,
+    role: USER_ROLE_MAP.get(db_user.role),
+    createdAt: convert_date_to_proto_timestamp(db_user.createdAt),
+    updatedAt: convert_date_to_proto_timestamp(db_user.updatedAt),
+  });
+}

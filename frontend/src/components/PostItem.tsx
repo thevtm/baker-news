@@ -1,15 +1,18 @@
 import React from "react";
+import { invariant, Link } from "@tanstack/react-router";
 
-import { Post, votePost, VoteType } from "../state";
+import * as proto from "../proto";
+import { getPostQueryKey, useUser } from "../queries";
 import { useStore } from "../contexts/store";
 import { useAPIClient } from "../contexts/api-client";
 
 import VoteButton from "./VoteButton";
 
 import { sprinkles } from "../sprinkles.css";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export interface PostItemProps {
-  post: Post;
+  post: proto.Post;
 }
 
 const formatDateToYYYYMMDD = (date: Date) => {
@@ -23,40 +26,49 @@ const formatDateToYYYYMMDD = (date: Date) => {
 const PostItem: React.FC<PostItemProps> = ({ post }) => {
   const store = useStore();
   const api_client = useAPIClient();
+  const query_client = useQueryClient();
+  const user = useUser();
 
-  const { createdAt } = post;
+  const vote_mutation = useMutation({
+    mutationFn: async (voteType: proto.VoteType) => {
+      if (store.user === null) return;
+
+      if (post.vote?.voteType === voteType) {
+        voteType = proto.VoteType.NO_VOTE;
+      }
+
+      const response = await api_client.votePost({ userId: user.id, postId: post.id, voteType });
+
+      if (response.result.case === "error") {
+        console.error("Failed to vote:", response.result.value.message);
+        return;
+      }
+
+      await query_client.invalidateQueries({ queryKey: getPostQueryKey(user.id, post.id) });
+    },
+  });
 
   const url = new URL(post.url);
   const url_host_href = `${url.protocol}//${url.host}`;
 
-  const created_at_formatted_date = formatDateToYYYYMMDD(createdAt);
+  const created_at_formatted_date = formatDateToYYYYMMDD(proto.convertDate(post.createdAt!));
 
-  const vote_state: VoteType = post.vote ? post.vote.voteType : VoteType.NoVote;
-
-  const handleVote = async (voteType: VoteType) => {
-    if (store.user === null) return;
-
-    if (vote_state === voteType) {
-      voteType = VoteType.NoVote;
-    }
-
-    await votePost(store, api_client, post.id, voteType);
-  };
+  const vote_state: proto.VoteType = post.vote ? post.vote.voteType : proto.VoteType.NO_VOTE;
 
   return (
     <div className={sprinkles({ display: "flex", paddingY: 1 })}>
       {/* Vote Buttons */}
       <div className={sprinkles({ display: "flex", flexDirection: "column", marginX: 2 })}>
         <VoteButton
-          voteType={VoteType.UpVote}
-          active={vote_state === VoteType.UpVote}
-          onClick={() => handleVote(VoteType.UpVote)}
+          voteType={proto.VoteType.UP_VOTE}
+          active={vote_state === proto.VoteType.UP_VOTE}
+          onClick={() => vote_mutation.mutate(proto.VoteType.UP_VOTE)}
         />
 
         <VoteButton
-          voteType={VoteType.DownVote}
-          active={vote_state === VoteType.DownVote}
-          onClick={() => handleVote(VoteType.DownVote)}
+          voteType={proto.VoteType.DOWN_VOTE}
+          active={vote_state === proto.VoteType.DOWN_VOTE}
+          onClick={() => vote_mutation.mutate(proto.VoteType.DOWN_VOTE)}
         />
       </div>
 
@@ -73,16 +85,23 @@ const PostItem: React.FC<PostItemProps> = ({ post }) => {
         </div>
 
         <div className={sprinkles({ display: "flex", flexDirection: "row", color: "gray-500" })}>
-          <span className="post-score">{post.score}</span>&nbsp;points by {post.author.username}{" "}
+          <span className="post-score">{post.score}</span>&nbsp;points by {post.author!.username}{" "}
           {created_at_formatted_date}
+          {/* Delete */}
           <span className={sprinkles({ marginX: 1 })}>|</span>
           <a className="hover:underline" href="/delete-post">
             delete
           </a>
+          {/* Comments */}
           <span className={sprinkles({ marginX: 1 })}>|</span>
-          <a className="hover:underline" href="" hx-get={post.commentsCount} hx-target="main" hx-push-url="true">
-            {post.commentsCount} comments
-          </a>
+          <Link
+            to={`/posts/$postId`}
+            params={{ postId: post.id.toString() }}
+            activeProps={{ className: "hover:underline" }}
+            activeOptions={{ exact: true }}
+          >
+            {post.commentCount} comments
+          </Link>
         </div>
       </div>
     </div>

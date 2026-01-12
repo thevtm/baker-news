@@ -1,16 +1,12 @@
-import React from "react";
 import cslx from "clsx";
 
 import * as proto from "../proto";
 
-import PostItem from "./PostItem";
+import PostItem from "../components/PostItem";
+import CommentList from "../components/CommentList";
 
 import { sprinkles } from "../sprinkles.css";
 import { container } from "../styles.css";
-
-export interface PostListProps {
-  posts: readonly proto.Post[];
-}
 
 // container mx-auto bg-orange-100 py-1
 const style = sprinkles({
@@ -19,14 +15,15 @@ const style = sprinkles({
   paddingY: 1,
 });
 
-export const PostList: React.FC<PostListProps> = ({ posts }) => {
+export interface PostPageProps {
+  post: proto.Post;
+}
+
+export const PostPage: React.FC<PostPageProps> = ({ post }) => {
   return (
     <div className={cslx(container, style)}>
-      {posts.map((post) => (
-        <PostItem key={post.id} post={post} />
-      ))}
+      <PostItem key={post.id} post={post} />
+      <CommentList comments={post.comments!.comments} />
     </div>
   );
 };
-
-export default PostList;

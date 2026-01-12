@@ -1,11 +1,14 @@
+import invariant from "tiny-invariant";
 import { MouseEventHandler } from "react";
-import { VoteType } from "../state";
+
+import { VoteType } from "../proto";
+
 import { sprinkles } from "../sprinkles.css";
 
-const voteIcons = {
-  [VoteType.UpVote]: "🔼",
-  [VoteType.DownVote]: "🔽",
-};
+const voteIcons = new Map<VoteType, string>([
+  [VoteType.UP_VOTE, "🔼"],
+  [VoteType.DOWN_VOTE, "🔽"],
+]);
 
 type VoteButtonProps = {
   voteType: VoteType;
@@ -24,9 +27,12 @@ const VoteButton: React.FC<VoteButtonProps> = ({ onClick, voteType, active }) =>
     cursor: "pointer",
   });
 
+  const icon = voteIcons.get(voteType);
+  invariant(icon !== undefined);
+
   return (
     <button className={style} onClick={onClick}>
-      {voteIcons[voteType]}
+      {icon}
     </button>
   );
 };

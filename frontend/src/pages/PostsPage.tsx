@@ -1,18 +1,11 @@
-import { useSnapshot } from "valtio";
+import * as proto from "../proto";
 
-import PostList from "../components/PostList";
-import PageLayout from "./PageLayout";
-import { useStore } from "../contexts/store";
+import { PostList } from "../components/PostList";
 
-const PostsPage: React.FC = () => {
-  const store = useStore();
-  const store_snap = useSnapshot(store);
+export interface PostsPageProps {
+  posts: proto.Post[];
+}
 
-  return (
-    <PageLayout>
-      <PostList posts={store_snap.posts} />
-    </PageLayout>
-  );
+export const PostsPage: React.FC<PostsPageProps> = ({ posts }) => {
+  return <PostList posts={posts} />;
 };
-
-export default PostsPage;
