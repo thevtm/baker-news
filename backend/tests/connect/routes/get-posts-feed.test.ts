@@ -77,10 +77,10 @@ Deno.test("GetPostsFeed", disable_leaks_test_options, async () => {
   expect(response_user_voted_post.result.case).toBe("success");
 
   const successful_vote_response = response_user_voted_post.result.value as proto.GetPostsFeedSuccessfulResponse;
-  expect(successful_vote_response.event.case).toBe("postScoreChanged");
+  expect(successful_vote_response.event.case).toBe("userVotedPost");
 
-  const post_score_changed_event = successful_vote_response.event.value as proto.PostScoreChanged;
-  expect(post_score_changed_event.postId).toBe(post_data.data!.id);
+  const post_score_changed_event = successful_vote_response.event.value as proto.UserVotedPost;
+  expect(post_score_changed_event.vote?.postId).toBe(post_data.data!.id);
   expect(post_score_changed_event.newScore).toBe(1);
 
   await clear_db();
