@@ -1,7 +1,9 @@
 import React from "react";
+import invariant from "tiny-invariant";
 
 import * as proto from "../proto";
-import { useStore } from "../contexts/store";
+import { useUser } from "../queries";
+import { useAPIClient } from "../contexts/api-client";
 
 import VoteButton from "./VoteButton";
 
@@ -20,21 +22,26 @@ const formatDateToYYYYMMDD = (date: Date) => {
 };
 
 export const CommentItem: React.FC<CommentItemProps> = ({ comment }) => {
-  const store = useStore();
-  // const api_client = useAPIClient();
+  const user = useUser();
+  const api_client = useAPIClient();
 
   const created_at_formatted_date = formatDateToYYYYMMDD(proto.convertDate(comment.createdAt!));
 
   const vote_state: proto.VoteType = comment.vote ? comment.vote.voteType : proto.VoteType.NO_VOTE;
+  const up_vote_active = vote_state === proto.VoteType.UP_VOTE;
+  const down_vote_active = vote_state === proto.VoteType.DOWN_VOTE;
 
   const handleVote = async (voteType: proto.VoteType) => {
-    if (store.user === null) return;
+    const response = await api_client.voteComment({ userId: user.id, commentId: comment.id, voteType });
 
-    if (vote_state === voteType) {
-      voteType = proto.VoteType.NO_VOTE;
+    if (response.result.case === "error") {
+      console.error("Failed to vote:", response.result.value.message);
+      return;
     }
 
-    // await voteComment(store, api_client, comment.id, voteType);
+    invariant(response.result.case === "success");
+
+    // TODO: Update the comment state in the UI
   };
 
   return (
@@ -43,14 +50,14 @@ export const CommentItem: React.FC<CommentItemProps> = ({ comment }) => {
       <div className={sprinkles({ display: "flex", flexDirection: "column", marginX: 2 })}>
         <VoteButton
           voteType={proto.VoteType.UP_VOTE}
-          active={vote_state === proto.VoteType.UP_VOTE}
-          onClick={() => handleVote(proto.VoteType.UP_VOTE)}
+          active={up_vote_active}
+          onClick={() => handleVote(up_vote_active ? proto.VoteType.NO_VOTE : proto.VoteType.UP_VOTE)}
         />
 
         <VoteButton
           voteType={proto.VoteType.DOWN_VOTE}
-          active={vote_state === proto.VoteType.DOWN_VOTE}
-          onClick={() => handleVote(proto.VoteType.DOWN_VOTE)}
+          active={down_vote_active}
+          onClick={() => handleVote(down_vote_active ? proto.VoteType.NO_VOTE : proto.VoteType.DOWN_VOTE)}
         />
       </div>
 
