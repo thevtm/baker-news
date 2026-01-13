@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file baker-news.proto.
  */
 export const file_baker_news: GenFile = /*@__PURE__*/
-  fileDesc("ChBiYWtlci1uZXdzLnByb3RvEglCYWtlck5ld3MipwEKBFVzZXISCgoCaWQYASABKAUSEAoIdXNlcm5hbWUYAiABKAkSIQoEcm9sZRgDIAEoDjITLkJha2VyTmV3cy5Vc2VyUm9sZRIuCgpjcmVhdGVkX2F0GAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCLCAgoEUG9zdBIKCgJpZBgBIAEoBRIfCgZhdXRob3IYAiABKAsyDy5CYWtlck5ld3MuVXNlchINCgV0aXRsZRgDIAEoCRILCgN1cmwYBCABKAkSDQoFc2NvcmUYBSABKAUSFQoNY29tbWVudF9jb3VudBgGIAEoBRImCgR2b3RlGAcgASgLMhMuQmFrZXJOZXdzLlBvc3RWb3RlSACIAQESLQoIY29tbWVudHMYCiABKAsyFi5CYWtlck5ld3MuQ29tbWVudExpc3RIAYgBARIuCgpjcmVhdGVkX2F0GAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcEIHCgVfdm90ZUILCglfY29tbWVudHMiwAEKCFBvc3RWb3RlEgoKAmlkGAEgASgFEg8KB3Bvc3RfaWQYAiABKAUSDwoHdXNlcl9pZBgDIAEoBRImCgl2b3RlX3R5cGUYBCABKA4yEy5CYWtlck5ld3MuVm90ZVR5cGUSLgoKY3JlYXRlZF9hdBgFIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiyAIKB0NvbW1lbnQSCgoCaWQYASABKAUSHwoGYXV0aG9yGAMgASgLMg8uQmFrZXJOZXdzLlVzZXISDwoHcG9zdF9pZBgCIAEoBRIeChFwYXJlbnRfY29tbWVudF9pZBgEIAEoBUgAiAEBEg8KB2NvbnRlbnQYBSABKAkSDQoFc2NvcmUYBiABKAUSFQoNY29tbWVudF9jb3VudBgHIAEoBRIpCgR2b3RlGAogASgLMhYuQmFrZXJOZXdzLkNvbW1lbnRWb3RlSAGIAQESLgoKY3JlYXRlZF9hdBgIIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBCFAoSX3BhcmVudF9jb21tZW50X2lkQgcKBV92b3RlIsYBCgtDb21tZW50Vm90ZRIKCgJpZBgBIAEoBRISCgpjb21tZW50X2lkGAIgASgFEg8KB3VzZXJfaWQYAyABKAUSJgoJdm90ZV90eXBlGAQgASgOMhMuQmFrZXJOZXdzLlZvdGVUeXBlEi4KCmNyZWF0ZWRfYXQYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYBiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIiAKDUVycm9yUmVzcG9uc2USDwoHbWVzc2FnZRgBIAEoCSIqCghQb3N0TGlzdBIeCgVwb3N0cxgBIAMoCzIPLkJha2VyTmV3cy5Qb3N0IjMKC0NvbW1lbnRMaXN0EiQKCGNvbW1lbnRzGAEgAygLMhIuQmFrZXJOZXdzLkNvbW1lbnQiJQoRQ3JlYXRlVXNlclJlcXVlc3QSEAoIdXNlcm5hbWUYASABKAkiPQocQ3JlYXRlVXNlclN1Y2Nlc3NmdWxSZXNwb25zZRIdCgR1c2VyGAEgASgLMg8uQmFrZXJOZXdzLlVzZXIihQEKEkNyZWF0ZVVzZXJSZXNwb25zZRI6CgdzdWNjZXNzGAEgASgLMicuQmFrZXJOZXdzLkNyZWF0ZVVzZXJTdWNjZXNzZnVsUmVzcG9uc2VIABIpCgVlcnJvchgCIAEoCzIYLkJha2VyTmV3cy5FcnJvclJlc3BvbnNlSABCCAoGcmVzdWx0IjIKDkdldFBvc3RSZXF1ZXN0Eg8KB3Bvc3RfaWQYASABKAUSDwoHdXNlcl9pZBgCIAEoBSI6ChlHZXRQb3N0U3VjY2Vzc2Z1bFJlc3BvbnNlEh0KBHBvc3QYASABKAsyDy5CYWtlck5ld3MuUG9zdCJ/Cg9HZXRQb3N0UmVzcG9uc2USNwoHc3VjY2VzcxgBIAEoCzIkLkJha2VyTmV3cy5HZXRQb3N0U3VjY2Vzc2Z1bFJlc3BvbnNlSAASKQoFZXJyb3IYAiABKAsyGC5CYWtlck5ld3MuRXJyb3JSZXNwb25zZUgAQggKBnJlc3VsdCIiCg9HZXRQb3N0c1JlcXVlc3QSDwoHdXNlcl9pZBgBIAEoBSJHCh1HZXRQb3N0TGlzdFN1Y2Nlc3NmdWxSZXNwb25zZRImCglwb3N0X2xpc3QYASABKAsyEy5CYWtlck5ld3MuUG9zdExpc3QihAEKEEdldFBvc3RzUmVzcG9uc2USOwoHc3VjY2VzcxgBIAEoCzIoLkJha2VyTmV3cy5HZXRQb3N0TGlzdFN1Y2Nlc3NmdWxSZXNwb25zZUgAEikKBWVycm9yGAIgASgLMhguQmFrZXJOZXdzLkVycm9yUmVzcG9uc2VIAEIICgZyZXN1bHQiOQoVR2V0Q29tbWVudExpc3RSZXF1ZXN0Eg8KB3VzZXJfaWQYASABKAUSDwoHcG9zdF9pZBgCIAEoBSJQCiBHZXRDb21tZW50TGlzdFN1Y2Nlc3NmdWxSZXNwb25zZRIsCgxjb21tZW50X2xpc3QYASABKAsyFi5CYWtlck5ld3MuQ29tbWVudExpc3QijQEKFkdldENvbW1lbnRMaXN0UmVzcG9uc2USPgoHc3VjY2VzcxgBIAEoCzIrLkJha2VyTmV3cy5HZXRDb21tZW50TGlzdFN1Y2Nlc3NmdWxSZXNwb25zZUgAEikKBWVycm9yGAIgASgLMhguQmFrZXJOZXdzLkVycm9yUmVzcG9uc2VIAEIICgZyZXN1bHQiWwoPVm90ZVBvc3RSZXF1ZXN0Eg8KB3Bvc3RfaWQYASABKAUSDwoHdXNlcl9pZBgCIAEoBRImCgl2b3RlX3R5cGUYAyABKA4yEy5CYWtlck5ld3MuVm90ZVR5cGUiUgoaVm90ZVBvc3RTdWNjZXNzZnVsUmVzcG9uc2USEQoJbmV3X3Njb3JlGAEgASgFEiEKBHZvdGUYAiABKAsyEy5CYWtlck5ld3MuUG9zdFZvdGUigQEKEFZvdGVQb3N0UmVzcG9uc2USOAoHc3VjY2VzcxgBIAEoCzIlLkJha2VyTmV3cy5Wb3RlUG9zdFN1Y2Nlc3NmdWxSZXNwb25zZUgAEikKBWVycm9yGAIgASgLMhguQmFrZXJOZXdzLkVycm9yUmVzcG9uc2VIAEIICgZyZXN1bHQiYQoSVm90ZUNvbW1lbnRSZXF1ZXN0EhIKCmNvbW1lbnRfaWQYASABKAUSDwoHdXNlcl9pZBgCIAEoBRImCgl2b3RlX3R5cGUYAyABKA4yEy5CYWtlck5ld3MuVm90ZVR5cGUiMgodVm90ZUNvbW1lbnRTdWNjZXNzZnVsUmVzcG9uc2USEQoJbmV3X3Njb3JlGAEgASgFIocBChNWb3RlQ29tbWVudFJlc3BvbnNlEjsKB3N1Y2Nlc3MYASABKAsyKC5CYWtlck5ld3MuVm90ZUNvbW1lbnRTdWNjZXNzZnVsUmVzcG9uc2VIABIpCgVlcnJvchgCIAEoCzIYLkJha2VyTmV3cy5FcnJvclJlc3BvbnNlSABCCAoGcmVzdWx0KmMKCFVzZXJSb2xlEhkKFVVTRVJfUk9MRV9VTlNQRUNJRklFRBAAEhMKD1VTRVJfUk9MRV9HVUVTVBABEhMKD1VTRVJfUk9MRV9BRE1JThACEhIKDlVTRVJfUk9MRV9VU0VSEAMqbAoIVm90ZVR5cGUSGQoVVk9URV9UWVBFX1VOU1BFQ0lGSUVEEAASFQoRVk9URV9UWVBFX05PX1ZPVEUQARIVChFWT1RFX1RZUEVfVVBfVk9URRACEhcKE1ZPVEVfVFlQRV9ET1dOX1ZPVEUQAzLaAwoQQmFrZXJOZXdzU2VydmljZRJLCgpDcmVhdGVVc2VyEhwuQmFrZXJOZXdzLkNyZWF0ZVVzZXJSZXF1ZXN0Gh0uQmFrZXJOZXdzLkNyZWF0ZVVzZXJSZXNwb25zZSIAEkUKCEdldFBvc3RzEhouQmFrZXJOZXdzLkdldFBvc3RzUmVxdWVzdBobLkJha2VyTmV3cy5HZXRQb3N0c1Jlc3BvbnNlIgASQgoHR2V0UG9zdBIZLkJha2VyTmV3cy5HZXRQb3N0UmVxdWVzdBoaLkJha2VyTmV3cy5HZXRQb3N0UmVzcG9uc2UiABJXCg5HZXRDb21tZW50TGlzdBIgLkJha2VyTmV3cy5HZXRDb21tZW50TGlzdFJlcXVlc3QaIS5CYWtlck5ld3MuR2V0Q29tbWVudExpc3RSZXNwb25zZSIAEkUKCFZvdGVQb3N0EhouQmFrZXJOZXdzLlZvdGVQb3N0UmVxdWVzdBobLkJha2VyTmV3cy5Wb3RlUG9zdFJlc3BvbnNlIgASTgoLVm90ZUNvbW1lbnQSHS5CYWtlck5ld3MuVm90ZUNvbW1lbnRSZXF1ZXN0Gh4uQmFrZXJOZXdzLlZvdGVDb21tZW50UmVzcG9uc2UiAGIGcHJvdG8z", [file_google_protobuf_timestamp]);
+  fileDesc("ChBiYWtlci1uZXdzLnByb3RvEglCYWtlck5ld3MipwEKBFVzZXISCgoCaWQYASABKAUSEAoIdXNlcm5hbWUYAiABKAkSIQoEcm9sZRgDIAEoDjITLkJha2VyTmV3cy5Vc2VyUm9sZRIuCgpjcmVhdGVkX2F0GAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCLCAgoEUG9zdBIKCgJpZBgBIAEoBRIfCgZhdXRob3IYAiABKAsyDy5CYWtlck5ld3MuVXNlchINCgV0aXRsZRgDIAEoCRILCgN1cmwYBCABKAkSDQoFc2NvcmUYBSABKAUSFQoNY29tbWVudF9jb3VudBgGIAEoBRImCgR2b3RlGAcgASgLMhMuQmFrZXJOZXdzLlBvc3RWb3RlSACIAQESLQoIY29tbWVudHMYCiABKAsyFi5CYWtlck5ld3MuQ29tbWVudExpc3RIAYgBARIuCgpjcmVhdGVkX2F0GAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcEIHCgVfdm90ZUILCglfY29tbWVudHMiKgoIUG9zdExpc3QSHgoFcG9zdHMYASADKAsyDy5CYWtlck5ld3MuUG9zdCIsCgtQb3N0Q3JlYXRlZBIdCgRwb3N0GAEgASgLMg8uQmFrZXJOZXdzLlBvc3QiNgoQUG9zdFNjb3JlQ2hhbmdlZBIPCgdwb3N0X2lkGAEgASgFEhEKCW5ld19zY29yZRgCIAEoBSJHChdQb3N0Q29tbWVudENvdW50Q2hhbmdlZBIPCgdwb3N0X2lkGAEgASgFEhsKE2NvbW1lbnRfY291bnRfZGVsdGEYAiABKAUiwAEKCFBvc3RWb3RlEgoKAmlkGAEgASgFEg8KB3Bvc3RfaWQYAiABKAUSDwoHdXNlcl9pZBgDIAEoBRImCgl2b3RlX3R5cGUYBCABKA4yEy5CYWtlck5ld3MuVm90ZVR5cGUSLgoKY3JlYXRlZF9hdBgFIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiRQoNVXNlclZvdGVkUG9zdBIhCgR2b3RlGAEgASgLMhMuQmFrZXJOZXdzLlBvc3RWb3RlEhEKCW5ld19zY29yZRgCIAEoBSLIAgoHQ29tbWVudBIKCgJpZBgBIAEoBRIfCgZhdXRob3IYAyABKAsyDy5CYWtlck5ld3MuVXNlchIPCgdwb3N0X2lkGAIgASgFEh4KEXBhcmVudF9jb21tZW50X2lkGAQgASgFSACIAQESDwoHY29udGVudBgFIAEoCRINCgVzY29yZRgGIAEoBRIVCg1jb21tZW50X2NvdW50GAcgASgFEikKBHZvdGUYCiABKAsyFi5CYWtlck5ld3MuQ29tbWVudFZvdGVIAYgBARIuCgpjcmVhdGVkX2F0GAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcEIUChJfcGFyZW50X2NvbW1lbnRfaWRCBwoFX3ZvdGUiMwoLQ29tbWVudExpc3QSJAoIY29tbWVudHMYASADKAsyEi5CYWtlck5ld3MuQ29tbWVudCI1Cg5Db21tZW50Q3JlYXRlZBIjCgdjb21tZW50GAEgASgLMhIuQmFrZXJOZXdzLkNvbW1lbnQiPAoTQ29tbWVudFNjb3JlQ2hhbmdlZBISCgpjb21tZW50X2lkGAEgASgFEhEKCW5ld19zY29yZRgCIAEoBSLGAQoLQ29tbWVudFZvdGUSCgoCaWQYASABKAUSEgoKY29tbWVudF9pZBgCIAEoBRIPCgd1c2VyX2lkGAMgASgFEiYKCXZvdGVfdHlwZRgEIAEoDjITLkJha2VyTmV3cy5Wb3RlVHlwZRIuCgpjcmVhdGVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCI5ChBVc2VyVm90ZWRDb21tZW50EhIKCmNvbW1lbnRfaWQYASABKAUSEQoJbmV3X3Njb3JlGAIgASgFIiAKDUVycm9yUmVzcG9uc2USDwoHbWVzc2FnZRgBIAEoCSIlChFDcmVhdGVVc2VyUmVxdWVzdBIQCgh1c2VybmFtZRgBIAEoCSI9ChxDcmVhdGVVc2VyU3VjY2Vzc2Z1bFJlc3BvbnNlEh0KBHVzZXIYASABKAsyDy5CYWtlck5ld3MuVXNlciKFAQoSQ3JlYXRlVXNlclJlc3BvbnNlEjoKB3N1Y2Nlc3MYASABKAsyJy5CYWtlck5ld3MuQ3JlYXRlVXNlclN1Y2Nlc3NmdWxSZXNwb25zZUgAEikKBWVycm9yGAIgASgLMhguQmFrZXJOZXdzLkVycm9yUmVzcG9uc2VIAEIICgZyZXN1bHQiMgoOR2V0UG9zdFJlcXVlc3QSDwoHcG9zdF9pZBgBIAEoBRIPCgd1c2VyX2lkGAIgASgFIjoKGUdldFBvc3RTdWNjZXNzZnVsUmVzcG9uc2USHQoEcG9zdBgBIAEoCzIPLkJha2VyTmV3cy5Qb3N0In8KD0dldFBvc3RSZXNwb25zZRI3CgdzdWNjZXNzGAEgASgLMiQuQmFrZXJOZXdzLkdldFBvc3RTdWNjZXNzZnVsUmVzcG9uc2VIABIpCgVlcnJvchgCIAEoCzIYLkJha2VyTmV3cy5FcnJvclJlc3BvbnNlSABCCAoGcmVzdWx0IiIKD0dldFBvc3RzUmVxdWVzdBIPCgd1c2VyX2lkGAEgASgFIkQKGkdldFBvc3RzU3VjY2Vzc2Z1bFJlc3BvbnNlEiYKCXBvc3RfbGlzdBgBIAEoCzITLkJha2VyTmV3cy5Qb3N0TGlzdCKBAQoQR2V0UG9zdHNSZXNwb25zZRI4CgdzdWNjZXNzGAEgASgLMiUuQmFrZXJOZXdzLkdldFBvc3RzU3VjY2Vzc2Z1bFJlc3BvbnNlSAASKQoFZXJyb3IYAiABKAsyGC5CYWtlck5ld3MuRXJyb3JSZXNwb25zZUgAQggKBnJlc3VsdCImChNHZXRQb3N0c0ZlZWRSZXF1ZXN0Eg8KB3VzZXJfaWQYASABKAUiwQIKHkdldFBvc3RzRmVlZFN1Y2Nlc3NmdWxSZXNwb25zZRIsCg1pbml0aWFsX3Bvc3RzGAEgASgLMhMuQmFrZXJOZXdzLlBvc3RMaXN0SAASLgoMcG9zdF9jcmVhdGVkGAIgASgLMhYuQmFrZXJOZXdzLlBvc3RDcmVhdGVkSAASMwoPdXNlcl92b3RlZF9wb3N0GAMgASgLMhguQmFrZXJOZXdzLlVzZXJWb3RlZFBvc3RIABI5ChJwb3N0X3Njb3JlX2NoYW5nZWQYBCABKAsyGy5CYWtlck5ld3MuUG9zdFNjb3JlQ2hhbmdlZEgAEkgKGnBvc3RfY29tbWVudF9jb3VudF9jaGFuZ2VkGAUgASgLMiIuQmFrZXJOZXdzLlBvc3RDb21tZW50Q291bnRDaGFuZ2VkSABCBwoFZXZlbnQiiQEKFEdldFBvc3RzRmVlZFJlc3BvbnNlEjwKB3N1Y2Nlc3MYASABKAsyKS5CYWtlck5ld3MuR2V0UG9zdHNGZWVkU3VjY2Vzc2Z1bFJlc3BvbnNlSAASKQoFZXJyb3IYAiABKAsyGC5CYWtlck5ld3MuRXJyb3JSZXNwb25zZUgAQggKBnJlc3VsdCI5ChVHZXRDb21tZW50TGlzdFJlcXVlc3QSDwoHdXNlcl9pZBgBIAEoBRIPCgdwb3N0X2lkGAIgASgFIlAKIEdldENvbW1lbnRMaXN0U3VjY2Vzc2Z1bFJlc3BvbnNlEiwKDGNvbW1lbnRfbGlzdBgBIAEoCzIWLkJha2VyTmV3cy5Db21tZW50TGlzdCKNAQoWR2V0Q29tbWVudExpc3RSZXNwb25zZRI+CgdzdWNjZXNzGAEgASgLMisuQmFrZXJOZXdzLkdldENvbW1lbnRMaXN0U3VjY2Vzc2Z1bFJlc3BvbnNlSAASKQoFZXJyb3IYAiABKAsyGC5CYWtlck5ld3MuRXJyb3JSZXNwb25zZUgAQggKBnJlc3VsdCJbCg9Wb3RlUG9zdFJlcXVlc3QSDwoHcG9zdF9pZBgBIAEoBRIPCgd1c2VyX2lkGAIgASgFEiYKCXZvdGVfdHlwZRgDIAEoDjITLkJha2VyTmV3cy5Wb3RlVHlwZSJSChpWb3RlUG9zdFN1Y2Nlc3NmdWxSZXNwb25zZRIRCgluZXdfc2NvcmUYASABKAUSIQoEdm90ZRgCIAEoCzITLkJha2VyTmV3cy5Qb3N0Vm90ZSKBAQoQVm90ZVBvc3RSZXNwb25zZRI4CgdzdWNjZXNzGAEgASgLMiUuQmFrZXJOZXdzLlZvdGVQb3N0U3VjY2Vzc2Z1bFJlc3BvbnNlSAASKQoFZXJyb3IYAiABKAsyGC5CYWtlck5ld3MuRXJyb3JSZXNwb25zZUgAQggKBnJlc3VsdCJhChJWb3RlQ29tbWVudFJlcXVlc3QSEgoKY29tbWVudF9pZBgBIAEoBRIPCgd1c2VyX2lkGAIgASgFEiYKCXZvdGVfdHlwZRgDIAEoDjITLkJha2VyTmV3cy5Wb3RlVHlwZSIyCh1Wb3RlQ29tbWVudFN1Y2Nlc3NmdWxSZXNwb25zZRIRCgluZXdfc2NvcmUYASABKAUihwEKE1ZvdGVDb21tZW50UmVzcG9uc2USOwoHc3VjY2VzcxgBIAEoCzIoLkJha2VyTmV3cy5Wb3RlQ29tbWVudFN1Y2Nlc3NmdWxSZXNwb25zZUgAEikKBWVycm9yGAIgASgLMhguQmFrZXJOZXdzLkVycm9yUmVzcG9uc2VIAEIICgZyZXN1bHQqYwoIVXNlclJvbGUSGQoVVVNFUl9ST0xFX1VOU1BFQ0lGSUVEEAASEwoPVVNFUl9ST0xFX0dVRVNUEAESEwoPVVNFUl9ST0xFX0FETUlOEAISEgoOVVNFUl9ST0xFX1VTRVIQAypsCghWb3RlVHlwZRIZChVWT1RFX1RZUEVfVU5TUEVDSUZJRUQQABIVChFWT1RFX1RZUEVfTk9fVk9URRABEhUKEVZPVEVfVFlQRV9VUF9WT1RFEAISFwoTVk9URV9UWVBFX0RPV05fVk9URRADMq8EChBCYWtlck5ld3NTZXJ2aWNlEksKCkNyZWF0ZVVzZXISHC5CYWtlck5ld3MuQ3JlYXRlVXNlclJlcXVlc3QaHS5CYWtlck5ld3MuQ3JlYXRlVXNlclJlc3BvbnNlIgASQgoHR2V0UG9zdBIZLkJha2VyTmV3cy5HZXRQb3N0UmVxdWVzdBoaLkJha2VyTmV3cy5HZXRQb3N0UmVzcG9uc2UiABJFCghHZXRQb3N0cxIaLkJha2VyTmV3cy5HZXRQb3N0c1JlcXVlc3QaGy5CYWtlck5ld3MuR2V0UG9zdHNSZXNwb25zZSIAElMKDEdldFBvc3RzRmVlZBIeLkJha2VyTmV3cy5HZXRQb3N0c0ZlZWRSZXF1ZXN0Gh8uQmFrZXJOZXdzLkdldFBvc3RzRmVlZFJlc3BvbnNlIgAwARJXCg5HZXRDb21tZW50TGlzdBIgLkJha2VyTmV3cy5HZXRDb21tZW50TGlzdFJlcXVlc3QaIS5CYWtlck5ld3MuR2V0Q29tbWVudExpc3RSZXNwb25zZSIAEkUKCFZvdGVQb3N0EhouQmFrZXJOZXdzLlZvdGVQb3N0UmVxdWVzdBobLkJha2VyTmV3cy5Wb3RlUG9zdFJlc3BvbnNlIgASTgoLVm90ZUNvbW1lbnQSHS5CYWtlck5ld3MuVm90ZUNvbW1lbnRSZXF1ZXN0Gh4uQmFrZXJOZXdzLlZvdGVDb21tZW50UmVzcG9uc2UiAGIGcHJvdG8z", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message BakerNews.User
@@ -114,6 +114,84 @@ export const PostSchema: GenMessage<Post> = /*@__PURE__*/
   messageDesc(file_baker_news, 1);
 
 /**
+ * @generated from message BakerNews.PostList
+ */
+export type PostList = Message<"BakerNews.PostList"> & {
+  /**
+   * @generated from field: repeated BakerNews.Post posts = 1;
+   */
+  posts: Post[];
+};
+
+/**
+ * Describes the message BakerNews.PostList.
+ * Use `create(PostListSchema)` to create a new message.
+ */
+export const PostListSchema: GenMessage<PostList> = /*@__PURE__*/
+  messageDesc(file_baker_news, 2);
+
+/**
+ * @generated from message BakerNews.PostCreated
+ */
+export type PostCreated = Message<"BakerNews.PostCreated"> & {
+  /**
+   * @generated from field: BakerNews.Post post = 1;
+   */
+  post?: Post;
+};
+
+/**
+ * Describes the message BakerNews.PostCreated.
+ * Use `create(PostCreatedSchema)` to create a new message.
+ */
+export const PostCreatedSchema: GenMessage<PostCreated> = /*@__PURE__*/
+  messageDesc(file_baker_news, 3);
+
+/**
+ * @generated from message BakerNews.PostScoreChanged
+ */
+export type PostScoreChanged = Message<"BakerNews.PostScoreChanged"> & {
+  /**
+   * @generated from field: int32 post_id = 1;
+   */
+  postId: number;
+
+  /**
+   * @generated from field: int32 new_score = 2;
+   */
+  newScore: number;
+};
+
+/**
+ * Describes the message BakerNews.PostScoreChanged.
+ * Use `create(PostScoreChangedSchema)` to create a new message.
+ */
+export const PostScoreChangedSchema: GenMessage<PostScoreChanged> = /*@__PURE__*/
+  messageDesc(file_baker_news, 4);
+
+/**
+ * @generated from message BakerNews.PostCommentCountChanged
+ */
+export type PostCommentCountChanged = Message<"BakerNews.PostCommentCountChanged"> & {
+  /**
+   * @generated from field: int32 post_id = 1;
+   */
+  postId: number;
+
+  /**
+   * @generated from field: int32 comment_count_delta = 2;
+   */
+  commentCountDelta: number;
+};
+
+/**
+ * Describes the message BakerNews.PostCommentCountChanged.
+ * Use `create(PostCommentCountChangedSchema)` to create a new message.
+ */
+export const PostCommentCountChangedSchema: GenMessage<PostCommentCountChanged> = /*@__PURE__*/
+  messageDesc(file_baker_news, 5);
+
+/**
  * @generated from message BakerNews.PostVote
  */
 export type PostVote = Message<"BakerNews.PostVote"> & {
@@ -153,7 +231,29 @@ export type PostVote = Message<"BakerNews.PostVote"> & {
  * Use `create(PostVoteSchema)` to create a new message.
  */
 export const PostVoteSchema: GenMessage<PostVote> = /*@__PURE__*/
-  messageDesc(file_baker_news, 2);
+  messageDesc(file_baker_news, 6);
+
+/**
+ * @generated from message BakerNews.UserVotedPost
+ */
+export type UserVotedPost = Message<"BakerNews.UserVotedPost"> & {
+  /**
+   * @generated from field: BakerNews.PostVote vote = 1;
+   */
+  vote?: PostVote;
+
+  /**
+   * @generated from field: int32 new_score = 2;
+   */
+  newScore: number;
+};
+
+/**
+ * Describes the message BakerNews.UserVotedPost.
+ * Use `create(UserVotedPostSchema)` to create a new message.
+ */
+export const UserVotedPostSchema: GenMessage<UserVotedPost> = /*@__PURE__*/
+  messageDesc(file_baker_news, 7);
 
 /**
  * @generated from message BakerNews.Comment
@@ -215,7 +315,63 @@ export type Comment = Message<"BakerNews.Comment"> & {
  * Use `create(CommentSchema)` to create a new message.
  */
 export const CommentSchema: GenMessage<Comment> = /*@__PURE__*/
-  messageDesc(file_baker_news, 3);
+  messageDesc(file_baker_news, 8);
+
+/**
+ * @generated from message BakerNews.CommentList
+ */
+export type CommentList = Message<"BakerNews.CommentList"> & {
+  /**
+   * @generated from field: repeated BakerNews.Comment comments = 1;
+   */
+  comments: Comment[];
+};
+
+/**
+ * Describes the message BakerNews.CommentList.
+ * Use `create(CommentListSchema)` to create a new message.
+ */
+export const CommentListSchema: GenMessage<CommentList> = /*@__PURE__*/
+  messageDesc(file_baker_news, 9);
+
+/**
+ * @generated from message BakerNews.CommentCreated
+ */
+export type CommentCreated = Message<"BakerNews.CommentCreated"> & {
+  /**
+   * @generated from field: BakerNews.Comment comment = 1;
+   */
+  comment?: Comment;
+};
+
+/**
+ * Describes the message BakerNews.CommentCreated.
+ * Use `create(CommentCreatedSchema)` to create a new message.
+ */
+export const CommentCreatedSchema: GenMessage<CommentCreated> = /*@__PURE__*/
+  messageDesc(file_baker_news, 10);
+
+/**
+ * @generated from message BakerNews.CommentScoreChanged
+ */
+export type CommentScoreChanged = Message<"BakerNews.CommentScoreChanged"> & {
+  /**
+   * @generated from field: int32 comment_id = 1;
+   */
+  commentId: number;
+
+  /**
+   * @generated from field: int32 new_score = 2;
+   */
+  newScore: number;
+};
+
+/**
+ * Describes the message BakerNews.CommentScoreChanged.
+ * Use `create(CommentScoreChangedSchema)` to create a new message.
+ */
+export const CommentScoreChangedSchema: GenMessage<CommentScoreChanged> = /*@__PURE__*/
+  messageDesc(file_baker_news, 11);
 
 /**
  * @generated from message BakerNews.CommentVote
@@ -257,7 +413,29 @@ export type CommentVote = Message<"BakerNews.CommentVote"> & {
  * Use `create(CommentVoteSchema)` to create a new message.
  */
 export const CommentVoteSchema: GenMessage<CommentVote> = /*@__PURE__*/
-  messageDesc(file_baker_news, 4);
+  messageDesc(file_baker_news, 12);
+
+/**
+ * @generated from message BakerNews.UserVotedComment
+ */
+export type UserVotedComment = Message<"BakerNews.UserVotedComment"> & {
+  /**
+   * @generated from field: int32 comment_id = 1;
+   */
+  commentId: number;
+
+  /**
+   * @generated from field: int32 new_score = 2;
+   */
+  newScore: number;
+};
+
+/**
+ * Describes the message BakerNews.UserVotedComment.
+ * Use `create(UserVotedCommentSchema)` to create a new message.
+ */
+export const UserVotedCommentSchema: GenMessage<UserVotedComment> = /*@__PURE__*/
+  messageDesc(file_baker_news, 13);
 
 /**
  * @generated from message BakerNews.ErrorResponse
@@ -274,41 +452,7 @@ export type ErrorResponse = Message<"BakerNews.ErrorResponse"> & {
  * Use `create(ErrorResponseSchema)` to create a new message.
  */
 export const ErrorResponseSchema: GenMessage<ErrorResponse> = /*@__PURE__*/
-  messageDesc(file_baker_news, 5);
-
-/**
- * @generated from message BakerNews.PostList
- */
-export type PostList = Message<"BakerNews.PostList"> & {
-  /**
-   * @generated from field: repeated BakerNews.Post posts = 1;
-   */
-  posts: Post[];
-};
-
-/**
- * Describes the message BakerNews.PostList.
- * Use `create(PostListSchema)` to create a new message.
- */
-export const PostListSchema: GenMessage<PostList> = /*@__PURE__*/
-  messageDesc(file_baker_news, 6);
-
-/**
- * @generated from message BakerNews.CommentList
- */
-export type CommentList = Message<"BakerNews.CommentList"> & {
-  /**
-   * @generated from field: repeated BakerNews.Comment comments = 1;
-   */
-  comments: Comment[];
-};
-
-/**
- * Describes the message BakerNews.CommentList.
- * Use `create(CommentListSchema)` to create a new message.
- */
-export const CommentListSchema: GenMessage<CommentList> = /*@__PURE__*/
-  messageDesc(file_baker_news, 7);
+  messageDesc(file_baker_news, 14);
 
 /**
  * Create User
@@ -327,7 +471,7 @@ export type CreateUserRequest = Message<"BakerNews.CreateUserRequest"> & {
  * Use `create(CreateUserRequestSchema)` to create a new message.
  */
 export const CreateUserRequestSchema: GenMessage<CreateUserRequest> = /*@__PURE__*/
-  messageDesc(file_baker_news, 8);
+  messageDesc(file_baker_news, 15);
 
 /**
  * @generated from message BakerNews.CreateUserSuccessfulResponse
@@ -344,7 +488,7 @@ export type CreateUserSuccessfulResponse = Message<"BakerNews.CreateUserSuccessf
  * Use `create(CreateUserSuccessfulResponseSchema)` to create a new message.
  */
 export const CreateUserSuccessfulResponseSchema: GenMessage<CreateUserSuccessfulResponse> = /*@__PURE__*/
-  messageDesc(file_baker_news, 9);
+  messageDesc(file_baker_news, 16);
 
 /**
  * @generated from message BakerNews.CreateUserResponse
@@ -373,7 +517,7 @@ export type CreateUserResponse = Message<"BakerNews.CreateUserResponse"> & {
  * Use `create(CreateUserResponseSchema)` to create a new message.
  */
 export const CreateUserResponseSchema: GenMessage<CreateUserResponse> = /*@__PURE__*/
-  messageDesc(file_baker_news, 10);
+  messageDesc(file_baker_news, 17);
 
 /**
  * Get Post
@@ -397,7 +541,7 @@ export type GetPostRequest = Message<"BakerNews.GetPostRequest"> & {
  * Use `create(GetPostRequestSchema)` to create a new message.
  */
 export const GetPostRequestSchema: GenMessage<GetPostRequest> = /*@__PURE__*/
-  messageDesc(file_baker_news, 11);
+  messageDesc(file_baker_news, 18);
 
 /**
  * @generated from message BakerNews.GetPostSuccessfulResponse
@@ -414,7 +558,7 @@ export type GetPostSuccessfulResponse = Message<"BakerNews.GetPostSuccessfulResp
  * Use `create(GetPostSuccessfulResponseSchema)` to create a new message.
  */
 export const GetPostSuccessfulResponseSchema: GenMessage<GetPostSuccessfulResponse> = /*@__PURE__*/
-  messageDesc(file_baker_news, 12);
+  messageDesc(file_baker_news, 19);
 
 /**
  * @generated from message BakerNews.GetPostResponse
@@ -443,10 +587,10 @@ export type GetPostResponse = Message<"BakerNews.GetPostResponse"> & {
  * Use `create(GetPostResponseSchema)` to create a new message.
  */
 export const GetPostResponseSchema: GenMessage<GetPostResponse> = /*@__PURE__*/
-  messageDesc(file_baker_news, 13);
+  messageDesc(file_baker_news, 20);
 
 /**
- * Get Post List
+ * Get Posts
  *
  * @generated from message BakerNews.GetPostsRequest
  */
@@ -462,12 +606,12 @@ export type GetPostsRequest = Message<"BakerNews.GetPostsRequest"> & {
  * Use `create(GetPostsRequestSchema)` to create a new message.
  */
 export const GetPostsRequestSchema: GenMessage<GetPostsRequest> = /*@__PURE__*/
-  messageDesc(file_baker_news, 14);
+  messageDesc(file_baker_news, 21);
 
 /**
- * @generated from message BakerNews.GetPostListSuccessfulResponse
+ * @generated from message BakerNews.GetPostsSuccessfulResponse
  */
-export type GetPostListSuccessfulResponse = Message<"BakerNews.GetPostListSuccessfulResponse"> & {
+export type GetPostsSuccessfulResponse = Message<"BakerNews.GetPostsSuccessfulResponse"> & {
   /**
    * @generated from field: BakerNews.PostList post_list = 1;
    */
@@ -475,11 +619,11 @@ export type GetPostListSuccessfulResponse = Message<"BakerNews.GetPostListSucces
 };
 
 /**
- * Describes the message BakerNews.GetPostListSuccessfulResponse.
- * Use `create(GetPostListSuccessfulResponseSchema)` to create a new message.
+ * Describes the message BakerNews.GetPostsSuccessfulResponse.
+ * Use `create(GetPostsSuccessfulResponseSchema)` to create a new message.
  */
-export const GetPostListSuccessfulResponseSchema: GenMessage<GetPostListSuccessfulResponse> = /*@__PURE__*/
-  messageDesc(file_baker_news, 15);
+export const GetPostsSuccessfulResponseSchema: GenMessage<GetPostsSuccessfulResponse> = /*@__PURE__*/
+  messageDesc(file_baker_news, 22);
 
 /**
  * @generated from message BakerNews.GetPostsResponse
@@ -490,9 +634,9 @@ export type GetPostsResponse = Message<"BakerNews.GetPostsResponse"> & {
    */
   result: {
     /**
-     * @generated from field: BakerNews.GetPostListSuccessfulResponse success = 1;
+     * @generated from field: BakerNews.GetPostsSuccessfulResponse success = 1;
      */
-    value: GetPostListSuccessfulResponse;
+    value: GetPostsSuccessfulResponse;
     case: "success";
   } | {
     /**
@@ -508,7 +652,102 @@ export type GetPostsResponse = Message<"BakerNews.GetPostsResponse"> & {
  * Use `create(GetPostsResponseSchema)` to create a new message.
  */
 export const GetPostsResponseSchema: GenMessage<GetPostsResponse> = /*@__PURE__*/
-  messageDesc(file_baker_news, 16);
+  messageDesc(file_baker_news, 23);
+
+/**
+ * Get Posts Feed
+ *
+ * @generated from message BakerNews.GetPostsFeedRequest
+ */
+export type GetPostsFeedRequest = Message<"BakerNews.GetPostsFeedRequest"> & {
+  /**
+   * @generated from field: int32 user_id = 1;
+   */
+  userId: number;
+};
+
+/**
+ * Describes the message BakerNews.GetPostsFeedRequest.
+ * Use `create(GetPostsFeedRequestSchema)` to create a new message.
+ */
+export const GetPostsFeedRequestSchema: GenMessage<GetPostsFeedRequest> = /*@__PURE__*/
+  messageDesc(file_baker_news, 24);
+
+/**
+ * @generated from message BakerNews.GetPostsFeedSuccessfulResponse
+ */
+export type GetPostsFeedSuccessfulResponse = Message<"BakerNews.GetPostsFeedSuccessfulResponse"> & {
+  /**
+   * @generated from oneof BakerNews.GetPostsFeedSuccessfulResponse.event
+   */
+  event: {
+    /**
+     * @generated from field: BakerNews.PostList initial_posts = 1;
+     */
+    value: PostList;
+    case: "initialPosts";
+  } | {
+    /**
+     * @generated from field: BakerNews.PostCreated post_created = 2;
+     */
+    value: PostCreated;
+    case: "postCreated";
+  } | {
+    /**
+     * @generated from field: BakerNews.UserVotedPost user_voted_post = 3;
+     */
+    value: UserVotedPost;
+    case: "userVotedPost";
+  } | {
+    /**
+     * @generated from field: BakerNews.PostScoreChanged post_score_changed = 4;
+     */
+    value: PostScoreChanged;
+    case: "postScoreChanged";
+  } | {
+    /**
+     * @generated from field: BakerNews.PostCommentCountChanged post_comment_count_changed = 5;
+     */
+    value: PostCommentCountChanged;
+    case: "postCommentCountChanged";
+  } | { case: undefined; value?: undefined };
+};
+
+/**
+ * Describes the message BakerNews.GetPostsFeedSuccessfulResponse.
+ * Use `create(GetPostsFeedSuccessfulResponseSchema)` to create a new message.
+ */
+export const GetPostsFeedSuccessfulResponseSchema: GenMessage<GetPostsFeedSuccessfulResponse> = /*@__PURE__*/
+  messageDesc(file_baker_news, 25);
+
+/**
+ * @generated from message BakerNews.GetPostsFeedResponse
+ */
+export type GetPostsFeedResponse = Message<"BakerNews.GetPostsFeedResponse"> & {
+  /**
+   * @generated from oneof BakerNews.GetPostsFeedResponse.result
+   */
+  result: {
+    /**
+     * @generated from field: BakerNews.GetPostsFeedSuccessfulResponse success = 1;
+     */
+    value: GetPostsFeedSuccessfulResponse;
+    case: "success";
+  } | {
+    /**
+     * @generated from field: BakerNews.ErrorResponse error = 2;
+     */
+    value: ErrorResponse;
+    case: "error";
+  } | { case: undefined; value?: undefined };
+};
+
+/**
+ * Describes the message BakerNews.GetPostsFeedResponse.
+ * Use `create(GetPostsFeedResponseSchema)` to create a new message.
+ */
+export const GetPostsFeedResponseSchema: GenMessage<GetPostsFeedResponse> = /*@__PURE__*/
+  messageDesc(file_baker_news, 26);
 
 /**
  * Get Comment List
@@ -532,7 +771,7 @@ export type GetCommentListRequest = Message<"BakerNews.GetCommentListRequest"> &
  * Use `create(GetCommentListRequestSchema)` to create a new message.
  */
 export const GetCommentListRequestSchema: GenMessage<GetCommentListRequest> = /*@__PURE__*/
-  messageDesc(file_baker_news, 17);
+  messageDesc(file_baker_news, 27);
 
 /**
  * @generated from message BakerNews.GetCommentListSuccessfulResponse
@@ -549,7 +788,7 @@ export type GetCommentListSuccessfulResponse = Message<"BakerNews.GetCommentList
  * Use `create(GetCommentListSuccessfulResponseSchema)` to create a new message.
  */
 export const GetCommentListSuccessfulResponseSchema: GenMessage<GetCommentListSuccessfulResponse> = /*@__PURE__*/
-  messageDesc(file_baker_news, 18);
+  messageDesc(file_baker_news, 28);
 
 /**
  * @generated from message BakerNews.GetCommentListResponse
@@ -578,7 +817,7 @@ export type GetCommentListResponse = Message<"BakerNews.GetCommentListResponse">
  * Use `create(GetCommentListResponseSchema)` to create a new message.
  */
 export const GetCommentListResponseSchema: GenMessage<GetCommentListResponse> = /*@__PURE__*/
-  messageDesc(file_baker_news, 19);
+  messageDesc(file_baker_news, 29);
 
 /**
  * Vote Post
@@ -607,7 +846,7 @@ export type VotePostRequest = Message<"BakerNews.VotePostRequest"> & {
  * Use `create(VotePostRequestSchema)` to create a new message.
  */
 export const VotePostRequestSchema: GenMessage<VotePostRequest> = /*@__PURE__*/
-  messageDesc(file_baker_news, 20);
+  messageDesc(file_baker_news, 30);
 
 /**
  * @generated from message BakerNews.VotePostSuccessfulResponse
@@ -629,7 +868,7 @@ export type VotePostSuccessfulResponse = Message<"BakerNews.VotePostSuccessfulRe
  * Use `create(VotePostSuccessfulResponseSchema)` to create a new message.
  */
 export const VotePostSuccessfulResponseSchema: GenMessage<VotePostSuccessfulResponse> = /*@__PURE__*/
-  messageDesc(file_baker_news, 21);
+  messageDesc(file_baker_news, 31);
 
 /**
  * @generated from message BakerNews.VotePostResponse
@@ -658,7 +897,7 @@ export type VotePostResponse = Message<"BakerNews.VotePostResponse"> & {
  * Use `create(VotePostResponseSchema)` to create a new message.
  */
 export const VotePostResponseSchema: GenMessage<VotePostResponse> = /*@__PURE__*/
-  messageDesc(file_baker_news, 22);
+  messageDesc(file_baker_news, 32);
 
 /**
  * Vote Comment
@@ -687,7 +926,7 @@ export type VoteCommentRequest = Message<"BakerNews.VoteCommentRequest"> & {
  * Use `create(VoteCommentRequestSchema)` to create a new message.
  */
 export const VoteCommentRequestSchema: GenMessage<VoteCommentRequest> = /*@__PURE__*/
-  messageDesc(file_baker_news, 23);
+  messageDesc(file_baker_news, 33);
 
 /**
  * @generated from message BakerNews.VoteCommentSuccessfulResponse
@@ -704,7 +943,7 @@ export type VoteCommentSuccessfulResponse = Message<"BakerNews.VoteCommentSucces
  * Use `create(VoteCommentSuccessfulResponseSchema)` to create a new message.
  */
 export const VoteCommentSuccessfulResponseSchema: GenMessage<VoteCommentSuccessfulResponse> = /*@__PURE__*/
-  messageDesc(file_baker_news, 24);
+  messageDesc(file_baker_news, 34);
 
 /**
  * @generated from message BakerNews.VoteCommentResponse
@@ -733,7 +972,7 @@ export type VoteCommentResponse = Message<"BakerNews.VoteCommentResponse"> & {
  * Use `create(VoteCommentResponseSchema)` to create a new message.
  */
 export const VoteCommentResponseSchema: GenMessage<VoteCommentResponse> = /*@__PURE__*/
-  messageDesc(file_baker_news, 25);
+  messageDesc(file_baker_news, 35);
 
 /**
  * @generated from enum BakerNews.UserRole
@@ -812,6 +1051,14 @@ export const BakerNewsService: GenService<{
     output: typeof CreateUserResponseSchema;
   },
   /**
+   * @generated from rpc BakerNews.BakerNewsService.GetPost
+   */
+  getPost: {
+    methodKind: "unary";
+    input: typeof GetPostRequestSchema;
+    output: typeof GetPostResponseSchema;
+  },
+  /**
    * @generated from rpc BakerNews.BakerNewsService.GetPosts
    */
   getPosts: {
@@ -820,12 +1067,12 @@ export const BakerNewsService: GenService<{
     output: typeof GetPostsResponseSchema;
   },
   /**
-   * @generated from rpc BakerNews.BakerNewsService.GetPost
+   * @generated from rpc BakerNews.BakerNewsService.GetPostsFeed
    */
-  getPost: {
-    methodKind: "unary";
-    input: typeof GetPostRequestSchema;
-    output: typeof GetPostResponseSchema;
+  getPostsFeed: {
+    methodKind: "server_streaming";
+    input: typeof GetPostsFeedRequestSchema;
+    output: typeof GetPostsFeedResponseSchema;
   },
   /**
    * @generated from rpc BakerNews.BakerNewsService.GetCommentList

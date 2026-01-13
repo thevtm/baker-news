@@ -3,9 +3,10 @@ import { createClient, createRouterTransport } from "npm:@connectrpc/connect";
 
 import { createCommands } from "../src/commands/index.ts";
 import { createQueries } from "../src/queries/index.ts";
-import { createRoutes } from "../src/connect.ts";
+import { createRoutes } from "../src/connect/index.ts";
 import { schema } from "../src/db/index.ts";
 import * as proto from "../src/proto/index.ts";
+import { createEvents } from "../src/events.ts";
 
 import { InitializeDatabaseForTests } from "./helpers/db.ts";
 import { disable_leaks_test_options } from "./helpers/disable-leaks-config.ts";
@@ -13,7 +14,8 @@ import { disable_leaks_test_options } from "./helpers/disable-leaks-config.ts";
 Deno.test("CreateUser", disable_leaks_test_options, async () => {
   const { db, clear_db } = await InitializeDatabaseForTests();
 
-  const routes = createRoutes(db);
+  const events = createEvents();
+  const routes = createRoutes(db, events);
 
   const transport = createRouterTransport(routes);
   const client = createClient(proto.BakerNewsService, transport);
@@ -30,11 +32,12 @@ Deno.test("CreateUser", disable_leaks_test_options, async () => {
   await clear_db();
 });
 
-Deno.test("GetPostList", disable_leaks_test_options, async () => {
+Deno.test("GetPosts", disable_leaks_test_options, async () => {
   const { db, clear_db } = await InitializeDatabaseForTests();
 
+  const events = createEvents();
   const queries = createQueries(db);
-  const commands = createCommands(db, queries);
+  const commands = createCommands(db, queries, events);
 
   // Create a user
   const user_data = await commands.createUser({ username: "test_user" });
@@ -65,7 +68,7 @@ Deno.test("GetPostList", disable_leaks_test_options, async () => {
   expect(vote_post_1.success).toBe(true);
 
   // Make request
-  const routes = createRoutes(db);
+  const routes = createRoutes(db, events);
 
   const transport = createRouterTransport(routes);
   const client = createClient(proto.BakerNewsService, transport);
@@ -73,7 +76,7 @@ Deno.test("GetPostList", disable_leaks_test_options, async () => {
 
   expect(response.result.case).toBe("success");
 
-  const post_list = (response.result.value! as proto.GetPostListSuccessfulResponse).postList!;
+  const post_list = (response.result.value! as proto.GetPostsSuccessfulResponse).postList!;
 
   expect(post_list.posts.length).toBe(2);
 
@@ -101,8 +104,9 @@ Deno.test("GetPostList", disable_leaks_test_options, async () => {
 Deno.test("GetPost", disable_leaks_test_options, async () => {
   const { db, clear_db } = await InitializeDatabaseForTests();
 
+  const events = createEvents();
   const queries = createQueries(db);
-  const commands = createCommands(db, queries);
+  const commands = createCommands(db, queries, events);
 
   // Create a user
   const user_data = await commands.createUser({ username: "test_user" });
@@ -132,7 +136,7 @@ Deno.test("GetPost", disable_leaks_test_options, async () => {
   expect(vote_comment.success).toBe(true);
 
   // Set up the routes and transport
-  const routes = createRoutes(db);
+  const routes = createRoutes(db, events);
   const transport = createRouterTransport(routes);
   const client = createClient(proto.BakerNewsService, transport);
 
@@ -179,8 +183,10 @@ Deno.test("GetPost", disable_leaks_test_options, async () => {
 
 Deno.test("GetCommentList", disable_leaks_test_options, async () => {
   const { db, clear_db } = await InitializeDatabaseForTests();
+
+  const events = createEvents();
   const queries = createQueries(db);
-  const commands = createCommands(db, queries);
+  const commands = createCommands(db, queries, events);
 
   // Create a user
   const user_data = await commands.createUser({ username: "test_user" });
@@ -222,7 +228,7 @@ Deno.test("GetCommentList", disable_leaks_test_options, async () => {
   expect(vote_comment_1.success).toBe(true);
 
   // Set up the routes and transport
-  const routes = createRoutes(db);
+  const routes = createRoutes(db, events);
   const transport = createRouterTransport(routes);
   const client = createClient(proto.BakerNewsService, transport);
 
@@ -256,8 +262,9 @@ Deno.test("GetCommentList", disable_leaks_test_options, async () => {
 Deno.test("VotePost", disable_leaks_test_options, async () => {
   const { db, clear_db } = await InitializeDatabaseForTests();
 
+  const events = createEvents();
   const queries = createQueries(db);
-  const commands = createCommands(db, queries);
+  const commands = createCommands(db, queries, events);
 
   const user_data = await commands.createUser({ username: "test_user" });
   expect(user_data.success).toBe(true);
@@ -271,7 +278,7 @@ Deno.test("VotePost", disable_leaks_test_options, async () => {
   expect(post_data.success).toBe(true);
   const post_id = post_data.data!.id;
 
-  const routes = createRoutes(db);
+  const routes = createRoutes(db, events);
 
   const transport = createRouterTransport(routes);
   const client = createClient(proto.BakerNewsService, transport);
@@ -310,8 +317,9 @@ Deno.test("VotePost", disable_leaks_test_options, async () => {
 Deno.test("VoteComment", disable_leaks_test_options, async () => {
   const { db, clear_db } = await InitializeDatabaseForTests();
 
+  const events = createEvents();
   const queries = createQueries(db);
-  const commands = createCommands(db, queries);
+  const commands = createCommands(db, queries, events);
 
   const user_data = await commands.createUser({ username: "test_user" });
   expect(user_data.success).toBe(true);
@@ -331,7 +339,7 @@ Deno.test("VoteComment", disable_leaks_test_options, async () => {
   });
   expect(comment_data.success).toBe(true);
 
-  const routes = createRoutes(db);
+  const routes = createRoutes(db, events);
 
   const transport = createRouterTransport(routes);
   const client = createClient(proto.BakerNewsService, transport);

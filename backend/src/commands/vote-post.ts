@@ -7,6 +7,8 @@ import { schema, DBOrTx } from "../db/index.ts";
 import { Queries } from "../queries/index.ts";
 
 import { CommandReturnType } from "./index.ts";
+import { Events, EventType, UserVotedPostEventData } from "../events.ts";
+import invariant from "tiny-invariant";
 
 export interface VotePostCommandInput {
   userId: number;
@@ -21,7 +23,7 @@ export interface VotePostReturnData {
 
 export type VotePostCommandFunction = (input: VotePostCommandInput) => Promise<CommandReturnType<VotePostReturnData>>;
 
-export function createVotePostCommand(db: DBOrTx, queries: Queries): VotePostCommandFunction {
+export function createVotePostCommand(db: DBOrTx, queries: Queries, events: Events): VotePostCommandFunction {
   const input_validator = z.object({
     userId: z
       .number()
@@ -53,6 +55,8 @@ export function createVotePostCommand(db: DBOrTx, queries: Queries): VotePostCom
     ////////////////////////////////////////////////////////////////////////////
 
     let result: CommandReturnType<VotePostReturnData> | null = null;
+    let post: typeof schema.posts.$inferSelect | null = null;
+    let vote: typeof schema.postVotes.$inferSelect | null = null;
 
     await db.transaction(async (tx) => {
       // Check if the user has already voted on the post
@@ -65,8 +69,6 @@ export function createVotePostCommand(db: DBOrTx, queries: Queries): VotePostCom
       const has_voted = existing_vote.length > 0;
 
       // Insert / update the vote
-      let vote: typeof schema.postVotes.$inferSelect | null = null;
-
       if (has_voted) {
         const insert_result = await tx
           .update(schema.postVotes)
@@ -91,22 +93,33 @@ export function createVotePostCommand(db: DBOrTx, queries: Queries): VotePostCom
       const voteDifference = newVoteValue - existingVoteValue;
       assert(voteDifference !== undefined);
 
-      const vote_count_result = await tx
+      const post_result = await tx
         .update(schema.posts)
         .set({ score: sql`${schema.posts.score} + ${voteDifference}` })
         .where(eq(schema.posts.id, postId))
-        .returning({ newVoteCount: schema.posts.score });
-      assert(vote_count_result.length === 1);
+        .returning();
 
-      const vote_count = vote_count_result[0].newVoteCount;
+      assert(post_result.length === 1);
+
+      const vote_count = post_result[0].score;
+
       assert(_.isFinite(vote_count));
 
       result = { success: true, data: { newScore: vote_count, vote } };
+      post = post_result[0];
     });
+
+    assert(result !== null);
 
     ////////////////////////////////////////////////////////////////////////////
 
-    assert(result !== null);
+    // Emit event
+    invariant(post !== null && vote !== null);
+    const event_data: UserVotedPostEventData = { postVote: vote, post };
+
+    events.dispatch({ type: EventType.USER_VOTED_POST, data: event_data });
+
+    ////////////////////////////////////////////////////////////////////////////
 
     return result;
   };

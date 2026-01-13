@@ -1,7 +1,8 @@
-import { eq } from "drizzle-orm/expressions";
-import { sql } from "drizzle-orm";
 import { z } from "zod";
 import _ from "lodash";
+import { sql } from "drizzle-orm";
+import invariant from "tiny-invariant";
+import { eq } from "drizzle-orm/expressions";
 
 import { schema, utils, DBOrTx } from "../db/index.ts";
 import { Queries } from "../queries/index.ts";
@@ -70,7 +71,13 @@ export function createCreatePostCommand(db: DBOrTx, queries: Queries): CreatePos
 
     // Create the post
     const post: typeof schema.posts.$inferInsert = { title, url: url, authorId: authorId };
-    const result = await db.insert(schema.posts).values(post).returning({ id: schema.posts.id });
+    const result = await db.insert(schema.posts).values(post).returning();
+
+    if (result.length === 0) {
+      return { success: false, error: "Failed to create post" };
+    }
+
+    invariant(result.length === 1);
 
     return { success: true, data: { id: result[0].id } };
   };

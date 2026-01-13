@@ -4,7 +4,8 @@ import { cors as connectCors } from "@connectrpc/connect";
 import { fastifyConnectPlugin } from "@connectrpc/connect-fastify";
 
 import { db } from "./db/index.ts";
-import { createRoutes } from "./connect.ts";
+import { createEvents } from "./events.ts";
+import { createRoutes } from "./connect/index.ts";
 
 async function main() {
   const server = fastify({ logger: true });
@@ -20,7 +21,8 @@ async function main() {
   });
 
   // Register the connect plugin with the server
-  const routes = createRoutes(db);
+  const events = createEvents();
+  const routes = createRoutes(db, events);
   await server.register(fastifyConnectPlugin, { routes });
 
   // Start the server
