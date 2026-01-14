@@ -1,4 +1,5 @@
 import { desc } from "drizzle-orm";
+import invariant from "tiny-invariant";
 import { create } from "@bufbuild/protobuf";
 import { eachValueFrom } from "rxjs-for-await";
 
@@ -7,7 +8,6 @@ import { DBOrTx, schema } from "../../db/index.ts";
 import { Events, EventType, Event, UserVotedPostEventData } from "../../events.ts";
 
 import { map_post, map_post_vote, map_post_votes, map_user } from "../mappers.ts";
-import invariant from "tiny-invariant";
 
 export function makeGetPostsFeedRoute(db: DBOrTx, events: Events) {
   return async function* (req: proto.GetPostsFeedRequest): AsyncIterable<proto.GetPostsFeedResponse> {

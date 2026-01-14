@@ -7,12 +7,13 @@ import { createCommands } from "../commands/index.ts";
 import { BakerNewsService } from "../proto/index.ts";
 
 import { makeCreateUserRoute } from "./routes/create-user.ts";
-import { makeGetPostsRoute } from "./routes/get-posts.ts";
-import { makeGetPostsFeedRoute } from "./routes/get-posts-feed.ts";
 import { makeGetCommentListRoute } from "./routes/get-comment-list.ts";
-import { makeVotePostRoute } from "./routes/vote-post.ts";
-import { makeVoteCommentRoute } from "./routes/vote-comment.ts";
+import { makeGetPostFeedRoute } from "./routes/get-post-feed.ts";
 import { makeGetPostRoute } from "./routes/get-post.ts";
+import { makeGetPostsFeedRoute } from "./routes/get-posts-feed.ts";
+import { makeGetPostsRoute } from "./routes/get-posts.ts";
+import { makeVoteCommentRoute } from "./routes/vote-comment.ts";
+import { makeVotePostRoute } from "./routes/vote-post.ts";
 
 export const createRoutes = (db: DBOrTx, events: Events) => {
   const queries = createQueries(db);
@@ -21,11 +22,12 @@ export const createRoutes = (db: DBOrTx, events: Events) => {
   return (router: ConnectRouter) =>
     router.service(BakerNewsService, {
       createUser: makeCreateUserRoute(commands),
+      getCommentList: makeGetCommentListRoute(db),
+      getPost: makeGetPostRoute(db),
+      getPostFeed: makeGetPostFeedRoute(db, events),
       getPosts: makeGetPostsRoute(db),
       getPostsFeed: makeGetPostsFeedRoute(db, events),
-      getPost: makeGetPostRoute(db),
-      getCommentList: makeGetCommentListRoute(db),
-      votePost: makeVotePostRoute(commands),
       voteComment: makeVoteCommentRoute(commands),
+      votePost: makeVotePostRoute(commands),
     });
 };

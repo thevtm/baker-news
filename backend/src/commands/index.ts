@@ -24,6 +24,6 @@ export function createCommands(db: DBOrTx, queries: Queries, events: Events): Co
     createPost: createCreatePostCommand(db, queries),
     createComment: createCreateCommentCommand(db, queries),
     votePost: createVotePostCommand(db, queries, events),
-    voteComment: createVoteCommentCommand(db, queries),
+    voteComment: createVoteCommentCommand(db, queries, events),
   };
 }

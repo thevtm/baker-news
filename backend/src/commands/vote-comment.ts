@@ -1,11 +1,12 @@
-import { assert } from "@std/assert";
 import _ from "lodash";
 import { z } from "zod";
+import invariant from "tiny-invariant";
 import { eq, and, sql } from "drizzle-orm";
 
 import { ApplicationError } from "../error.ts";
 import { schema, DBOrTx } from "../db/index.ts";
 import { Queries } from "../queries/index.ts";
+import { Events, EventType, UserVotedCommentEventData } from "../events.ts";
 
 import { CommandReturnType } from "./index.ts";
 
@@ -23,7 +24,7 @@ export type VoteCommentCommandFunction = (
   input: VoteCommentCommandInput
 ) => Promise<CommandReturnType<VoteCommentReturnData>>;
 
-export function createVoteCommentCommand(db: DBOrTx, queries: Queries): VoteCommentCommandFunction {
+export function createVoteCommentCommand(db: DBOrTx, queries: Queries, events: Events): VoteCommentCommandFunction {
   const input_validator = z.object({
     userId: z
       .number()
@@ -55,6 +56,8 @@ export function createVoteCommentCommand(db: DBOrTx, queries: Queries): VoteComm
     ////////////////////////////////////////////////////////////////////////////
 
     let result: CommandReturnType<VoteCommentReturnData> | null = null;
+    let comment: typeof schema.comments.$inferSelect | null = null;
+    let vote: typeof schema.commentVotes.$inferSelect | null = null;
 
     await db.transaction(async (tx) => {
       // Check if the user has already voted on the comment
@@ -68,33 +71,43 @@ export function createVoteCommentCommand(db: DBOrTx, queries: Queries): VoteComm
 
       // Insert / update the vote
       if (has_voted) {
-        await tx.update(schema.commentVotes).set({ voteType }).where(eq(schema.commentVotes.id, existing_vote[0].id));
+        const insert_result = await tx
+          .update(schema.commentVotes)
+          .set({ voteType })
+          .where(eq(schema.commentVotes.id, existing_vote[0].id))
+          .returning();
+        invariant(insert_result.length === 1);
+
+        vote = insert_result[0];
       } else {
-        const vote: typeof schema.commentVotes.$inferInsert = { commentId, userId, voteType };
-        await tx.insert(schema.commentVotes).values(vote);
+        const update_result = await tx.insert(schema.commentVotes).values({ commentId, userId, voteType }).returning();
+        invariant(update_result.length === 1);
+
+        vote = update_result[0];
       }
 
       // Update the comment's score
       const existing_vote_value = has_voted ? schema.vote_types_values_map.get(existing_vote[0].voteType) : 0;
-      assert(existing_vote_value !== undefined);
+      invariant(existing_vote_value !== undefined);
 
       const new_vote_value = schema.vote_types_values_map.get(voteType);
-      assert(new_vote_value !== undefined);
+      invariant(new_vote_value !== undefined);
 
       const vote_difference = new_vote_value - existing_vote_value;
-      assert(vote_difference !== undefined);
+      invariant(vote_difference !== undefined);
 
-      const vote_count_result = await tx
+      const comment_result = await tx
         .update(schema.comments)
         .set({ score: sql`${schema.comments.score} + ${vote_difference}` })
         .where(eq(schema.comments.id, commentId))
-        .returning({ newVoteCount: schema.comments.score });
-      assert(vote_count_result.length === 1);
+        .returning();
+      invariant(comment_result.length === 1);
 
-      const new_vote_count = vote_count_result[0].newVoteCount;
-      assert(_.isFinite(new_vote_count));
+      const new_vote_count = comment_result[0].score;
+      invariant(_.isFinite(new_vote_count));
 
       result = { success: true, data: { newScore: new_vote_count } };
+      comment = comment_result[0];
     });
 
     ////////////////////////////////////////////////////////////////////////////
@@ -103,6 +116,16 @@ export function createVoteCommentCommand(db: DBOrTx, queries: Queries): VoteComm
       const error_data = { userId, commentId, voteType };
       throw new ApplicationError("Result should not be null", "Failed to process vote", error_data);
     }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    // Emit event
+    invariant(comment !== null && vote !== null);
+    const event_data: UserVotedCommentEventData = { commentVote: vote, comment };
+
+    events.dispatch({ type: EventType.USER_VOTED_COMMENT, data: event_data });
+
+    ////////////////////////////////////////////////////////////////////////////
 
     return result;
   };

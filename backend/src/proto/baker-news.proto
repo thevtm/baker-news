@@ -151,6 +151,33 @@ message GetPostResponse {
   }
 }
 
+// Get Post Feed
+message GetPostFeedRequest {
+  int32 post_id = 1;
+  int32 user_id = 2;
+}
+
+message GetPostFeedSuccessfulResponse {
+  oneof event {
+    Post initial_post = 1;
+
+    UserVotedPost user_voted_post = 2;
+    PostScoreChanged post_score_changed = 3;
+
+    CommentCreated comment_created = 4;
+
+    UserVotedComment user_voted_comment = 5;
+    CommentScoreChanged comment_score_changed = 6;
+  }
+}
+
+message GetPostFeedResponse {
+  oneof result {
+    GetPostFeedSuccessfulResponse success = 1;
+    ErrorResponse error = 2;
+  }
+}
+
 // Get Posts
 message GetPostsRequest { int32 user_id = 1; }
 
@@ -169,9 +196,12 @@ message GetPostsFeedRequest { int32 user_id = 1; }
 message GetPostsFeedSuccessfulResponse {
   oneof event {
     PostList initial_posts = 1;
+
     PostCreated post_created = 2;
+
     UserVotedPost user_voted_post = 3;
     PostScoreChanged post_score_changed = 4;
+
     PostCommentCountChanged post_comment_count_changed = 5;
   }
 }
@@ -231,8 +261,9 @@ service BakerNewsService {
   rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {}
 
   rpc GetPost(GetPostRequest) returns (GetPostResponse) {}
-  rpc GetPosts(GetPostsRequest) returns (GetPostsResponse) {}
+  rpc GetPostFeed(GetPostFeedRequest) returns (stream GetPostFeedResponse) {}
 
+  rpc GetPosts(GetPostsRequest) returns (GetPostsResponse) {}
   rpc GetPostsFeed(GetPostsFeedRequest) returns (stream GetPostsFeedResponse) {}
 
   rpc GetCommentList(GetCommentListRequest) returns (GetCommentListResponse) {}
