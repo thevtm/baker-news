@@ -39,7 +39,7 @@ Deno.test("GetCommentList", disable_leaks_test_options, async () => {
     content: "test_comment 1",
   });
   expect(comment_data_1.success).toBe(true);
-  const comment_id_1 = comment_data_1.data!.id;
+  const comment_id_1 = comment_data_1.data!.comment.id;
 
   const comment_data_2 = await commands.createComment({
     parentCommentId: comment_id_1,
@@ -47,7 +47,7 @@ Deno.test("GetCommentList", disable_leaks_test_options, async () => {
     content: "test_comment 2",
   });
   expect(comment_data_2.success).toBe(true);
-  const comment_id_2 = comment_data_2.data!.id;
+  const comment_id_2 = comment_data_2.data!.comment.id;
 
   // Vote for comments
   const vote_comment_1 = await commands.voteComment({

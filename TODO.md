@@ -2,12 +2,14 @@
 
 ## Backend
 
-- [x] Commands
+- [ ] Commands
   - [x] create user
   - [x] create post
   - [x] create comment
-  - [x] vote post
-  - [x] vote comment
+  - [ ] vote post
+    - [x] Fix comment count
+  - [ ] vote comment
+    - [x] Fix comment count
 - [ ] API
   - [x] get posts
   - [x] get post
@@ -28,3 +30,4 @@
 - [ ] API Client
 - [ ] Index page
 - [ ] Post page
+  - [ ] Comments hierarchy

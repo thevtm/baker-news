@@ -22,7 +22,7 @@ export function createCommands(db: DBOrTx, queries: Queries, events: Events): Co
   return {
     createUser: createCreateUserCommand(db),
     createPost: createCreatePostCommand(db, queries),
-    createComment: createCreateCommentCommand(db, queries),
+    createComment: createCreateCommentCommand(db, queries, events),
     votePost: createVotePostCommand(db, queries, events),
     voteComment: createVoteCommentCommand(db, queries, events),
   };

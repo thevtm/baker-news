@@ -31,7 +31,7 @@ Deno.test("GetPost", disable_leaks_test_options, async () => {
   // Create a comment
   const comment_data = await commands.createComment({ postId: post_id, authorId: user_id, content: "test_comment" });
   expect(comment_data.success).toBe(true);
-  const comment_id = comment_data.data!.id;
+  const comment_id = comment_data.data!.comment.id;
 
   // Vote for the post
   const vote_post = await commands.votePost({ userId: user_id, postId: post_id, voteType: schema.VoteType.UP_VOTE });

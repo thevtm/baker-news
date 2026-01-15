@@ -43,7 +43,7 @@ Deno.test("VoteComment", disable_leaks_test_options, async () => {
   // Vote for the comment
   const vote_response = await client.voteComment({
     userId: user_id,
-    commentId: comment_data.data!.id,
+    commentId: comment_data.data!.comment.id,
     voteType: proto.VoteType.DOWN_VOTE,
   });
 
@@ -51,7 +51,7 @@ Deno.test("VoteComment", disable_leaks_test_options, async () => {
 
   // Check the updated score
   const updated_comment = await db.query.comments.findFirst({
-    where: (comments, { eq }) => eq(comments.id, comment_data.data!.id),
+    where: (comments, { eq }) => eq(comments.id, comment_data.data!.comment.id),
   });
 
   expect(updated_comment).not.toBeNull();

@@ -2,13 +2,13 @@ import _ from "lodash";
 import { z } from "zod";
 import { eq, and, sql } from "drizzle-orm";
 import { assert } from "@std/assert";
+import invariant from "tiny-invariant";
 
 import { schema, DBOrTx } from "../db/index.ts";
 import { Queries } from "../queries/index.ts";
+import { Events, EventType, UserVotedPostEventData } from "../events.ts";
 
 import { CommandReturnType } from "./index.ts";
-import { Events, EventType, UserVotedPostEventData } from "../events.ts";
-import invariant from "tiny-invariant";
 
 export interface VotePostCommandInput {
   userId: number;

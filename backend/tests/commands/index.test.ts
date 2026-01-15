@@ -63,9 +63,9 @@ Deno.test("smoke test", disable_leaks_test_options, async () => {
   });
 
   expect(create_comment_command_result.success).toBe(true);
-  expect(create_comment_command_result.data?.id).toBeDefined();
+  expect(create_comment_command_result.data?.comment.id).toBeDefined();
 
-  const comment_id = create_comment_command_result.data!.id;
+  const comment_id = create_comment_command_result.data!.comment.id;
 
   const comments_query = await db.query.comments.findMany();
 
@@ -73,6 +73,10 @@ Deno.test("smoke test", disable_leaks_test_options, async () => {
   expect(comments_query[0].content).toBe("Test Comment");
   expect(comments_query[0].authorId).toBe(user_id);
   expect(comments_query[0].score).toBe(0);
+
+  expect(events_spy.calls.length).toBe(1);
+  let last_event = _.last(events_spy.calls)!.args[0] as Event;
+  expect(last_event.type).toBe(EventType.USER_CREATED_COMMENT);
 
   // Vote Post
   const vote_post_command_result = await commands.votePost({
@@ -91,8 +95,8 @@ Deno.test("smoke test", disable_leaks_test_options, async () => {
   expect(vote_post_command_result.data?.vote.createdAt).toBeDefined();
   expect(vote_post_command_result.data?.vote.updatedAt).toBeDefined();
 
-  expect(events_spy.calls.length).toBe(1);
-  let last_event = _.last(events_spy.calls)!.args[0] as Event;
+  expect(events_spy.calls.length).toBe(2);
+  last_event = _.last(events_spy.calls)!.args[0] as Event;
   expect(last_event.type).toBe(EventType.USER_VOTED_POST);
 
   const post_votes_query = await db.query.postVotes.findMany({ with: { post: true } });
@@ -120,7 +124,7 @@ Deno.test("smoke test", disable_leaks_test_options, async () => {
 
   expect(comment_votes_query[0].comment.score).toBe(-1);
 
-  expect(events_spy.calls.length).toBe(2);
+  expect(events_spy.calls.length).toBe(3);
   last_event = _.last(events_spy.calls)!.args[0] as Event;
   expect(last_event.type).toBe(EventType.USER_VOTED_COMMENT);
 
