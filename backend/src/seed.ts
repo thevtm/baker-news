@@ -4,11 +4,13 @@
 import { exit } from "node:process";
 import { faker } from "@faker-js/faker";
 
-import { db, schema } from "./db/index.ts";
+import { db as global_db, schema } from "./db/index.ts";
 import { createCommands } from "./commands/index.ts";
 import { createQueries } from "./queries/index.ts";
+import { createEvents } from "./events.ts";
+import { DBOrTx } from "./db/index.ts";
 
-async function seed() {
+export async function seed(db: DBOrTx = global_db) {
   // Constants
   const NUM_USERS = 100;
   const NUM_POSTS = 10;
@@ -22,8 +24,9 @@ async function seed() {
   await db.transaction(async (tx) => {
     console.log("Seeding database...");
 
+    const events = createEvents();
     const queries = createQueries(tx);
-    const commands = createCommands(tx, queries);
+    const commands = createCommands(tx, queries, events);
 
     // Users
     const user_ids = new Array<number>(NUM_USERS);
@@ -31,7 +34,7 @@ async function seed() {
     for (let i = 0; i < NUM_USERS; i++) {
       const result = await commands.createUser({ username: faker.internet.username() });
       if (!result.success) throw new Error(`Failed to create user: ${result.error}`);
-      user_ids[i] = result.data!.id;
+      user_ids[i] = result.data!.user.id;
     }
 
     console.log(`Seeded ${NUM_USERS} users.`);
@@ -61,7 +64,7 @@ async function seed() {
         authorId: user_ids[faker.number.int({ min: 0, max: user_ids.length - 1 })],
       });
       if (!result.success) throw new Error(`Failed to create root comment: ${result.error}`);
-      comment_ids[i] = result.data!.id;
+      comment_ids[i] = result.data!.comment.id;
     }
 
     console.log(`Seeded ${NUM_ROOT_COMMENTS} root comments.`);
@@ -106,12 +109,14 @@ async function seed() {
   });
 }
 
-seed()
-  .then(() => {
-    console.log("Seed function executed successfully");
-    exit(0);
-  })
-  .catch((error) => {
-    console.error("Error executing seed function:", error);
-    exit(-1);
-  });
+if (import.meta.main) {
+  seed()
+    .then(() => {
+      console.log("Seed function executed successfully");
+      exit(0);
+    })
+    .catch((error) => {
+      console.error("Error executing seed function:", error);
+      exit(-1);
+    });
+}
