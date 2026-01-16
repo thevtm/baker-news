@@ -1,33 +1,11 @@
 # TODO
 
-## Backend
-
-- [ ] Commands
-  - [x] create user
-  - [x] create post
-  - [x] create comment
-  - [ ] vote post
-    - [x] Fix comment count
-  - [ ] vote comment
-    - [x] Fix comment count
-- [ ] API
-  - [x] get posts
-  - [x] get post
-  - [x] create user
-  - [ ] create post
-  - [ ] create comment
-  - [x] vote post
-  - [x] vote comment
-- [ ] Testing
-  - [x] DB set up
+- [ ] Comments Hierarchy
+- [ ] Create Post
+- [ ] Delete Post
+- [ ] Create Comment
+- [ ] Delete Comment
+- [ ] Frontend testing
   - [ ] Contract testing
-- [ ] Events
-  - [ ] Set up `pgmq`
-- [ ] clean up
-
-## Frontend
-
-- [ ] API Client
-- [ ] Index page
-- [ ] Post page
-  - [ ] Comments hierarchy
+  - [ ] Storybook
+- [ ] `pgmq`
