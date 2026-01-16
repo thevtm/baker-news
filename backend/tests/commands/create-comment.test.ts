@@ -69,5 +69,5 @@ Deno.test("updates comment counters", disable_leaks_test_options, async () => {
   expect(comments_query).not.toBeNull();
   expect(comments_query!.commentsCount).toBe(1);
 
-  clear_db();
+  await clear_db();
 });

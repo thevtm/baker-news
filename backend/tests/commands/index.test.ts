@@ -128,5 +128,5 @@ Deno.test("smoke test", disable_leaks_test_options, async () => {
   last_event = _.last(events_spy.calls)!.args[0] as Event;
   expect(last_event.type).toBe(EventType.USER_VOTED_COMMENT);
 
-  clear_db();
+  await clear_db();
 });

@@ -12,5 +12,5 @@ Deno.test("seed", disable_leaks_test_options, async () => {
   // Check
   expect(async () => await seed(db)).not.toThrow();
 
-  clear_db();
+  await clear_db();
 });
