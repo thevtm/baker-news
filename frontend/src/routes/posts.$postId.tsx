@@ -29,7 +29,7 @@ function reducer(state: State, response: proto.GetPostFeedResponse): State {
     return { ...state, state: "error" };
   }
 
-  console.log("Fetched posts:", response);
+  console.log("Feed response:", response);
 
   invariant(response.result.case === "success");
 
@@ -48,9 +48,59 @@ function reducer(state: State, response: proto.GetPostFeedResponse): State {
     const vote = event.vote!;
     const updated_post = { ...state.post, score: event.newScore, vote } as proto.Post;
     return { ...state, post: updated_post };
+  } else if (event_name === "userVotedComment") {
+    const event = response.result.value.event.value as proto.UserVotedComment;
+    return handle_user_voted_comment(event, state);
+  } else if (event_name === "commentScoreChanged") {
+    const event = response.result.value.event.value as proto.CommentScoreChanged;
+    return handle_comment_changed_score(event, state);
   }
 
   return state;
+}
+
+function handle_comment_changed_score(event: proto.CommentScoreChanged, state: State) {
+  invariant(state.post?.comments?.comments !== undefined);
+  const comments = state.post!.comments!.comments;
+
+  const comment_index = comments.findIndex((comment) => comment.id === event.commentId);
+  invariant(comment_index !== -1, "Comment not found");
+
+  const updated_comment = { ...comments[comment_index], score: event.newScore } as proto.Comment;
+
+  const updated_comments = [...comments];
+  updated_comments[comment_index] = updated_comment;
+
+  const updated_post = {
+    ...state.post,
+    comments: { ...state.post.comments, comments: updated_comments },
+  } as proto.Post;
+
+  return { ...state, post: updated_post };
+}
+
+function handle_user_voted_comment(event: proto.UserVotedComment, state: State) {
+  invariant(state.post?.comments?.comments !== undefined);
+  const comments = state.post!.comments!.comments;
+
+  const comment_index = comments.findIndex((comment) => comment.id === event.vote!.commentId);
+  invariant(comment_index !== -1, "Comment not found");
+
+  const updated_comment: proto.Comment = {
+    ...comments[comment_index],
+    score: event.newScore,
+    vote: event.vote!,
+  };
+
+  const updated_comments = [...comments];
+  updated_comments[comment_index] = updated_comment;
+
+  const updated_post: proto.Post = {
+    ...state.post,
+    comments: { ...state.post.comments, comments: updated_comments },
+  };
+
+  return { ...state, post: updated_post };
 }
 
 function PostsShowRouteComponent() {

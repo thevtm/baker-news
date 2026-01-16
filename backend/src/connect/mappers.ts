@@ -50,13 +50,11 @@ export function map_post_vote(db_vote: typeof schema.postVotes.$inferSelect): pr
 export function map_post_votes(post_vote: (typeof schema.postVotes.$inferSelect)[]): proto.PostVote | undefined {
   invariant(post_vote.length <= 1);
 
-  let proto_vote: proto.PostVote | undefined = undefined;
-
-  if (post_vote.length === 1) {
-    proto_vote = map_post_vote(post_vote[0]);
+  if (post_vote.length === 0) {
+    return undefined;
   }
 
-  return proto_vote;
+  return map_post_vote(post_vote[0]);
 }
 
 export function map_comment(db_comment: typeof schema.comments.$inferSelect): proto.Comment {
@@ -72,27 +70,15 @@ export function map_comment(db_comment: typeof schema.comments.$inferSelect): pr
   });
 }
 
-export function map_comment_vote(
-  comment_vote: (typeof schema.commentVotes.$inferSelect)[]
-): proto.CommentVote | undefined {
-  invariant(comment_vote.length <= 1);
-
-  let proto_vote: proto.CommentVote | undefined = undefined;
-
-  if (comment_vote.length === 1) {
-    const db_vote = comment_vote[0];
-
-    proto_vote = create(proto.CommentVoteSchema, {
-      id: db_vote.userId,
-      commentId: db_vote.commentId,
-      userId: db_vote.userId,
-      voteType: SCHEMA_TO_PROTO_VOTE_TYPE_MAP.get(db_vote.voteType),
-      createdAt: proto.convert_date_to_proto_timestamp(db_vote.createdAt),
-      updatedAt: proto.convert_date_to_proto_timestamp(db_vote.updatedAt),
-    });
-  }
-
-  return proto_vote;
+export function map_comment_vote(comment_vote: typeof schema.commentVotes.$inferSelect): proto.CommentVote {
+  return create(proto.CommentVoteSchema, {
+    id: comment_vote.userId,
+    commentId: comment_vote.commentId,
+    userId: comment_vote.userId,
+    voteType: SCHEMA_TO_PROTO_VOTE_TYPE_MAP.get(comment_vote.voteType),
+    createdAt: proto.convert_date_to_proto_timestamp(comment_vote.createdAt),
+    updatedAt: proto.convert_date_to_proto_timestamp(comment_vote.updatedAt),
+  });
 }
 
 export function map_user(db_user: typeof schema.users.$inferSelect): proto.User {

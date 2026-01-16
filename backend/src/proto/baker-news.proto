@@ -116,7 +116,7 @@ message CommentVote {
 }
 
 message UserVotedComment {
-  int32 comment_id = 1;
+  CommentVote vote = 1;
   int32 new_score = 2;
 }
 

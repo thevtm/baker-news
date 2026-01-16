@@ -33,7 +33,7 @@ export function makeGetPostRoute(db: DBOrTx) {
     // Comments
     const proto_comments = db_post.comments.map((db_comment) => {
       const proto_comment_author = map_user(db_comment.author);
-      const proto_vote = map_comment_vote(db_comment.votes);
+      const proto_vote = db_comment.votes.length === 1 ? map_comment_vote(db_comment.votes[0]) : undefined;
 
       const comment = map_comment(db_comment);
       comment.author = proto_comment_author;

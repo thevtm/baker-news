@@ -4,7 +4,7 @@ import { eachValueFrom } from "rxjs-for-await";
 
 import { DBOrTx } from "../../db/index.ts";
 import * as proto from "../../proto/index.ts";
-import { Event, Events, EventType, UserVotedPostEventData } from "../../events.ts";
+import { Event, Events, EventType, UserVotedCommentEventData, UserVotedPostEventData } from "../../events.ts";
 import { ApplicationError } from "../../error.ts";
 
 import { map_comment, map_comment_vote, map_post, map_post_vote, map_post_votes, map_user } from "../mappers.ts";
@@ -20,6 +20,11 @@ export function makeGetPostFeedRoute(db: DBOrTx, events: Events) {
     for await (const event of eachValueFrom(events.subject)) {
       if (event.type === EventType.USER_VOTED_POST && (event.data as UserVotedPostEventData).post.id === postId)
         yield user_voted_post(event, userId);
+      else if (
+        event.type === EventType.USER_VOTED_COMMENT &&
+        (event.data as UserVotedCommentEventData).comment.postId === postId
+      )
+        yield user_voted_comment(event, userId);
       else invariant(false, `Unknown event type "${event.type}"`);
     }
   };
@@ -48,7 +53,7 @@ async function initial_post(db: DBOrTx, userId: number, postId: number): Promise
   // Comments
   const proto_comments = db_post.comments.map((db_comment) => {
     const proto_comment_author = map_user(db_comment.author);
-    const proto_vote = map_comment_vote(db_comment.votes);
+    const proto_vote = db_comment.votes.length === 1 ? map_comment_vote(db_comment.votes[0]) : undefined;
 
     const comment = map_comment(db_comment);
     comment.author = proto_comment_author;
@@ -93,6 +98,36 @@ function user_voted_post(event: Event, userId: number): proto.GetPostFeedRespons
 
     success = create(proto.GetPostFeedSuccessfulResponseSchema, {
       event: { case: "postScoreChanged", value: proto_post_score_changed_event },
+    });
+  }
+
+  invariant(success !== undefined);
+
+  const response = create(proto.GetPostFeedResponseSchema, { result: { case: "success", value: success } });
+  return response;
+}
+
+function user_voted_comment(event: Event, userId: number): proto.GetPostFeedResponse {
+  const { comment, commentVote } = event.data as UserVotedCommentEventData;
+  let success: proto.GetPostFeedSuccessfulResponse | undefined = undefined;
+
+  if (commentVote.userId === userId) {
+    const proto_user_voted_post = create(proto.UserVotedCommentSchema, {
+      vote: map_comment_vote(commentVote),
+      newScore: comment.score,
+    });
+
+    success = create(proto.GetPostFeedSuccessfulResponseSchema, {
+      event: { case: "userVotedComment", value: proto_user_voted_post },
+    });
+  } else {
+    const proto_post_score_changed_event = create(proto.CommentScoreChangedSchema, {
+      commentId: comment.id,
+      newScore: comment.score,
+    });
+
+    success = create(proto.GetPostFeedSuccessfulResponseSchema, {
+      event: { case: "commentScoreChanged", value: proto_post_score_changed_event },
     });
   }
 
