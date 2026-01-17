@@ -1,6 +1,6 @@
 # TODO
 
-- [ ] Comments Hierarchy
+- [x] Comments Hierarchy
 - [ ] Create Post
 - [ ] Delete Post
 - [ ] Create Comment
