@@ -44,8 +44,6 @@ const PostItem: React.FC<PostItemProps> = ({ post }) => {
     }
 
     invariant(response.result.case === "success");
-
-    // TODO: Update the post state in the UI
   };
 
   return (
@@ -67,7 +65,9 @@ const PostItem: React.FC<PostItemProps> = ({ post }) => {
 
       <div className={sprinkles({ display: "flex", flexDirection: "column", color: "black" })}>
         <div>
-          <a href={post.url}>{post.title}</a>
+          <a href={post.url} className={sprinkles({ color: "black", textDecoration: "none" })}>
+            {post.title}
+          </a>
 
           <a
             href={url_host_href}
@@ -77,12 +77,12 @@ const PostItem: React.FC<PostItemProps> = ({ post }) => {
           </a>
         </div>
 
-        <div className={sprinkles({ display: "flex", flexDirection: "row", color: "gray-500" })}>
+        <div className={sprinkles({ display: "flex", flexDirection: "row", color: "gray-500", fontSize: "xs" })}>
           <span className="post-score">{post.score}</span>&nbsp;points by {post.author!.username}{" "}
           {created_at_formatted_date}
           {/* Delete */}
           <span className={sprinkles({ marginX: 1 })}>|</span>
-          <a className="hover:underline" href="/delete-post">
+          <a className={sprinkles({ color: "gray-500", textDecoration: "none" })} href="/delete-post">
             delete
           </a>
           {/* Comments */}
@@ -90,6 +90,7 @@ const PostItem: React.FC<PostItemProps> = ({ post }) => {
           <Link
             to={`/posts/$postId`}
             params={{ postId: post.id.toString() }}
+            className={sprinkles({ color: "gray-500", textDecoration: "none" })}
             activeProps={{ className: "hover:underline" }}
             activeOptions={{ exact: true }}
           >

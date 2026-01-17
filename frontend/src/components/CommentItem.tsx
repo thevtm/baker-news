@@ -70,7 +70,9 @@ export const CommentItem: React.FC<CommentItemProps> = ({ comment }) => {
           <div className={sprinkles({ display: "flex", fontSize: "xs", color: "gray-500" })}>
             {score} points by {author!.username} {created_at_formatted_date}
             <span className={sprinkles({ marginX: 1 })}>|</span>
-            <a href="#">reply</a>
+            <a href="#" className={sprinkles({ color: "gray-500", textDecoration: "none" })}>
+              reply
+            </a>
           </div>
 
           {/* Content */}

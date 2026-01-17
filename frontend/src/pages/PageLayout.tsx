@@ -38,7 +38,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({ user, children }) => {
         <nav className={sprinkles({ display: "flex", paddingY: 1 })}>
           <div className={sprinkles({ display: "flex", flexGrow: 1 })}>
             <a
-              className={sprinkles({ marginX: 1, fontWeight: "bold" })}
+              className={sprinkles({ marginX: 1, fontWeight: "bold", textDecoration: "none" })}
               href="/"
               hx-get="/"
               hx-target="main"
@@ -47,12 +47,18 @@ const PageLayout: React.FC<PageLayoutProps> = ({ user, children }) => {
               🥖
             </a>
 
-            <a className="mx-1 font-bold" href="/" hx-get="/" hx-target="main" hx-push-url="true">
+            <a
+              className={sprinkles({ marginX: 1, fontWeight: "bold", textDecoration: "none", color: "white" })}
+              href="/"
+              hx-get="/"
+              hx-target="main"
+              hx-push-url="true"
+            >
               Backer News
             </a>
           </div>
 
-          {username}
+          <span className={sprinkles({ marginX: 1 })}>{username}</span>
         </nav>
       </header>
 

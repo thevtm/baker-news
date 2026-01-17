@@ -67,6 +67,8 @@ const responsiveProperties = defineProperties({
     fontSize: sizes,
     fontWeight: weight,
 
+    textDecoration: ["none", "underline", "line-through"],
+
     filter: ["none", "grayscale(100%)"],
 
     cursor: ["pointer"],
