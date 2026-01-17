@@ -13,7 +13,7 @@ import { APIClientProvider } from "./contexts/api-client.tsx";
 import { routeTree } from "./routeTree.gen";
 import { createLocalStoragePersister } from "./queries.ts";
 
-import "./reset.css";
+import "./css/reset.css";
 
 // API Client
 const api_client = createAPIClient();
