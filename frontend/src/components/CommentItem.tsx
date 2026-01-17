@@ -8,7 +8,7 @@ import { PostPageComment } from "../state/post-store";
 
 import VoteButton from "./VoteButton";
 
-import { sprinkles } from "../sprinkles.css";
+import { sprinkles } from "../css/sprinkles.css";
 
 export interface CommentItemProps {
   comment: PostPageComment;

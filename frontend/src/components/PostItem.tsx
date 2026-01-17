@@ -8,7 +8,7 @@ import { useAPIClient } from "../contexts/api-client";
 
 import VoteButton from "./VoteButton";
 
-import { sprinkles } from "../sprinkles.css";
+import { sprinkles } from "../css/sprinkles.css";
 
 export interface PostItemProps {
   post: proto.Post;

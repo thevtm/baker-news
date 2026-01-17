@@ -5,8 +5,8 @@ import * as proto from "../proto";
 import PostItem from "../components/PostItem";
 import CommentList from "../components/CommentList";
 
-import { sprinkles } from "../sprinkles.css";
-import { container } from "../styles.css";
+import { sprinkles } from "../css/sprinkles.css";
+import { container } from "../css/styles.css";
 import { PostPageComment } from "../state/post-store";
 
 // container mx-auto bg-orange-100 py-1

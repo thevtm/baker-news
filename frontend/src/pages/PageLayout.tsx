@@ -3,8 +3,8 @@ import cslx from "clsx";
 
 import * as proto from "../proto";
 
-import { sprinkles } from "../sprinkles.css";
-import { container } from "../styles.css";
+import { sprinkles } from "../css/sprinkles.css";
+import { container } from "../css/styles.css";
 
 // container mx-auto bg-orange-800 text-gray-200
 const header_style = sprinkles({
@@ -37,7 +37,13 @@ const PageLayout: React.FC<PageLayoutProps> = ({ user, children }) => {
       <header className={cslx(container, header_style)}>
         <nav className={sprinkles({ display: "flex", paddingY: 1 })}>
           <div className={sprinkles({ display: "flex", flexGrow: 1 })}>
-            <a className="mx-1 font-bold" href="/" hx-get="/" hx-target="main" hx-push-url="true">
+            <a
+              className={sprinkles({ marginX: 1, fontWeight: "bold" })}
+              href="/"
+              hx-get="/"
+              hx-target="main"
+              hx-push-url="true"
+            >
               🥖
             </a>
 

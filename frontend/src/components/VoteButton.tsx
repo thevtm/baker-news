@@ -3,7 +3,7 @@ import { MouseEventHandler } from "react";
 
 import { VoteType } from "../proto";
 
-import { sprinkles } from "../sprinkles.css";
+import { sprinkles } from "../css/sprinkles.css";
 
 const voteIcons = new Map<VoteType, string>([
   [VoteType.UP_VOTE, "🔼"],

@@ -19,6 +19,18 @@ const sizes = {
   xl: "1.25rem",
 };
 
+const weight = {
+  thin: 100,
+  extraLight: 200,
+  light: 300,
+  normal: 400,
+  medium: 500,
+  semiBold: 600,
+  bold: 700,
+  extraBold: 800,
+  black: 900,
+};
+
 const responsiveProperties = defineProperties({
   conditions: {
     mobile: { "@media": "screen and (min-width: 640px)" },
@@ -33,14 +45,7 @@ const responsiveProperties = defineProperties({
 
     flexDirection: ["row", "column"],
     flexGrow: [0, 1],
-    justifyContent: [
-      "stretch",
-      "flex-start",
-      "center",
-      "flex-end",
-      "space-around",
-      "space-between",
-    ],
+    justifyContent: ["stretch", "flex-start", "center", "flex-end", "space-around", "space-between"],
     alignItems: ["stretch", "flex-start", "center", "flex-end"],
     alignSelf: ["stretch", "flex-start", "center", "flex-end"],
 
@@ -60,6 +65,7 @@ const responsiveProperties = defineProperties({
     paddingRight: space,
 
     fontSize: sizes,
+    fontWeight: weight,
 
     filter: ["none", "grayscale(100%)"],
 
