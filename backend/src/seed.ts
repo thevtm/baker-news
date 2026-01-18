@@ -49,7 +49,7 @@ export async function seed(db: DBOrTx = global_db) {
         authorId: user_ids[faker.number.int({ min: 0, max: user_ids.length - 1 })],
       });
       if (!result.success) throw new Error(`Failed to create post: ${result.error}`);
-      post_ids[i] = result.data!.id;
+      post_ids[i] = result.data!.post.id;
     }
 
     console.log(`Seeded ${NUM_POSTS} posts.`);

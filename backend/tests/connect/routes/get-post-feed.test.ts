@@ -34,7 +34,7 @@ Deno.test("GetPostFeed", disable_leaks_test_options, async () => {
     authorId: user_id,
   });
   expect(post_data.success).toBe(true);
-  const post_id = post_data.data!.id;
+  const post_id = post_data.data!.post.id;
 
   // Make request for the initial post list
   const feed = client.getPostFeed({ userId: user_id, postId: post_id });
@@ -60,7 +60,7 @@ Deno.test("GetPostFeed", disable_leaks_test_options, async () => {
   const vote_post_promise = commands
     .votePost({
       userId: user_id,
-      postId: post_data.data!.id,
+      postId: post_data.data!.post.id,
       voteType: schema.VoteType.UP_VOTE,
     })
     .then((vote_post_response) => {
@@ -71,18 +71,18 @@ Deno.test("GetPostFeed", disable_leaks_test_options, async () => {
   response_it = await iterator.next();
   await vote_post_promise;
 
-  // expect(response_it.done).toBe(false);
+  expect(response_it.done).toBe(false);
 
-  // const response_user_voted_post = response_it.value as proto.GetPostsFeedResponse;
-  // expect(response_user_voted_post.result).toBeDefined();
-  // expect(response_user_voted_post.result.case).toBe("success");
+  const response_user_voted_post = response_it.value as proto.GetPostsFeedResponse;
+  expect(response_user_voted_post.result).toBeDefined();
+  expect(response_user_voted_post.result.case).toBe("success");
 
-  // const successful_vote_response = response_user_voted_post.result.value as proto.GetPostsFeedSuccessfulResponse;
-  // expect(successful_vote_response.event.case).toBe("userVotedPost");
+  const successful_vote_response = response_user_voted_post.result.value as proto.GetPostsFeedSuccessfulResponse;
+  expect(successful_vote_response.event.case).toBe("userVotedPost");
 
-  // const post_score_changed_event = successful_vote_response.event.value as proto.UserVotedPost;
-  // expect(post_score_changed_event.vote?.postId).toBe(post_data.data!.id);
-  // expect(post_score_changed_event.newScore).toBe(1);
+  const post_score_changed_event = successful_vote_response.event.value as proto.UserVotedPost;
+  expect(post_score_changed_event.vote?.postId).toBe(post_data.data!.post.id);
+  expect(post_score_changed_event.newScore).toBe(1);
 
   await clear_db();
 });

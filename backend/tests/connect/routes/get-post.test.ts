@@ -26,7 +26,7 @@ Deno.test("GetPost", disable_leaks_test_options, async () => {
   // Create a post
   const post_data = await commands.createPost({ title: "test_post", url: "https://example.com", authorId: user_id });
   expect(post_data.success).toBe(true);
-  const post_id = post_data.data!.id;
+  const post_id = post_data.data!.post.id;
 
   // Create a comment
   const comment_data = await commands.createComment({ postId: post_id, authorId: user_id, content: "test_comment" });

@@ -4,7 +4,7 @@ import invariant from "tiny-invariant";
 import * as proto from "../proto";
 import { useUser } from "../queries";
 import { useAPIClient } from "../contexts/api-client";
-import { PostPageComment } from "../state/post-store";
+import { PostPageComment } from "../state/post-page-store";
 
 import VoteButton from "./VoteButton";
 

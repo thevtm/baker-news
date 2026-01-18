@@ -22,6 +22,7 @@ export type EventData =
 
 export interface UserCreatedPostEventData {
   post: typeof schema.posts.$inferSelect;
+  author: typeof schema.users.$inferSelect;
 }
 
 export interface UserVotedPostEventData {

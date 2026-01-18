@@ -59,7 +59,7 @@ Deno.test("GetPostsFeed", disable_leaks_test_options, async () => {
   const vote_post_promise = commands
     .votePost({
       userId: user_id,
-      postId: post_data.data!.id,
+      postId: post_data.data!.post.id,
       voteType: schema.VoteType.UP_VOTE,
     })
     .then((vote_post_response) => {
@@ -80,7 +80,7 @@ Deno.test("GetPostsFeed", disable_leaks_test_options, async () => {
   expect(successful_vote_response.event.case).toBe("userVotedPost");
 
   const post_score_changed_event = successful_vote_response.event.value as proto.UserVotedPost;
-  expect(post_score_changed_event.vote?.postId).toBe(post_data.data!.id);
+  expect(post_score_changed_event.vote?.postId).toBe(post_data.data!.post.id);
   expect(post_score_changed_event.newScore).toBe(1);
 
   await clear_db();

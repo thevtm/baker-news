@@ -14,6 +14,7 @@ import { makeGetPostsFeedRoute } from "./routes/get-posts-feed.ts";
 import { makeGetPostsRoute } from "./routes/get-posts.ts";
 import { makeVoteCommentRoute } from "./routes/vote-comment.ts";
 import { makeVotePostRoute } from "./routes/vote-post.ts";
+import { makeCreatePostRoute } from "./routes/create-post.ts";
 
 export const createRoutes = (db: DBOrTx, events: Events) => {
   const queries = createQueries(db);
@@ -22,6 +23,7 @@ export const createRoutes = (db: DBOrTx, events: Events) => {
   return (router: ConnectRouter) =>
     router.service(BakerNewsService, {
       createUser: makeCreateUserRoute(commands),
+      createPost: makeCreatePostRoute(db, commands),
       getCommentList: makeGetCommentListRoute(db),
       getPost: makeGetPostRoute(db),
       getPostFeed: makeGetPostFeedRoute(db, events),

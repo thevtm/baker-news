@@ -19,6 +19,7 @@ export function makeCreateUserRoute(commands: Commands) {
 
     const user_data = create_user_result.data!;
     const user_proto = map_user(user_data.user);
+
     const success = create(proto.CreateUserSuccessfulResponseSchema, { user: user_proto });
     const response = create(proto.CreateUserResponseSchema, { result: { case: "success", value: success } });
 

@@ -67,6 +67,7 @@ const responsiveProperties = defineProperties({
     fontSize: sizes,
     fontWeight: weight,
 
+    textAlign: ["left", "center", "right"],
     textDecoration: ["none", "underline", "line-through"],
 
     filter: ["none", "grayscale(100%)"],
@@ -92,6 +93,15 @@ const colors = {
   black: "#000",
   white: "#fff",
 
+  "red-50": "#fef2f2",
+  "red-100": "#fee2e2",
+  "red-200": "#fecaca",
+  "red-300": "#fca5a1",
+  "red-400": "#f87171",
+  "red-500": "#ef4444",
+  "red-600": "#dc2626",
+  "red-700": "#b91c1c",
+
   "blue-50": "#eff6ff",
   "blue-100": "#dbeafe",
   "blue-200": "#bfdbfe",
@@ -101,6 +111,7 @@ const colors = {
   "gray-800": "#1f2937",
   "gray-900": "#111827",
 
+  "orange-50": "#fff7ed",
   "orange-100": "#ffedd5",
   "orange-200": "#ffd6a7",
   "orange-800": "#9f2d00",

@@ -30,7 +30,7 @@ Deno.test("GetCommentList", disable_leaks_test_options, async () => {
     authorId: user_id,
   });
   expect(post_data.success).toBe(true);
-  const post_id = post_data.data!.id;
+  const post_id = post_data.data!.post.id;
 
   // Create comments
   const comment_data_1 = await commands.createComment({

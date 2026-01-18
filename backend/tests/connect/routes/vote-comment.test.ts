@@ -29,7 +29,7 @@ Deno.test("VoteComment", disable_leaks_test_options, async () => {
   expect(post_data.success).toBe(true);
 
   const comment_data = await commands.createComment({
-    postId: post_data.data!.id,
+    postId: post_data.data!.post.id,
     authorId: user_id,
     content: "test_comment",
   });

@@ -7,7 +7,7 @@ import CommentList from "../components/CommentList";
 
 import { sprinkles } from "../css/sprinkles.css";
 import { container } from "../css/styles.css";
-import { PostPageComment } from "../state/post-store";
+import { PostPageComment } from "../state/post-page-store";
 
 // container mx-auto bg-orange-100 py-1
 const style = sprinkles({

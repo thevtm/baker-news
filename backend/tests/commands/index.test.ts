@@ -44,9 +44,9 @@ Deno.test("smoke test", disable_leaks_test_options, async () => {
   });
 
   expect(create_post_command_result.success).toBe(true);
-  expect(create_post_command_result.data?.id).toBeDefined();
+  expect(create_post_command_result.data?.post.id).toBeDefined();
 
-  const post_id = create_post_command_result.data!.id;
+  const post_id = create_post_command_result.data!.post.id;
 
   const posts_query = await db.query.posts.findMany();
 
@@ -54,6 +54,10 @@ Deno.test("smoke test", disable_leaks_test_options, async () => {
   expect(posts_query[0].title).toBe("Test Post");
   expect(posts_query[0].url).toBe("https://example.com");
   expect(posts_query[0].authorId).toBe(user_id);
+
+  expect(events_spy.calls.length).toBe(1);
+  let last_event = _.last(events_spy.calls)!.args[0] as Event;
+  expect(last_event.type).toBe(EventType.USER_CREATED_POST);
 
   // Create Comment
   const create_comment_command_result = await commands.createComment({
@@ -74,8 +78,8 @@ Deno.test("smoke test", disable_leaks_test_options, async () => {
   expect(comments_query[0].authorId).toBe(user_id);
   expect(comments_query[0].score).toBe(0);
 
-  expect(events_spy.calls.length).toBe(1);
-  let last_event = _.last(events_spy.calls)!.args[0] as Event;
+  expect(events_spy.calls.length).toBe(2);
+  last_event = _.last(events_spy.calls)!.args[0] as Event;
   expect(last_event.type).toBe(EventType.USER_CREATED_COMMENT);
 
   // Vote Post
@@ -95,7 +99,7 @@ Deno.test("smoke test", disable_leaks_test_options, async () => {
   expect(vote_post_command_result.data?.vote.createdAt).toBeDefined();
   expect(vote_post_command_result.data?.vote.updatedAt).toBeDefined();
 
-  expect(events_spy.calls.length).toBe(2);
+  expect(events_spy.calls.length).toBe(3);
   last_event = _.last(events_spy.calls)!.args[0] as Event;
   expect(last_event.type).toBe(EventType.USER_VOTED_POST);
 
@@ -124,7 +128,7 @@ Deno.test("smoke test", disable_leaks_test_options, async () => {
 
   expect(comment_votes_query[0].comment.score).toBe(-1);
 
-  expect(events_spy.calls.length).toBe(3);
+  expect(events_spy.calls.length).toBe(4);
   last_event = _.last(events_spy.calls)!.args[0] as Event;
   expect(last_event.type).toBe(EventType.USER_VOTED_COMMENT);
 

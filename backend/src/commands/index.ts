@@ -21,7 +21,7 @@ export type Commands = {
 export function createCommands(db: DBOrTx, queries: Queries, events: Events): Commands {
   return {
     createUser: createCreateUserCommand(db),
-    createPost: createCreatePostCommand(db, queries),
+    createPost: createCreatePostCommand(db, queries, events),
     createComment: createCreateCommentCommand(db, queries, events),
     votePost: createVotePostCommand(db, queries, events),
     voteComment: createVoteCommentCommand(db, queries, events),

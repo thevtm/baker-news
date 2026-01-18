@@ -1,7 +1,7 @@
 import React from "react";
 
 import { CommentItem } from "./CommentItem";
-import { PostPageComment } from "../state/post-store";
+import { PostPageComment } from "../state/post-page-store";
 
 export interface CommentListProps {
   comments: PostPageComment[];

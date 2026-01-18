@@ -6,7 +6,7 @@ import * as proto from "../proto/index.ts";
 import { useUser } from "../queries";
 import { PostPage } from "../pages/PostPage";
 import { useAPIClient } from "../contexts/api-client.tsx";
-import { handleFeedEvent, makePostStore, PostPageComment } from "../state/post-store.ts";
+import { handleFeedEvent, makePostStore, PostPageComment } from "../state/post-page-store.ts";
 import { useSnapshot } from "valtio";
 
 export const Route = createFileRoute("/posts/$postId")({

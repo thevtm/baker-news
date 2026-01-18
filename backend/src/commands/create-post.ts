@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm/expressions";
 
 import { schema, utils, DBOrTx } from "../db/index.ts";
 import { Queries } from "../queries/index.ts";
+import { Events, UserCreatedPostEventData, EventType } from "../events.ts";
 
 import { CommandReturnType } from "./index.ts";
 
@@ -16,14 +17,14 @@ export interface CreatePostCommandInput {
 }
 
 export interface CreatePostReturnData {
-  id: number;
+  post: typeof schema.posts.$inferSelect;
 }
 
 export type CreatePostCommandFunction = (
   input: CreatePostCommandInput
 ) => Promise<CommandReturnType<CreatePostReturnData>>;
 
-export function createCreatePostCommand(db: DBOrTx, queries: Queries): CreatePostCommandFunction {
+export function createCreatePostCommand(db: DBOrTx, queries: Queries, events: Events): CreatePostCommandFunction {
   const title_taken_prepared_query = db
     .select()
     .from(schema.posts)
@@ -70,15 +71,31 @@ export function createCreatePostCommand(db: DBOrTx, queries: Queries): CreatePos
     const { title, url, authorId } = validation_result.data;
 
     // Create the post
-    const post: typeof schema.posts.$inferInsert = { title, url: url, authorId: authorId };
-    const result = await db.insert(schema.posts).values(post).returning();
+    const post_inputs: typeof schema.posts.$inferInsert = { title, url: url, authorId: authorId };
+    const result = await db.insert(schema.posts).values(post_inputs).returning();
 
     if (result.length === 0) {
       return { success: false, error: "Failed to create post" };
     }
 
-    invariant(result.length === 1);
+    ////////////////////////////////////////////////////////////////////////////
 
-    return { success: true, data: { id: result[0].id } };
+    // Emit event
+
+    invariant(result.length === 1);
+    const post = result[0];
+
+    const author = await db.query.users.findFirst({
+      where: (users, { eq }) => eq(users.id, result[0].authorId),
+    });
+    invariant(author !== undefined);
+
+    const event_data: UserCreatedPostEventData = { post, author };
+
+    events.dispatch({ type: EventType.USER_CREATED_POST, data: event_data });
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    return { success: true, data: { post } };
   };
 }

@@ -41,7 +41,7 @@ Deno.test("GetPosts", disable_leaks_test_options, async () => {
   // Vote for the first post
   const vote_post_1 = await commands.votePost({
     userId: user_id,
-    postId: post_data_1.data!.id,
+    postId: post_data_1.data!.post.id,
     voteType: schema.VoteType.UP_VOTE,
   });
   expect(vote_post_1.success).toBe(true);
@@ -65,7 +65,7 @@ Deno.test("GetPosts", disable_leaks_test_options, async () => {
   expect(post_list.posts[0].score).toBe(1);
 
   expect(post_list.posts[0].vote).toBeDefined();
-  expect(post_list.posts[0].vote!.postId).toBe(post_data_1.data!.id);
+  expect(post_list.posts[0].vote!.postId).toBe(post_data_1.data!.post.id);
   expect(post_list.posts[0].vote!.userId).toBe(user_id);
   expect(post_list.posts[0].vote!.voteType).toBe(proto.VoteType.UP_VOTE);
   expect(post_list.posts[0].vote!.createdAt).toBeDefined();

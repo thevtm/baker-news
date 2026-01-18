@@ -136,6 +136,23 @@ message CreateUserResponse {
   }
 }
 
+
+// Create Post
+message CreatePostRequest {
+  string title = 1;
+  string url = 2;
+  int32 author_id = 3;
+}
+
+message CreatePostSuccessfulResponse { Post post = 1; }
+
+message CreatePostResponse {
+  oneof result {
+    CreatePostSuccessfulResponse success = 1;
+    ErrorResponse error = 2;
+  }
+}
+
 // Get Post
 message GetPostRequest {
   int32 post_id = 1;
@@ -259,6 +276,7 @@ message VoteCommentResponse {
 // Service
 service BakerNewsService {
   rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {}
+  rpc CreatePost(CreatePostRequest) returns (CreatePostResponse) {}
 
   rpc GetPost(GetPostRequest) returns (GetPostResponse) {}
   rpc GetPostFeed(GetPostFeedRequest) returns (stream GetPostFeedResponse) {}

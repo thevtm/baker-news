@@ -34,7 +34,7 @@ Deno.test("updates comment counters", disable_leaks_test_options, async () => {
   });
   expect(post_result.success).toBe(true);
 
-  const post_id = post_result.data!.id;
+  const post_id = post_result.data!.post.id;
 
   // Create Comment 1
   const comment_1_result = await commands.createComment({
