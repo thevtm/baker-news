@@ -20,6 +20,7 @@ export function makeGetPostsFeedRoute(db: DBOrTx, events: Events) {
     for await (const event of eachValueFrom(events.subject)) {
       if (event.type === EventType.USER_VOTED_POST) yield user_voted_post(event, userId);
       else if (event.type === EventType.USER_CREATED_POST) yield user_created_post(event);
+      else if (event.type === EventType.USER_DELETED_POST) yield user_deleted_post(event);
       else invariant(false, `Unknown event type "${event.type}"`);
     }
   };
@@ -27,6 +28,7 @@ export function makeGetPostsFeedRoute(db: DBOrTx, events: Events) {
 
 async function initial_posts(db: DBOrTx, userId: number) {
   const db_posts = await db.query.posts.findMany({
+    where: (posts, { isNull }) => isNull(posts.deletedAt),
     with: { author: true, votes: { where: (post_votes, { eq }) => eq(post_votes.userId, userId) } },
     orderBy: [desc(schema.posts.score)],
   });
@@ -65,6 +67,22 @@ function user_created_post(event: Event) {
 
   const success = create(proto.GetPostsFeedSuccessfulResponseSchema, {
     event: { case: "postCreated", value: proto_event },
+  });
+
+  const response = create(proto.GetPostsFeedResponseSchema, {
+    result: { case: "success", value: success },
+  });
+
+  return response;
+}
+
+function user_deleted_post(event: Event) {
+  const { post } = event.data as UserVotedPostEventData;
+
+  const proto_event = create(proto.PostDeletedSchema, { postId: post.id });
+
+  const success = create(proto.GetPostsFeedSuccessfulResponseSchema, {
+    event: { case: "postDeleted", value: proto_event },
   });
 
   const response = create(proto.GetPostsFeedResponseSchema, {

@@ -52,6 +52,10 @@ message PostCreated {
   Post post = 1;
 }
 
+message PostDeleted {
+  int32 post_id = 1;
+}
+
 message PostScoreChanged {
   int32 post_id = 1;
   int32 new_score = 2;
@@ -153,6 +157,20 @@ message CreatePostResponse {
   }
 }
 
+// Delete Post
+message DeletePostRequest {
+  int32 post_id = 1;
+}
+
+message DeletePostSuccessfulResponse { int32 post_id = 1; }
+
+message DeletePostResponse {
+  oneof result {
+    DeletePostSuccessfulResponse success = 1;
+    ErrorResponse error = 2;
+  }
+}
+
 // Get Post
 message GetPostRequest {
   int32 post_id = 1;
@@ -215,6 +233,7 @@ message GetPostsFeedSuccessfulResponse {
     PostList initial_posts = 1;
 
     PostCreated post_created = 2;
+    PostDeleted post_deleted = 6;
 
     UserVotedPost user_voted_post = 3;
     PostScoreChanged post_score_changed = 4;
@@ -276,7 +295,9 @@ message VoteCommentResponse {
 // Service
 service BakerNewsService {
   rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {}
+
   rpc CreatePost(CreatePostRequest) returns (CreatePostResponse) {}
+  rpc DeletePost(DeletePostRequest) returns (DeletePostResponse) {}
 
   rpc GetPost(GetPostRequest) returns (GetPostResponse) {}
   rpc GetPostFeed(GetPostFeedRequest) returns (stream GetPostFeedResponse) {}

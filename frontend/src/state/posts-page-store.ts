@@ -28,6 +28,10 @@ export function handleGetPostsFeedEvent(store: PostsPageStore, response: proto.G
   } else if (event.case === "postCreated") {
     store.posts.push(event.value.post!);
     sort_posts(store);
+  } else if (event.case === "postDeleted") {
+    const postId = (event.value satisfies proto.PostDeleted).postId;
+    invariant(postId !== undefined);
+    store.posts = store.posts.filter((post) => post.id !== postId);
   } else if (event.case === "postScoreChanged") {
     handle_post_score_changed(event.value, store);
     sort_posts(store);

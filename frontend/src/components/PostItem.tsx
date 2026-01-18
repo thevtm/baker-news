@@ -35,11 +35,24 @@ const PostItem: React.FC<PostItemProps> = ({ post }) => {
   const up_vote_active = vote_state === proto.VoteType.UP_VOTE;
   const down_vote_active = vote_state === proto.VoteType.DOWN_VOTE;
 
-  const handleVote = async (voteType: proto.VoteType) => {
+  const handle_vote = async (voteType: proto.VoteType) => {
     const response = await api_client.votePost({ userId: user.id, postId: post.id, voteType });
 
     if (response.result.case === "error") {
       console.error("Failed to vote:", response.result.value.message);
+      return;
+    }
+
+    invariant(response.result.case === "success");
+  };
+
+  const handle_delete_post = async (e: React.FormEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+
+    const response = await api_client.deletePost({ postId: post.id });
+
+    if (response.result.case === "error") {
+      console.error("Failed to delete post:", response.result.value.message);
       return;
     }
 
@@ -53,13 +66,13 @@ const PostItem: React.FC<PostItemProps> = ({ post }) => {
         <VoteButton
           voteType={proto.VoteType.UP_VOTE}
           active={up_vote_active}
-          onClick={() => handleVote(up_vote_active ? proto.VoteType.NO_VOTE : proto.VoteType.UP_VOTE)}
+          onClick={() => handle_vote(up_vote_active ? proto.VoteType.NO_VOTE : proto.VoteType.UP_VOTE)}
         />
 
         <VoteButton
           voteType={proto.VoteType.DOWN_VOTE}
           active={down_vote_active}
-          onClick={() => handleVote(down_vote_active ? proto.VoteType.NO_VOTE : proto.VoteType.DOWN_VOTE)}
+          onClick={() => handle_vote(down_vote_active ? proto.VoteType.NO_VOTE : proto.VoteType.DOWN_VOTE)}
         />
       </div>
 
@@ -80,9 +93,9 @@ const PostItem: React.FC<PostItemProps> = ({ post }) => {
         <div className={sprinkles({ display: "flex", flexDirection: "row", color: "gray-500", fontSize: "xs" })}>
           <span className="post-score">{post.score}</span>&nbsp;points by {post.author!.username}{" "}
           {created_at_formatted_date}
-          {/* Delete */}
           <span className={sprinkles({ marginX: 1 })}>|</span>
-          <a className={sprinkles({ color: "gray-500", textDecoration: "none" })} href="/delete-post">
+          {/* Delete */}
+          <a className={sprinkles({ color: "gray-500", textDecoration: "none" })} onClick={handle_delete_post} href="#">
             delete
           </a>
           {/* Comments */}
