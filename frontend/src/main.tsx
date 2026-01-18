@@ -6,8 +6,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { persistQueryClient } from "@tanstack/react-query-persist-client";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
-import { createStore, postsFSM } from "./state.ts";
-import { StoreProvider } from "./contexts/store.tsx";
 import { createAPIClient } from "./api-client.ts";
 import { APIClientProvider } from "./contexts/api-client.tsx";
 import { routeTree } from "./routeTree.gen";
@@ -33,20 +31,13 @@ declare module "@tanstack/react-router" {
 
 const router = createRouter({ routeTree });
 
-// Store
-const store = createStore();
-
-postsFSM(store, api_client, "loading");
-
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <StoreProvider store={store}>
-      <APIClientProvider apiClient={api_client}>
-        <QueryClientProvider client={queryClient}>
-          <RouterProvider router={router} />
-          <ReactQueryDevtools />
-        </QueryClientProvider>
-      </APIClientProvider>
-    </StoreProvider>
+    <APIClientProvider apiClient={api_client}>
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+        <ReactQueryDevtools />
+      </QueryClientProvider>
+    </APIClientProvider>
   </StrictMode>
 );
