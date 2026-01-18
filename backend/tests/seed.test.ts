@@ -1,5 +1,4 @@
 import _ from "lodash";
-import { expect } from "jsr:@std/expect";
 
 import { InitializeDatabaseForTests } from "./helpers/db.ts";
 import { disable_leaks_test_options } from "./helpers/disable-leaks-config.ts";
@@ -10,7 +9,11 @@ Deno.test("seed", disable_leaks_test_options, async () => {
   const { db, clear_db } = await InitializeDatabaseForTests();
 
   // Check
-  expect(async () => await seed(db)).not.toThrow();
+  try {
+    await seed(db);
+  } catch (error) {
+    throw new Error(`Seeding failed: ${error}`);
+  }
 
   await clear_db();
 });
