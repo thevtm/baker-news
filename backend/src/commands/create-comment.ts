@@ -124,7 +124,12 @@ export function createCreateCommentCommand(db: DBOrTx, queries: Queries, events:
     invariant(new_comment !== undefined);
 
     // Emit the event
-    const event_data: UserCreatedCommentEventData = { comment: new_comment };
+    const author = await db.query.users.findFirst({
+      where: (users, { eq }) => eq(users.id, authorId),
+    });
+    invariant(author, "Comment author has to exist");
+
+    const event_data: UserCreatedCommentEventData = { comment: new_comment, author: author };
     const event = { type: EventType.USER_CREATED_COMMENT, data: event_data };
 
     events.dispatch(event);

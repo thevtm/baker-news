@@ -249,6 +249,27 @@ message GetPostsFeedResponse {
   }
 }
 
+// Create Comment
+message CreateCommentRequest {
+  int32 author_id = 1;
+
+  oneof parent {
+    int32 post_id = 2;
+    int32 comment_id = 3;
+  }
+
+  string content = 4;
+}
+
+message CreateCommentSuccessfulResponse { Comment comment = 1; }
+
+message CreateCommentResponse {
+  oneof result {
+    CreateCommentSuccessfulResponse success = 1;
+    ErrorResponse error = 2;
+  }
+}
+
 // Get Comment List
 message GetCommentListRequest { int32 user_id = 1; int32 post_id = 2; }
 
@@ -305,6 +326,7 @@ service BakerNewsService {
   rpc GetPosts(GetPostsRequest) returns (GetPostsResponse) {}
   rpc GetPostsFeed(GetPostsFeedRequest) returns (stream GetPostsFeedResponse) {}
 
+  rpc CreateComment(CreateCommentRequest) returns (CreateCommentResponse) {}
   rpc GetCommentList(GetCommentListRequest) returns (GetCommentListResponse) {}
 
   rpc VotePost(VotePostRequest) returns (VotePostResponse) {}

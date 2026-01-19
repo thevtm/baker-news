@@ -4,7 +4,14 @@ import { eachValueFrom } from "rxjs-for-await";
 
 import { DBOrTx } from "../../db/index.ts";
 import * as proto from "../../proto/index.ts";
-import { Event, Events, EventType, UserVotedCommentEventData, UserVotedPostEventData } from "../../events.ts";
+import {
+  Event,
+  Events,
+  EventType,
+  UserCreatedCommentEventData,
+  UserVotedCommentEventData,
+  UserVotedPostEventData,
+} from "../../events.ts";
 import { ApplicationError } from "../../error.ts";
 
 import { map_comment, map_comment_vote, map_post, map_post_vote, map_post_votes, map_user } from "../mappers.ts";
@@ -25,6 +32,11 @@ export function makeGetPostFeedRoute(db: DBOrTx, events: Events) {
         (event.data as UserVotedCommentEventData).comment.postId === postId
       )
         yield user_voted_comment(event, userId);
+      else if (
+        event.type === EventType.USER_CREATED_COMMENT &&
+        (event.data as UserVotedCommentEventData).comment.postId === postId
+      )
+        yield user_created_comment(event);
       else invariant(false, `Unknown event type "${event.type}"`);
     }
   };
@@ -135,4 +147,20 @@ function user_voted_comment(event: Event, userId: number): proto.GetPostFeedResp
 
   const response = create(proto.GetPostFeedResponseSchema, { result: { case: "success", value: success } });
   return response;
+}
+
+function user_created_comment(event: Event): proto.GetPostFeedResponse {
+  const { comment, author } = event.data as UserCreatedCommentEventData;
+
+  const proto_comment_author = map_user(author);
+  const proto_comment = map_comment(comment);
+  proto_comment.author = proto_comment_author;
+
+  const proto_comment_created = create(proto.CommentCreatedSchema, { comment: proto_comment });
+
+  const success = create(proto.GetPostFeedSuccessfulResponseSchema, {
+    event: { case: "commentCreated", value: proto_comment_created },
+  });
+
+  return create(proto.GetPostFeedResponseSchema, { result: { case: "success", value: success } });
 }

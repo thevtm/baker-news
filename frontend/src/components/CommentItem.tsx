@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import invariant from "tiny-invariant";
 
 import * as proto from "../proto";
@@ -7,6 +7,7 @@ import { useAPIClient } from "../contexts/api-client";
 import { PostPageComment } from "../state/post-page-store";
 
 import VoteButton from "./VoteButton";
+import CommentForm from "./CommentForm";
 
 import { sprinkles } from "../css/sprinkles.css";
 
@@ -25,8 +26,8 @@ const formatDateToYYYYMMDD = (date: Date) => {
 export const CommentItem: React.FC<CommentItemProps> = ({ comment }) => {
   const user = useUser();
   const api_client = useAPIClient();
+  const [is_reply_form_open, setIsReplyFormOpen] = useState(false);
 
-  // const snap = useSnapshot(comment);
   const { id, vote, createdAt, score, author, content } = comment.comment;
 
   const created_at_formatted_date = formatDateToYYYYMMDD(proto.convertDate(createdAt! as proto.Timestamp));
@@ -45,6 +46,8 @@ export const CommentItem: React.FC<CommentItemProps> = ({ comment }) => {
 
     invariant(response.result.case === "success");
   };
+
+  const toggle_reply_form = () => setIsReplyFormOpen((prev) => !prev);
 
   return (
     <>
@@ -70,7 +73,11 @@ export const CommentItem: React.FC<CommentItemProps> = ({ comment }) => {
           <div className={sprinkles({ display: "flex", fontSize: "xs", color: "gray-500" })}>
             {score} points by {author!.username} {created_at_formatted_date}
             <span className={sprinkles({ marginX: 1 })}>|</span>
-            <a href="#" className={sprinkles({ color: "gray-500", textDecoration: "none" })}>
+            <a
+              href="#"
+              className={sprinkles({ color: "gray-500", textDecoration: "none" })}
+              onClick={toggle_reply_form}
+            >
               reply
             </a>
           </div>
@@ -80,7 +87,12 @@ export const CommentItem: React.FC<CommentItemProps> = ({ comment }) => {
         </div>
       </div>
 
-      {/* TODO: Reply Form */}
+      {/* Reply Form */}
+      {is_reply_form_open && (
+        <div className={sprinkles({ marginX: 4 })}>
+          <CommentForm parent={{ case: "commentId", value: id }} onSuccess={() => setIsReplyFormOpen(false)} />
+        </div>
+      )}
 
       {/* Children */}
       <div id={`comment-children-container-${id}`} className={sprinkles({ marginX: 4 })}>

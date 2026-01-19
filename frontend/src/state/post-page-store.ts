@@ -60,6 +60,8 @@ export function handleFeedEvent(store: PostPageStore, response: proto.GetPostFee
     invariant(comment !== undefined);
 
     comment.score = newScore;
+  } else if (event.case === "commentCreated") {
+    handle_comment_created(event, store);
   }
 }
 
@@ -92,4 +94,25 @@ function handle_initial_post(event: { value: proto.Post; case: "initialPost" }, 
 
   // State
   store.state = "ready";
+}
+
+function handle_comment_created(event: { value: proto.CommentCreated; case: "commentCreated" }, store: PostPageStore) {
+  const { comment } = event.value;
+  invariant(comment !== undefined);
+  invariant(store.post !== null);
+
+  const postPageComment: PostPageComment = {
+    comment,
+    children: [],
+  };
+  store.comments.set(comment.id, postPageComment);
+
+  // Set up Comments relationships
+  if (comment.parentCommentId === undefined) {
+    store.rootComments.push(postPageComment);
+  } else {
+    const parentComment = store.comments.get(comment.parentCommentId);
+    invariant(parentComment !== undefined);
+    parentComment.children.push(postPageComment);
+  }
 }

@@ -16,6 +16,7 @@ import { makeVoteCommentRoute } from "./routes/vote-comment.ts";
 import { makeVotePostRoute } from "./routes/vote-post.ts";
 import { makeCreatePostRoute } from "./routes/create-post.ts";
 import { makeDeletePostRoute } from "./routes/delete-post.ts";
+import { makeCreateCommentRoute } from "./routes/create-comment.ts";
 
 export const createRoutes = (db: DBOrTx, events: Events) => {
   const queries = createQueries(db);
@@ -28,6 +29,7 @@ export const createRoutes = (db: DBOrTx, events: Events) => {
       createPost: makeCreatePostRoute(db, commands),
       deletePost: makeDeletePostRoute(commands),
 
+      createComment: makeCreateCommentRoute(db, commands),
       getCommentList: makeGetCommentListRoute(db),
 
       getPost: makeGetPostRoute(db),

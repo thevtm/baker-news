@@ -38,6 +38,7 @@ export interface UserVotedPostEventData {
 
 export interface UserCreatedCommentEventData {
   comment: typeof schema.comments.$inferSelect;
+  author: typeof schema.users.$inferSelect;
 }
 
 export interface UserVotedCommentEventData {

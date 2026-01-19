@@ -8,6 +8,7 @@ import CommentList from "../components/CommentList";
 import { sprinkles } from "../css/sprinkles.css";
 import { container } from "../css/styles.css";
 import { PostPageComment } from "../state/post-page-store";
+import { CommentForm } from "../components/CommentForm";
 
 // container mx-auto bg-orange-100 py-1
 const style = sprinkles({
@@ -25,6 +26,7 @@ export const PostPage: React.FC<PostPageProps> = ({ post, rootComments }) => {
   return (
     <div className={cslx(container, style)}>
       <PostItem key={post.id} post={post} />
+      <CommentForm parent={{ case: "postId", value: post.id }} />
       <CommentList comments={rootComments} />
     </div>
   );
