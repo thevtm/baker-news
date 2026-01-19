@@ -96,7 +96,9 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = () => {
           disabled={state === State.SUBMITTING}
         />
 
-        <button type="submit">Post</button>
+        <button type="submit" disabled={state === State.SUBMITTING}>
+          Post
+        </button>
       </form>
     </div>
   );
