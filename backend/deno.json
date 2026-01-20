@@ -6,7 +6,7 @@
 
     "db:create": "deno run --allow-all ./bin/db-utils.ts create",
     "db:drop": "deno run --allow-all ./bin/db-utils.ts drop",
-    "db:migrate": "deno run --allow-all npm:drizzle-kit push",
+    "db:migrate": "deno run --allow-all npm:drizzle-kit migrate",
     "db:seed": "deno run --allow-all ./src/seed.ts",
     "db:reset": "deno run db:drop && deno run db:create && deno run db:migrate",
 
