@@ -70,4 +70,4 @@ CREATE UNIQUE INDEX "users_username_idx" ON "users" USING btree (lower("username
 --> statement-breakpoint
 CREATE EXTENSION IF NOT EXISTS pgmq;
 --> statement-breakpoint
-SELECT pgmq.create('post_vote_queue');
+SELECT pgmq.create('event_queue');

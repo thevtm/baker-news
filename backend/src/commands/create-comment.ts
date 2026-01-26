@@ -6,7 +6,7 @@ import { CommandReturnType } from "./index.ts";
 
 import { schema, DBOrTx } from "../db/index.ts";
 import { Queries } from "../queries/index.ts";
-import { Events, EventType, UserCreatedCommentEventData } from "../events.ts";
+import { Events } from "../events/index.ts";
 
 export interface CreateCommentCommandInput {
   content: string;
@@ -119,22 +119,12 @@ export function createCreateCommentCommand(db: DBOrTx, queries: Queries, events:
 
         parent_comment_id = parent_comment_result[0].parentCommentId ?? undefined;
       }
+
+      events.emitUserCreatedComment(new_comment.id, new_comment.authorId, tx);
     });
-
-    invariant(new_comment !== undefined);
-
-    // Emit the event
-    const author = await db.query.users.findFirst({
-      where: (users, { eq }) => eq(users.id, authorId),
-    });
-    invariant(author, "Comment author has to exist");
-
-    const event_data: UserCreatedCommentEventData = { comment: new_comment, author: author };
-    const event = { type: EventType.USER_CREATED_COMMENT, data: event_data };
-
-    events.dispatch(event);
 
     // result
+    invariant(new_comment !== undefined);
     const result_data: CreateCommentReturnData = { comment: new_comment };
 
     return { success: true, data: result_data };

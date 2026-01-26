@@ -16,6 +16,7 @@ export type Queries = {
   pgmqCreateQueue: pgmq.PGMQCreateQueueQueryFunction;
   pgmqSendMessage: pgmq.PGMQSendMessageQueryFunction;
   pgmqReadMessage: pgmq.PGMQReadMessageQueryFunction;
+  pgmqReadMessageWithPoll: pgmq.PGMQReadMessageWithPollQueryFunction;
   pgmqDeleteMessage: pgmq.PGMQDeleteMessageQueryFunction;
   pgmqArchiveMessage: pgmq.PGMQArchiveMessageQueryFunction;
 };
@@ -30,6 +31,7 @@ export function createQueries(db: DBOrTx): Queries {
     pgmqCreateQueue: pgmq.makePGMQCreateQueueQuery(db),
     pgmqSendMessage: pgmq.makePGMQSendMessageQuery(db),
     pgmqReadMessage: pgmq.makePGMQReadMessageQuery(db),
+    pgmqReadMessageWithPoll: pgmq.makePGMQReadMessageWithPollQuery(db),
     pgmqDeleteMessage: pgmq.makePGMQDeleteMessageQuery(db),
     pgmqArchiveMessage: pgmq.makePGMQArchiveMessageQuery(db),
   };

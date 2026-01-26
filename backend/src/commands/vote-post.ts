@@ -1,12 +1,11 @@
 import _ from "lodash";
 import { z } from "zod";
 import { eq, and, sql } from "drizzle-orm";
-import { assert } from "@std/assert";
 import invariant from "tiny-invariant";
 
 import { schema, DBOrTx } from "../db/index.ts";
 import { Queries } from "../queries/index.ts";
-import { Events, EventType, UserVotedPostEventData } from "../events.ts";
+import { Events } from "../events/index.ts";
 
 import { CommandReturnType } from "./index.ts";
 
@@ -55,8 +54,6 @@ export function createVotePostCommand(db: DBOrTx, queries: Queries, events: Even
     ////////////////////////////////////////////////////////////////////////////
 
     let result: CommandReturnType<VotePostReturnData> | null = null;
-    let post: typeof schema.posts.$inferSelect | null = null;
-    let vote: typeof schema.postVotes.$inferSelect | null = null;
 
     await db.transaction(async (tx) => {
       // Check if the user has already voted on the post
@@ -69,6 +66,8 @@ export function createVotePostCommand(db: DBOrTx, queries: Queries, events: Even
       const has_voted = existing_vote.length > 0;
 
       // Insert / update the vote
+      let vote: typeof schema.postVotes.$inferSelect | null = null;
+
       if (has_voted) {
         const insert_result = await tx
           .update(schema.postVotes)
@@ -81,46 +80,36 @@ export function createVotePostCommand(db: DBOrTx, queries: Queries, events: Even
         vote = update_result[0];
       }
 
-      assert(vote !== null);
+      invariant(vote !== null);
 
       // Update post score
       const existingVoteValue = has_voted ? schema.vote_types_values_map.get(existing_vote[0].voteType) : 0;
-      assert(existingVoteValue !== undefined);
+      invariant(existingVoteValue !== undefined);
 
       const newVoteValue = schema.vote_types_values_map.get(voteType);
-      assert(newVoteValue !== undefined);
+      invariant(newVoteValue !== undefined);
 
       const voteDifference = newVoteValue - existingVoteValue;
-      assert(voteDifference !== undefined);
+      invariant(voteDifference !== undefined);
 
       const post_result = await tx
         .update(schema.posts)
         .set({ score: sql`${schema.posts.score} + ${voteDifference}` })
         .where(eq(schema.posts.id, postId))
         .returning();
-
-      assert(post_result.length === 1);
+      invariant(post_result.length === 1);
 
       const vote_count = post_result[0].score;
+      invariant(_.isFinite(vote_count));
 
-      assert(_.isFinite(vote_count));
+      events.emitUserVotedPost(vote.id, postId, userId, tx);
 
       result = { success: true, data: { newScore: vote_count, vote } };
-      post = post_result[0];
     });
 
-    assert(result !== null);
-
     ////////////////////////////////////////////////////////////////////////////
 
-    // Emit event
-    invariant(post !== null && vote !== null);
-    const event_data: UserVotedPostEventData = { postVote: vote, post };
-
-    events.dispatch({ type: EventType.USER_VOTED_POST, data: event_data });
-
-    ////////////////////////////////////////////////////////////////////////////
-
+    invariant(result !== null);
     return result;
   };
 }

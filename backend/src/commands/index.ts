@@ -2,7 +2,7 @@ export * from "./types.ts";
 
 import { DBOrTx } from "../db/db.ts";
 import { Queries } from "../queries/index.ts";
-import { Events } from "../events.ts";
+import { Events } from "../events/index.ts";
 
 import { createCreateUserCommand, CreateUserCommandFunction } from "./create-user.ts";
 import { createCreatePostCommand, CreatePostCommandFunction } from "./create-post.ts";

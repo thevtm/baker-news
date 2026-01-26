@@ -7,7 +7,7 @@ import { faker } from "@faker-js/faker";
 import { db as global_db, schema } from "./db/index.ts";
 import { createCommands } from "./commands/index.ts";
 import { createQueries } from "./queries/index.ts";
-import { createEvents } from "./events.ts";
+import { createEvents } from "./events/index.ts";
 import { DBOrTx } from "./db/index.ts";
 
 export async function seed(db: DBOrTx = global_db) {
@@ -24,8 +24,8 @@ export async function seed(db: DBOrTx = global_db) {
   await db.transaction(async (tx) => {
     console.log("Seeding database...");
 
-    const events = createEvents();
     const queries = createQueries(tx);
+    const events = createEvents(queries);
     const commands = createCommands(tx, queries, events);
 
     // Users

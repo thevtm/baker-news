@@ -6,7 +6,7 @@ import { createQueries } from "../../../src/queries/index.ts";
 import { createRoutes } from "../../../src/connect/index.ts";
 import { schema } from "../../../src/db/index.ts";
 import * as proto from "../../../src/proto/index.ts";
-import { createEvents } from "../../../src/events.ts";
+import { createEvents } from "../../../src/events/index.ts";
 
 import { InitializeDatabaseForTests } from "../../helpers/db.ts";
 import { disable_leaks_test_options } from "../../helpers/disable-leaks-config.ts";
@@ -14,8 +14,8 @@ import { disable_leaks_test_options } from "../../helpers/disable-leaks-config.t
 Deno.test("GetCommentList", disable_leaks_test_options, async () => {
   const { db, clear_db } = await InitializeDatabaseForTests();
 
-  const events = createEvents();
   const queries = createQueries(db);
+  const events = createEvents(queries);
   const commands = createCommands(db, queries, events);
 
   // Create a user

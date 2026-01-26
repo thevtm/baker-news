@@ -6,7 +6,7 @@ import { eq, and, sql } from "drizzle-orm";
 import { ApplicationError } from "../error.ts";
 import { schema, DBOrTx } from "../db/index.ts";
 import { Queries } from "../queries/index.ts";
-import { Events, EventType, UserVotedCommentEventData } from "../events.ts";
+import { Events } from "../events/index.ts";
 
 import { CommandReturnType } from "./index.ts";
 
@@ -108,6 +108,8 @@ export function createVoteCommentCommand(db: DBOrTx, queries: Queries, events: E
 
       result = { success: true, data: { newScore: new_vote_count } };
       comment = comment_result[0];
+
+      events.emitUserVotedComment(vote.id, comment.id, vote.userId, tx);
     });
 
     ////////////////////////////////////////////////////////////////////////////
@@ -116,16 +118,6 @@ export function createVoteCommentCommand(db: DBOrTx, queries: Queries, events: E
       const error_data = { userId, commentId, voteType };
       throw new ApplicationError("Result should not be null", "Failed to process vote", error_data);
     }
-
-    ////////////////////////////////////////////////////////////////////////////
-
-    // Emit event
-    invariant(comment !== null && vote !== null);
-    const event_data: UserVotedCommentEventData = { commentVote: vote, comment };
-
-    events.dispatch({ type: EventType.USER_VOTED_COMMENT, data: event_data });
-
-    ////////////////////////////////////////////////////////////////////////////
 
     return result;
   };

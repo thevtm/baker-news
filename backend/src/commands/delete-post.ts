@@ -3,7 +3,7 @@ import invariant from "tiny-invariant";
 import { eq } from "drizzle-orm/expressions";
 
 import { schema, DBOrTx } from "../db/index.ts";
-import { Events, UserDeletedPostEventData, EventType } from "../events.ts";
+import { Events } from "../events/index.ts";
 
 import { CommandReturnType } from "./index.ts";
 
@@ -52,9 +52,7 @@ export function createDeletePostCommand(db: DBOrTx, events: Events): DeletePostC
     invariant(result.length === 1);
     const post_after_deletion = result[0];
 
-    const event_data: UserDeletedPostEventData = { post: post_after_deletion };
-
-    events.dispatch({ type: EventType.USER_DELETED_POST, data: event_data });
+    events.emitUserDeletedPost(post_after_deletion.id);
 
     ////////////////////////////////////////////////////////////////////////////
 

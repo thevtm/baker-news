@@ -4,7 +4,7 @@ import { spy } from "jsr:@std/testing/mock";
 
 import { createCommands } from "../../src/commands/index.ts";
 import { createQueries } from "../../src/queries/index.ts";
-import { createEvents } from "../../src/events.ts";
+import { createEvents } from "../../src/events/index.ts";
 
 import { InitializeDatabaseForTests } from "../helpers/db.ts";
 import { disable_leaks_test_options } from "../helpers/disable-leaks-config.ts";
@@ -12,8 +12,8 @@ import { disable_leaks_test_options } from "../helpers/disable-leaks-config.ts";
 Deno.test("updates comment counters", disable_leaks_test_options, async () => {
   const { db, clear_db } = await InitializeDatabaseForTests();
 
-  const events = createEvents();
   const queries = createQueries(db);
+  const events = createEvents(queries);
   const commands = createCommands(db, queries, events);
 
   // Spy on events
@@ -53,8 +53,6 @@ Deno.test("updates comment counters", disable_leaks_test_options, async () => {
     content: "Test Comment 2",
   });
   expect(comment_2_result.success).toBe(true);
-
-  const comment_2_id = comment_2_result.data!.comment.id;
 
   // Check Post
   const posts_query = await db.query.posts.findFirst({ where: (posts, { eq }) => eq(posts.id, post_id) });

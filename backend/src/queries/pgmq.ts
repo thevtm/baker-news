@@ -19,6 +19,18 @@ export type PGMQReadMessageQueryFunction = (
   tx?: DBOrTx
 ) => Promise<QueryReturnType<PGMQMessage[]>>;
 
+export type PGMQReadMessageWithPollQueryFunction = (
+  queue_name: string,
+  visibility_timeout: number,
+  quantity: number,
+  tx?: DBOrTx
+) => Promise<QueryReturnType<PGMQMessage[]>>;
+
+export type PGMQPopMessageQueryFunction = (
+  queue_name: string,
+  tx?: DBOrTx
+) => Promise<QueryReturnType<PGMQMessage | undefined>>;
+
 export type PGMQDeleteMessageQueryFunction = (
   queue_name: string,
   message_id: string,
@@ -32,7 +44,7 @@ export type PGMQArchiveMessageQueryFunction = (
 ) => Promise<QueryReturnType<void>>;
 
 export interface PGMQMessage {
-  msg_id: number;
+  msg_id: string;
   read_counter: number;
   enqueued_at: Date;
   visibility_timeout: Date;
@@ -69,18 +81,33 @@ export function makePGMQReadMessageQuery(db: DBOrTx): PGMQReadMessageQueryFuncti
       sql`SELECT * from pgmq.read(queue_name => ${queue_name}, vt => ${visibility_timeout}, qty => ${quantity});`
     );
 
-    const messages: PGMQMessage[] = result.rows.map(
-      (row) =>
-        ({
-          msg_id: row.msg_id as number,
-          read_counter: row.read_ct as number,
-          enqueued_at: row.enqueued_at as Date,
-          visibility_timeout: row.vt as Date,
-          message: row.message as object,
-        } satisfies PGMQMessage)
-    );
+    const messages: PGMQMessage[] = result.rows.map(parse_pgmq_message);
 
     return { success: true, data: messages };
+  };
+}
+
+export function makePGMQReadMessageWithPollQuery(db: DBOrTx): PGMQReadMessageWithPollQueryFunction {
+  return async (queue_name, visibility_timeout, quantity, tx = db) => {
+    const result = await tx.execute(
+      sql`SELECT * from pgmq.read_with_poll(queue_name => ${queue_name}, vt => ${visibility_timeout}, qty => ${quantity});`
+    );
+
+    const messages: PGMQMessage[] = result.rows.map(parse_pgmq_message);
+
+    return { success: true, data: messages };
+  };
+}
+
+export function makePGMQPopMessageQuery(db: DBOrTx): PGMQPopMessageQueryFunction {
+  return async (queue_name, tx = db) => {
+    const result = await tx.execute(sql`SELECT * from pgmq.pop(${queue_name});`);
+
+    if (result.rowCount === 0) {
+      return { success: true, data: undefined };
+    }
+
+    return { success: true, data: parse_pgmq_message(result.rows[0]) };
   };
 }
 
@@ -107,5 +134,15 @@ export function makePGMQArchiveMessageQuery(db: DBOrTx): PGMQArchiveMessageQuery
     }
 
     return { success: true };
+  };
+}
+
+function parse_pgmq_message(row: Record<string, unknown>): PGMQMessage {
+  return {
+    msg_id: row.msg_id as string,
+    read_counter: row.read_ct as number,
+    enqueued_at: row.enqueued_at as Date,
+    visibility_timeout: row.vt as Date,
+    message: row.message as object,
   };
 }

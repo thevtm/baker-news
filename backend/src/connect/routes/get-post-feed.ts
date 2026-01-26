@@ -11,7 +11,7 @@ import {
   UserCreatedCommentEventData,
   UserVotedCommentEventData,
   UserVotedPostEventData,
-} from "../../events.ts";
+} from "../../events/index.ts";
 import { ApplicationError } from "../../error.ts";
 
 import { map_comment, map_comment_vote, map_post, map_post_vote, map_post_votes, map_user } from "../mappers.ts";

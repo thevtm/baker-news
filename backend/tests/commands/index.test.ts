@@ -6,7 +6,7 @@ import { schema } from "../../src/db/index.ts";
 import { UserRoles } from "../../src/db/schema.ts";
 import { createCommands } from "../../src/commands/index.ts";
 import { createQueries } from "../../src/queries/index.ts";
-import { createEvents, Event, EventType } from "../../src/events.ts";
+import { createEvents, Event, EventType } from "../../src/events/index.ts";
 
 import { InitializeDatabaseForTests } from "../helpers/db.ts";
 import { disable_leaks_test_options } from "../helpers/disable-leaks-config.ts";
@@ -14,8 +14,8 @@ import { disable_leaks_test_options } from "../helpers/disable-leaks-config.ts";
 Deno.test("smoke test", disable_leaks_test_options, async () => {
   const { db, clear_db } = await InitializeDatabaseForTests();
 
-  const events = createEvents();
   const queries = createQueries(db);
+  const events = createEvents(queries);
   const commands = createCommands(db, queries, events);
 
   // Spy on events
@@ -99,10 +99,6 @@ Deno.test("smoke test", disable_leaks_test_options, async () => {
   expect(vote_post_command_result.data?.vote.createdAt).toBeDefined();
   expect(vote_post_command_result.data?.vote.updatedAt).toBeDefined();
 
-  expect(events_spy.calls.length).toBe(3);
-  last_event = _.last(events_spy.calls)!.args[0] as Event;
-  expect(last_event.type).toBe(EventType.USER_VOTED_POST);
-
   const post_votes_query = await db.query.postVotes.findMany({ with: { post: true } });
 
   expect(post_votes_query.length).toBe(1);
@@ -128,7 +124,7 @@ Deno.test("smoke test", disable_leaks_test_options, async () => {
 
   expect(comment_votes_query[0].comment.score).toBe(-1);
 
-  expect(events_spy.calls.length).toBe(4);
+  expect(events_spy.calls.length).toBe(3);
   last_event = _.last(events_spy.calls)!.args[0] as Event;
   expect(last_event.type).toBe(EventType.USER_VOTED_COMMENT);
 

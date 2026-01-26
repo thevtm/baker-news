@@ -5,7 +5,7 @@ import { eachValueFrom } from "rxjs-for-await";
 
 import * as proto from "../../proto/index.ts";
 import { DBOrTx, schema } from "../../db/index.ts";
-import { Events, EventType, Event, UserVotedPostEventData, UserCreatedPostEventData } from "../../events.ts";
+import { Events, EventType, Event, UserVotedPostEventData, UserCreatedPostEventData } from "../../events/index.ts";
 
 import { map_post, map_post_vote, map_post_votes, map_user } from "../mappers.ts";
 

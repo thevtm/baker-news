@@ -4,8 +4,10 @@ import { cors as connectCors } from "@connectrpc/connect";
 import { fastifyConnectPlugin } from "@connectrpc/connect-fastify";
 
 import { db } from "./db/index.ts";
-import { createEvents } from "./events.ts";
+import { createEvents } from "./events/index.ts";
 import { createRoutes } from "./connect/index.ts";
+import { createQueries } from "./queries/index.ts";
+import { makeEventListenerWorker } from "./events/worker.ts";
 
 async function main() {
   const server = fastify({ logger: true });
@@ -21,9 +23,18 @@ async function main() {
   });
 
   // Register the connect plugin with the server
-  const events = createEvents();
+  const queries = createQueries(db);
+  const events = createEvents(queries);
   const routes = createRoutes(db, events);
   await server.register(fastifyConnectPlugin, { routes });
+
+  // Start workers
+  const eventListenerWorker = makeEventListenerWorker(db, queries, (e) => events.dispatch(e));
+
+  eventListenerWorker().catch((err) => {
+    console.error("Error in event listener worker:", err);
+    Deno.exit(-1);
+  });
 
   // Start the server
   try {

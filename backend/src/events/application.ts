@@ -1,6 +1,4 @@
-import { Subject } from "rxjs";
-
-import { schema } from "./db/index.ts";
+import { schema } from "../db/index.ts";
 
 export interface Event {
   type: EventType;
@@ -44,20 +42,4 @@ export interface UserCreatedCommentEventData {
 export interface UserVotedCommentEventData {
   commentVote: typeof schema.commentVotes.$inferSelect;
   comment: typeof schema.comments.$inferSelect;
-}
-
-export type Events = {
-  subject: Subject<Event>;
-  dispatch(event: Event): void;
-};
-
-export function createEvents(): Events {
-  const subject = new Subject<Event>();
-
-  return {
-    subject,
-    dispatch(event: Event) {
-      subject.next(event);
-    },
-  };
 }

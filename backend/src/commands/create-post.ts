@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm/expressions";
 
 import { schema, utils, DBOrTx } from "../db/index.ts";
 import { Queries } from "../queries/index.ts";
-import { Events, UserCreatedPostEventData, EventType } from "../events.ts";
+import { Events } from "../events/index.ts";
 
 import { CommandReturnType } from "./index.ts";
 
@@ -85,14 +85,7 @@ export function createCreatePostCommand(db: DBOrTx, queries: Queries, events: Ev
     invariant(result.length === 1);
     const post = result[0];
 
-    const author = await db.query.users.findFirst({
-      where: (users, { eq }) => eq(users.id, result[0].authorId),
-    });
-    invariant(author !== undefined);
-
-    const event_data: UserCreatedPostEventData = { post, author };
-
-    events.dispatch({ type: EventType.USER_CREATED_POST, data: event_data });
+    await events.emitUserCreatedPost(post.id, post.authorId);
 
     ////////////////////////////////////////////////////////////////////////////
 

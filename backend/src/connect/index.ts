@@ -1,7 +1,7 @@
 import type { ConnectRouter } from "@connectrpc/connect";
 
 import { DBOrTx } from "../db/index.ts";
-import { Events } from "../events.ts";
+import { Events } from "../events/index.ts";
 import { createQueries } from "../queries/index.ts";
 import { createCommands } from "../commands/index.ts";
 import { BakerNewsService } from "../proto/index.ts";

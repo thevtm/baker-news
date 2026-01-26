@@ -3,7 +3,7 @@ import { createClient, createRouterTransport } from "npm:@connectrpc/connect";
 
 import { createRoutes } from "../../../src/connect/index.ts";
 import * as proto from "../../../src/proto/index.ts";
-import { createEvents } from "../../../src/events.ts";
+import { createEvents } from "../../../src/events/index.ts";
 import { createQueries } from "../../../src/queries/index.ts";
 import { createCommands } from "../../../src/commands/index.ts";
 
@@ -13,8 +13,8 @@ import { disable_leaks_test_options } from "../../helpers/disable-leaks-config.t
 Deno.test("DeletePost", disable_leaks_test_options, async () => {
   const { db, clear_db } = await InitializeDatabaseForTests();
 
-  const events = createEvents();
   const queries = createQueries(db);
+  const events = createEvents(queries);
   const commands = createCommands(db, queries, events);
   const routes = createRoutes(db, events);
 
