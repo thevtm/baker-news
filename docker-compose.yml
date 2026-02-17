@@ -48,6 +48,7 @@ services:
       - std-network
     volumes:
       - ./docker-compose/pgadmin/data:/var/lib/pgadmin
+    user: "0" # Run as root to avoid permission issues with mounted volumes
 
   ############################
   # Redis state store
@@ -69,6 +70,7 @@ services:
       - std-network
     volumes:
       - ./docker-compose/redis-insight/data:/data
+    user: "0" # Run as root to avoid permission issues with mounted volumes
 
   ############################
   # Zipkin tracing service
