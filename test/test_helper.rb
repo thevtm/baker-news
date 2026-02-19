@@ -8,8 +8,9 @@ module ActiveSupport
     parallelize(workers: :number_of_processors)
 
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
-    fixtures :all
+    # fixtures :all
 
     # Add more helper methods to be used by all tests here...
+    self.use_transactional_tests = true
   end
 end
