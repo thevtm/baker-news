@@ -6,5 +6,6 @@
   "deno.enablePaths": ["./backend"],
 
   // This is required for the tests to run with the correct environment variables
-  "deno.testing.args": ["--allow-all", "--env-file=./backend/.env.test"]
+  "deno.testing.args": ["--allow-all", "--env-file=./backend/.env.test"],
+  "cSpell.words": ["bufbuild", "PGMQ"]
 }
