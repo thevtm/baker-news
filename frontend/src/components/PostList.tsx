@@ -21,7 +21,7 @@ const style = sprinkles({
 
 export const PostList: React.FC<PostListProps> = ({ posts }) => {
   return (
-    <div className={cslx(container, style)}>
+    <div className={cslx(container, style)} style={{ minHeight: "30rem" }}>
       {posts.map((post) => (
         <PostItem key={post.id} post={post} />
       ))}
