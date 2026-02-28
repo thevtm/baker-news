@@ -21,92 +21,107 @@ export async function seed(db: DBOrTx = global_db) {
 
   // Dependencies
 
-  await db.transaction(async (tx) => {
-    console.log("Seeding database...");
+  console.log("Seeding database...");
 
-    const queries = createQueries(tx);
-    const events = createEvents(queries);
-    const commands = createCommands(tx, queries, events);
+  const queries = createQueries(db);
+  const events = createEvents(queries);
+  const commands = createCommands(db, queries, events);
 
-    // Users
-    const user_ids = new Array<number>(NUM_USERS);
+  // Users
+  const user_ids = new Array<number>(NUM_USERS);
 
-    for (let i = 0; i < NUM_USERS; i++) {
-      const result = await commands.createUser({ username: faker.internet.username() });
-      if (!result.success) throw new Error(`Failed to create user: ${result.error}`);
-      user_ids[i] = result.data!.user.id;
-    }
+  for (let i = 0; i < NUM_USERS; i++) {
+    const result = await commands.createUser({ username: faker.internet.username() });
+    if (!result.success) throw new Error(`Failed to create user: ${result.error}`);
+    user_ids[i] = result.data!.user.id;
+  }
 
-    console.log(`Seeded ${NUM_USERS} users.`);
+  console.log(`Seeded ${NUM_USERS} users.`);
 
-    // Posts
-    const post_ids = new Array<number>(NUM_POSTS);
+  // Posts
+  const post_ids = new Array<number>(NUM_POSTS);
 
-    for (let i = 0; i < NUM_POSTS; i++) {
-      const result = await commands.createPost({
-        title: faker.lorem.sentence({ min: 2, max: 10 }),
-        url: faker.internet.url(),
-        authorId: user_ids[faker.number.int({ min: 0, max: user_ids.length - 1 })],
-      });
-      if (!result.success) throw new Error(`Failed to create post: ${result.error}`);
-      post_ids[i] = result.data!.post.id;
-    }
+  for (let i = 0; i < NUM_POSTS; i++) {
+    const result = await commands.createPost({
+      title: faker.lorem.sentence({ min: 2, max: 10 }),
+      url: faker.internet.url(),
+      authorId: user_ids[faker.number.int({ min: 0, max: user_ids.length - 1 })],
+    });
+    if (!result.success) throw new Error(`Failed to create post: ${result.error}`);
+    post_ids[i] = result.data!.post.id;
 
-    console.log(`Seeded ${NUM_POSTS} posts.`);
+    await sleep(50);
+  }
 
-    // Root comments
-    const comment_ids = new Array<number>(NUM_ROOT_COMMENTS);
+  console.log(`Seeded ${NUM_POSTS} posts.`);
 
-    for (let i = 0; i < NUM_ROOT_COMMENTS; i++) {
-      const result = await commands.createComment({
-        content: faker.lorem.sentence({ min: 2, max: 10 }),
-        postId: post_ids[faker.number.int({ min: 0, max: post_ids.length - 1 })],
-        authorId: user_ids[faker.number.int({ min: 0, max: user_ids.length - 1 })],
-      });
-      if (!result.success) throw new Error(`Failed to create root comment: ${result.error}`);
-      comment_ids[i] = result.data!.comment.id;
-    }
+  // Root comments
+  const comment_ids = new Array<number>(NUM_ROOT_COMMENTS);
 
-    console.log(`Seeded ${NUM_ROOT_COMMENTS} root comments.`);
+  for (let i = 0; i < NUM_ROOT_COMMENTS; i++) {
+    const result = await commands.createComment({
+      content: faker.lorem.sentence({ min: 2, max: 10 }),
+      postId: post_ids[faker.number.int({ min: 0, max: post_ids.length - 1 })],
+      authorId: user_ids[faker.number.int({ min: 0, max: user_ids.length - 1 })],
+    });
+    if (!result.success) throw new Error(`Failed to create root comment: ${result.error}`);
+    comment_ids[i] = result.data!.comment.id;
 
-    // Child comments
-    for (let i = 0; i < NUM_CHILD_COMMENTS; i++) {
-      const result = await commands.createComment({
-        content: faker.lorem.sentence({ min: 2, max: 10 }),
-        authorId: user_ids[faker.number.int({ min: 0, max: user_ids.length - 1 })],
-        parentCommentId: comment_ids[faker.number.int({ min: 0, max: comment_ids.length - 1 })],
-      });
-      if (!result.success) throw new Error(`Failed to create child comment: ${result.error}`);
-    }
+    await sleep(50);
+  }
 
-    console.log(`Seeded ${NUM_CHILD_COMMENTS} child comments.`);
+  console.log(`Seeded ${NUM_ROOT_COMMENTS} root comments.`);
 
-    // Post votes
-    for (let i = 0; i < NUM_POST_VOTES; i++) {
-      const result = await commands.votePost({
-        userId: user_ids[faker.number.int({ min: 0, max: user_ids.length - 1 })],
-        postId: post_ids[faker.number.int({ min: 0, max: post_ids.length - 1 })],
-        voteType: faker.helpers.arrayElement(schema.voteTypes.enumValues),
-      });
-      if (!result.success) throw new Error(`Failed to vote on post: ${result.error}`);
-    }
+  // Child comments
+  for (let i = 0; i < NUM_CHILD_COMMENTS; i++) {
+    const result = await commands.createComment({
+      content: faker.lorem.sentence({ min: 2, max: 10 }),
+      authorId: user_ids[faker.number.int({ min: 0, max: user_ids.length - 1 })],
+      parentCommentId: comment_ids[faker.number.int({ min: 0, max: comment_ids.length - 1 })],
+    });
+    if (!result.success) throw new Error(`Failed to create child comment: ${result.error}`);
 
-    console.log(`Seeded ${NUM_POST_VOTES} post votes.`);
+    await sleep(50);
+  }
 
-    // Comment votes
-    for (let i = 0; i < NUM_COMMENT_VOTES; i++) {
-      const result = await commands.voteComment({
-        userId: user_ids[faker.number.int({ min: 0, max: user_ids.length - 1 })],
-        commentId: comment_ids[faker.number.int({ min: 0, max: comment_ids.length - 1 })],
-        voteType: faker.helpers.arrayElement(schema.voteTypes.enumValues),
-      });
-      if (!result.success) throw new Error(`Failed to vote on comment: ${result.error}`);
-    }
+  console.log(`Seeded ${NUM_CHILD_COMMENTS} child comments.`);
 
-    console.log(`Seeded ${NUM_COMMENT_VOTES} comment votes.`);
+  // Post votes
+  for (let i = 0; i < NUM_POST_VOTES; i++) {
+    const result = await commands.votePost({
+      userId: user_ids[faker.number.int({ min: 0, max: user_ids.length - 1 })],
+      postId: post_ids[faker.number.int({ min: 0, max: post_ids.length - 1 })],
+      voteType: faker.helpers.arrayElement(schema.voteTypes.enumValues),
+    });
+    if (!result.success) throw new Error(`Failed to vote on post: ${result.error}`);
 
-    console.log("Done!");
-  });
+    await sleep(50);
+  }
+
+  console.log(`Seeded ${NUM_POST_VOTES} post votes.`);
+
+  // Comment votes
+  for (let i = 0; i < NUM_COMMENT_VOTES; i++) {
+    const result = await commands.voteComment({
+      userId: user_ids[faker.number.int({ min: 0, max: user_ids.length - 1 })],
+      commentId: comment_ids[faker.number.int({ min: 0, max: comment_ids.length - 1 })],
+      voteType: faker.helpers.arrayElement(schema.voteTypes.enumValues),
+    });
+    if (!result.success) throw new Error(`Failed to vote on comment: ${result.error}`);
+
+    await sleep(50);
+  }
+
+  console.log(`Seeded ${NUM_COMMENT_VOTES} comment votes.`);
+
+  console.log("Done!");
+}
+
+async function sleep(milliseconds: number): Promise<void> {
+  let resolve;
+  const promise = new Promise<void>((res) => (resolve = res));
+  setTimeout(resolve!, milliseconds);
+  await promise;
 }
 
 if (import.meta.main) {
