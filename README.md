@@ -4,7 +4,7 @@ A mono repo containing multiple implementations of a [Hacker News](https://news.
 each built with a different tech stack. The goal is to learn and experiment with new technologies by
 building the same product over and over.
 
-![Screenshot of baker-news](https://github.com/thevtm/baker-news/blob/master/docs/screenshots/Screen%20Shot%202025-01-04%20at%2022.01.39.png?raw=true)
+![Screenshot of baker-news](https://github.com/thevtm/baker-news/blob/master/baker-news-go/docs/screenshots/index.png?raw=true)
 
 ## Projects
 

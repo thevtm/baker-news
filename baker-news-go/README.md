@@ -1,6 +1,6 @@
 # baker-news
 
-![Screenshot of baker-news](https://github.com/thevtm/baker-news/blob/master/docs/screenshots/Screen%20Shot%202025-01-04%20at%2022.01.39.png?raw=true)
+![Screenshot of baker-news](https://github.com/thevtm/baker-news/blob/master/baker-news-go/docs/screenshots/index.png?raw=true)
 
 A hacker news clone that I made while learning Go.
 
