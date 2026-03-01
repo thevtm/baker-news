@@ -1,0 +1,193 @@
+services:
+  ############################
+  # PostgreSQL state store
+  ############################
+  postgres:
+    image: "postgres:17-alpine"
+    shm_size: 128mb
+    environment:
+      POSTGRES_PASSWORD: "password"
+    ports:
+      - "5432:5432"
+    networks:
+      - std-network
+    volumes:
+      - ./docker-compose/postgres/data:/var/lib/postgresql/data
+
+  # Didn't like using it TBH
+  # atlas:
+  #   image: arigaio/atlas:0.28.1-distroless
+  #   command: >
+  #     migrate apply
+  #     --url postgres://postgres:password@postgres:5432/baker_news
+  #   networks:
+  #     - db
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   volumes:
+  #     - ./state/sql/migrations/:/migrations
+
+  # pgAdmin is better
+  # adminer:
+  #   image: adminer
+  #   ports:
+  #     - 58081:8080
+  #   networks:
+  #     - std-network
+
+  pgadmin:
+    image: dpage/pgadmin4:8
+    ports:
+      - 50080:80
+    environment:
+      PGADMIN_CONFIG_SERVER_MODE: "False" # Run in Desktop Mode, no need to log in.
+      PGADMIN_DEFAULT_EMAIL: "admin@domain.com"
+      PGADMIN_DEFAULT_PASSWORD: "password"
+    networks:
+      - std-network
+    volumes:
+      - ./docker-compose/pgadmin/data:/var/lib/pgadmin
+    user: "0" # Run as root to avoid permission issues with mounted volumes
+
+  ############################
+  # Redis state store
+  ############################
+  redis:
+    image: "redis:7-alpine"
+    ports:
+      - "6379:6379"
+    networks:
+      - std-network
+    volumes:
+      - ./docker-compose/redis/data:/data
+
+  redis-insight:
+    image: "redis/redisinsight:2.58.0"
+    ports:
+      - "55540:5540"
+    networks:
+      - std-network
+    volumes:
+      - ./docker-compose/redis-insight/data:/data
+    user: "0" # Run as root to avoid permission issues with mounted volumes
+
+  ############################
+  # Zipkin tracing service
+  ############################
+  zipkin:
+    image: "openzipkin/zipkin-slim:3.4.2"
+    ports:
+      - "59411:9411"
+    networks:
+      - std-network
+
+  ############################
+  # Dapr scheduler service
+  ############################
+  dapr-scheduler:
+    image: "daprio/dapr:1.14.3"
+    command: ["./scheduler", "--port", "50007", "--etcd-data-dir=/var/lock/dapr/scheduler"]
+    ports:
+      - "50007:50007"
+      # - "58081:8080" # Healthz server
+      # - "59091:9090" # Metrics server
+    networks:
+      - std-network
+
+  ############################
+  # Dapr placement service
+  ############################
+  dapr-placement:
+    image: "daprio/dapr:1.14.3"
+    command: ["./placement", "--port", "50006"]
+    ports:
+      - "50006:50006"
+      # - "58080:8080" # Healthz server
+      # - "59090:9090" # Metrics server
+    depends_on:
+      - redis
+      - dapr-scheduler
+    networks:
+      - std-network
+
+  ############################
+  # Dapr sidecar
+  ############################
+  dapr-sidecar:
+    image: "daprio/daprd:1.14.3"
+    command: [
+      "./daprd",
+      "--app-id", "baker-news",
+      "--app-channel-address", "host.docker.internal",
+      "--app-port", "8080",
+      "--placement-host-address", "dapr-placement:50006", # Dapr's placement service can be reach via the docker DNS entry
+      "--resources-path", "./components",
+      "--log-level", "debug",
+      "--enable-api-logging", "true",
+    ]
+    ports:
+      - "3500:3500" # HTTP port
+      - "50001:50001" # gRPC port
+    volumes:
+        # Mount our components folder for the runtime to use. The mounted location must match the --resources-path argument.
+        - ./docker-compose/dapr/components/:/components
+    networks:
+      - std-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  ############################
+  # Dapr dashboard
+  ############################
+  dapr-dashboard:
+    image: "daprio/dashboard:0.15.0"
+    command: [
+      "--docker-compose=true",
+      "--components-path=/home/nonroot/components",
+      "--config-path=/home/nonroot/configuration",
+      "--docker-compose-path=/home/nonroot/docker-compose.yml"
+    ]
+    ports:
+      - "58080:8080"
+    volumes:
+      - ./docker-compose/dapr/components/:/home/nonroot/components
+      - ./docker-compose/dapr/config/:/home/nonroot/configuration
+      - ./docker-compose.yml:/home/nonroot/docker-compose.yml
+    networks:
+      - std-network
+
+  # ############################
+  # # GoNB - GO Notebook Kernel
+  # ############################
+  # Doesn't work that well
+  # gonb:
+  #   image: "janpfeifer/gonb_jupyterlab:v0.10.6"
+  #   entrypoint: ""
+  #   command: ["tini", "-g", "--", "/notebooks/docker-compose/gonb/autostart.sh"]
+  #   # environment:
+  #   #   - NB_USER=${USER}
+  #   # ports:
+  #   #   - "58888:8888"
+  #   volumes:
+  #     - ./:/notebooks
+  #   networks:
+  #     - std-network
+
+  # ############################
+  # # GopherNotes - Notebook
+  # ############################
+  # Doesn't work that well
+  # gophernotes:
+  #   image: "gopherdata/gophernotes"
+  #   ports:
+  #     - "58888:8888"
+  #   networks:
+  #     - std-network
+
+
+############################
+# Networks
+############################
+networks:
+  std-network:
