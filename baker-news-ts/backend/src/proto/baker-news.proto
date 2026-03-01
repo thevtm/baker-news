@@ -1,0 +1,334 @@
+syntax = "proto3";
+package BakerNews;
+
+import "google/protobuf/timestamp.proto";
+
+/* Data Types */
+
+enum UserRole {
+  USER_ROLE_UNSPECIFIED = 0;
+  USER_ROLE_GUEST = 1;
+  USER_ROLE_ADMIN = 2;
+  USER_ROLE_USER = 3;
+}
+
+enum VoteType {
+  VOTE_TYPE_UNSPECIFIED = 0;
+  VOTE_TYPE_NO_VOTE = 1;
+  VOTE_TYPE_UP_VOTE = 2;
+  VOTE_TYPE_DOWN_VOTE = 3;
+}
+
+message User {
+  int32 id = 1;
+  string username = 2;
+  UserRole role = 3;
+
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+}
+
+message Post {
+  int32 id = 1;
+  User author = 2;
+
+  string title = 3;
+  string url = 4;
+
+  int32 score = 5;
+  int32 comment_count = 6;
+
+  optional PostVote vote = 7;
+
+  optional CommentList comments = 10;
+
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+}
+
+message PostList { repeated Post posts = 1; }
+
+message PostCreated {
+  Post post = 1;
+}
+
+message PostDeleted {
+  int32 post_id = 1;
+}
+
+message PostScoreChanged {
+  int32 post_id = 1;
+  int32 new_score = 2;
+}
+
+message PostCommentCountChanged {
+  int32 post_id = 1;
+  int32 comment_count_delta = 2;
+}
+
+message PostVote {
+  int32 id = 1;
+  int32 post_id = 2;
+  int32 user_id = 3;
+  VoteType vote_type = 4;
+
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}
+
+message UserVotedPost {
+  PostVote vote = 1;
+  int32 new_score = 2;
+}
+
+message Comment {
+  int32 id = 1;
+  User author = 3;
+  int32 post_id = 2;
+  optional int32 parent_comment_id = 4;
+
+  string content = 5;
+
+  int32 score = 6;
+  int32 comment_count = 7;
+
+  optional CommentVote vote = 10;
+
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+}
+
+message CommentList { repeated Comment comments = 1; }
+
+message CommentCreated {
+  Comment comment = 1;
+}
+
+message CommentScoreChanged {
+  int32 comment_id = 1;
+  int32 new_score = 2;
+}
+
+message CommentVote {
+  int32 id = 1;
+  int32 comment_id = 2;
+  int32 user_id = 3;
+  VoteType vote_type = 4;
+
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}
+
+message UserVotedComment {
+  CommentVote vote = 1;
+  int32 new_score = 2;
+}
+
+/* Service Requests and Responses */
+
+message ErrorResponse { string message = 1; }
+
+// Create User
+message CreateUserRequest { string username = 1; }
+
+message CreateUserSuccessfulResponse { User user = 1; }
+
+message CreateUserResponse {
+  oneof result {
+    CreateUserSuccessfulResponse success = 1;
+    ErrorResponse error = 2;
+  }
+}
+
+
+// Create Post
+message CreatePostRequest {
+  string title = 1;
+  string url = 2;
+  int32 author_id = 3;
+}
+
+message CreatePostSuccessfulResponse { Post post = 1; }
+
+message CreatePostResponse {
+  oneof result {
+    CreatePostSuccessfulResponse success = 1;
+    ErrorResponse error = 2;
+  }
+}
+
+// Delete Post
+message DeletePostRequest {
+  int32 post_id = 1;
+}
+
+message DeletePostSuccessfulResponse { int32 post_id = 1; }
+
+message DeletePostResponse {
+  oneof result {
+    DeletePostSuccessfulResponse success = 1;
+    ErrorResponse error = 2;
+  }
+}
+
+// Get Post
+message GetPostRequest {
+  int32 post_id = 1;
+  int32 user_id = 2;
+}
+
+message GetPostSuccessfulResponse { Post post = 1; }
+
+message GetPostResponse {
+  oneof result {
+    GetPostSuccessfulResponse success = 1;
+    ErrorResponse error = 2;
+  }
+}
+
+// Get Post Feed
+message GetPostFeedRequest {
+  int32 post_id = 1;
+  int32 user_id = 2;
+}
+
+message GetPostFeedSuccessfulResponse {
+  oneof event {
+    Post initial_post = 1;
+
+    UserVotedPost user_voted_post = 2;
+    PostScoreChanged post_score_changed = 3;
+
+    CommentCreated comment_created = 4;
+
+    UserVotedComment user_voted_comment = 5;
+    CommentScoreChanged comment_score_changed = 6;
+  }
+}
+
+message GetPostFeedResponse {
+  oneof result {
+    GetPostFeedSuccessfulResponse success = 1;
+    ErrorResponse error = 2;
+  }
+}
+
+// Get Posts
+message GetPostsRequest { int32 user_id = 1; }
+
+message GetPostsSuccessfulResponse { PostList post_list = 1; }
+
+message GetPostsResponse {
+  oneof result {
+    GetPostsSuccessfulResponse success = 1;
+    ErrorResponse error = 2;
+  }
+}
+
+// Get Posts Feed
+message GetPostsFeedRequest { int32 user_id = 1; }
+
+message GetPostsFeedSuccessfulResponse {
+  oneof event {
+    PostList initial_posts = 1;
+
+    PostCreated post_created = 2;
+    PostDeleted post_deleted = 6;
+
+    UserVotedPost user_voted_post = 3;
+    PostScoreChanged post_score_changed = 4;
+
+    PostCommentCountChanged post_comment_count_changed = 5;
+  }
+}
+
+message GetPostsFeedResponse {
+  oneof result {
+    GetPostsFeedSuccessfulResponse success = 1;
+    ErrorResponse error = 2;
+  }
+}
+
+// Create Comment
+message CreateCommentRequest {
+  int32 author_id = 1;
+
+  oneof parent {
+    int32 post_id = 2;
+    int32 comment_id = 3;
+  }
+
+  string content = 4;
+}
+
+message CreateCommentSuccessfulResponse { Comment comment = 1; }
+
+message CreateCommentResponse {
+  oneof result {
+    CreateCommentSuccessfulResponse success = 1;
+    ErrorResponse error = 2;
+  }
+}
+
+// Get Comment List
+message GetCommentListRequest { int32 user_id = 1; int32 post_id = 2; }
+
+message GetCommentListSuccessfulResponse { CommentList comment_list = 1; }
+
+message GetCommentListResponse {
+  oneof result {
+    GetCommentListSuccessfulResponse success = 1;
+    ErrorResponse error = 2;
+  }
+}
+
+// Vote Post
+message VotePostRequest { int32 post_id = 1; int32 user_id = 2; VoteType vote_type = 3; }
+
+message VotePostSuccessfulResponse {
+  int32 new_score = 1;
+  PostVote vote = 2;
+}
+
+message VotePostResponse {
+  oneof result {
+    VotePostSuccessfulResponse success = 1;
+    ErrorResponse error = 2;
+  }
+}
+
+// Vote Comment
+message VoteCommentRequest {
+  int32 comment_id = 1;
+  int32 user_id = 2;
+  VoteType vote_type = 3;
+}
+
+message VoteCommentSuccessfulResponse { int32 new_score = 1; }
+
+message VoteCommentResponse {
+  oneof result {
+    VoteCommentSuccessfulResponse success = 1;
+    ErrorResponse error = 2;
+  }
+}
+
+// Service
+service BakerNewsService {
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {}
+
+  rpc CreatePost(CreatePostRequest) returns (CreatePostResponse) {}
+  rpc DeletePost(DeletePostRequest) returns (DeletePostResponse) {}
+
+  rpc GetPost(GetPostRequest) returns (GetPostResponse) {}
+  rpc GetPostFeed(GetPostFeedRequest) returns (stream GetPostFeedResponse) {}
+
+  rpc GetPosts(GetPostsRequest) returns (GetPostsResponse) {}
+  rpc GetPostsFeed(GetPostsFeedRequest) returns (stream GetPostsFeedResponse) {}
+
+  rpc CreateComment(CreateCommentRequest) returns (CreateCommentResponse) {}
+  rpc GetCommentList(GetCommentListRequest) returns (GetCommentListResponse) {}
+
+  rpc VotePost(VotePostRequest) returns (VotePostResponse) {}
+  rpc VoteComment(VoteCommentRequest) returns (VoteCommentResponse) {}
+}
