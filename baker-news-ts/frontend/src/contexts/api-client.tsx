@@ -4,6 +4,7 @@ import { APIClient } from "../api-client";
 
 const APIClientContext = createContext<APIClient | null>(null);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAPIClient = (): APIClient => {
   const context = useContext(APIClientContext);
   if (!context) {

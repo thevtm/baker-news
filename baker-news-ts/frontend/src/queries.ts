@@ -1,4 +1,5 @@
 import _ from "lodash";
+import { useEffect, useRef } from "react";
 import invariant from "tiny-invariant";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
@@ -7,36 +8,43 @@ import { fromJson, toJson } from "@bufbuild/protobuf";
 
 import * as proto from "./proto";
 import { useAPIClient } from "./contexts/api-client";
-
-const DISABLE_QUERY_REFRESH = {
-  gcTime: Infinity,
-  staleTime: Infinity,
-};
+import { useUserStore } from "./contexts/user-store";
+import { userSignIn, UserStoreState } from "./state/user-store";
+import { useSnapshot, subscribe } from "valtio";
 
 export function useUser(): proto.User {
   const api_client = useAPIClient();
+  const user_store = useUserStore();
 
-  const { data } = useSuspenseQuery({
-    ...DISABLE_QUERY_REFRESH,
-    refetchOnMount: false,
-    refetchOnReconnect: false,
-    refetchOnWindowFocus: false,
-    queryKey: [proto.BakerNewsService.typeName, proto.BakerNewsService.method.createUser.name],
-    queryFn: async () => {
-      const random_username = `User-${Math.floor(Math.random() * 10000)}`;
-      const response = await api_client.createUser({ username: random_username });
+  const user_snap = useSnapshot(user_store);
+  const suspense_promise = useRef<Promise<void> | null>(null);
 
-      if (response.result.case === "error") {
-        throw new Error(`Failed to create a random user: ${response.result.value.message}`);
-      }
+  useEffect(() => {
+    if (user_snap.state === UserStoreState.Initial) {
+      userSignIn(user_store, api_client);
+    }
+  }, [user_snap.state, user_store, api_client]);
 
-      invariant(response.result.case === "success");
+  if (user_snap.state === UserStoreState.Error) {
+    throw new Error("Failed to sign in");
+  }
 
-      return response.result.value.user!;
-    },
-  });
+  if (user_snap.state !== UserStoreState.Ready) {
+    if (suspense_promise.current === null) {
+      suspense_promise.current = new Promise<void>((resolve) => {
+        const unsubscribe = subscribe(user_store, () => {
+          if (user_store.state === UserStoreState.Ready) {
+            unsubscribe();
+            resolve();
+          }
+        });
+      });
+    }
+    throw suspense_promise.current;
+  }
 
-  return data;
+  invariant(user_store.user !== null);
+  return user_store.user;
 }
 
 export function getPostQueryKey(user_id: number, post_id: number) {

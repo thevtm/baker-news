@@ -10,11 +10,16 @@ import { createAPIClient } from "./api-client.ts";
 import { APIClientProvider } from "./contexts/api-client.tsx";
 import { routeTree } from "./routeTree.gen";
 import { createLocalStoragePersister } from "./queries.ts";
+import { makeUserStore } from "./state/user-store.ts";
+import { UserStoreProvider } from "./contexts/user-store.tsx";
 
 import "./css/reset.css";
 
 // API Client
 const api_client = createAPIClient();
+
+// Stores
+const user_store = makeUserStore();
 
 // Queries
 const queryClient = new QueryClient();
@@ -35,9 +40,11 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <APIClientProvider apiClient={api_client}>
       <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
-        <ReactQueryDevtools />
+        <UserStoreProvider store={user_store}>
+          <RouterProvider router={router} />
+          <ReactQueryDevtools />
+        </UserStoreProvider>
       </QueryClientProvider>
     </APIClientProvider>
-  </StrictMode>
+  </StrictMode>,
 );
