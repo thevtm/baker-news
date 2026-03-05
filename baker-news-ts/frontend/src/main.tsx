@@ -34,7 +34,7 @@ declare module "@tanstack/react-router" {
   }
 }
 
-const router = createRouter({ routeTree });
+const router = createRouter({ routeTree, defaultPendingComponent: () => <div>Loading...</div> });
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

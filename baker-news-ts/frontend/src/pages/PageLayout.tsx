@@ -1,10 +1,13 @@
 import React from "react";
 import cslx from "clsx";
 
-import * as proto from "../proto";
+import { useUser } from "../queries";
+import { useUserStore } from "../contexts/user-store";
+import { useAPIClient } from "../contexts/api-client";
 
 import { sprinkles } from "../css/sprinkles.css";
 import { container } from "../css/styles.css";
+import { userReset } from "../state/user-store";
 
 // container mx-auto bg-orange-800 text-gray-200
 const header_style = sprinkles({
@@ -23,14 +26,17 @@ const footer_style = sprinkles({
   background: "orange-200",
 });
 
-export type PageLayoutProps = React.PropsWithChildren<{
-  user: proto.User;
-}>;
+export type PageLayoutProps = React.PropsWithChildren<object>;
 
-const PageLayout: React.FC<PageLayoutProps> = ({ user, children }) => {
-  const username = user?.username ?? "Loading...";
+const PageLayout: React.FC<PageLayoutProps> = ({ children }) => {
+  const user_store = useUserStore();
+  const api_client = useAPIClient();
+
+  const user = useUser();
+  const username = user.username;
 
   const current_year = new Date().getFullYear();
+  const reset_user = () => userReset(user_store, api_client);
 
   return (
     <>
@@ -58,7 +64,9 @@ const PageLayout: React.FC<PageLayoutProps> = ({ user, children }) => {
             </a>
           </div>
 
-          <span className={sprinkles({ marginX: 1 })}>{username}</span>
+          <span className={sprinkles({ marginX: 1 })} onClick={() => reset_user()}>
+            {username}
+          </span>
         </nav>
       </header>
 

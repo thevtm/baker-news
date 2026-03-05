@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import invariant from "tiny-invariant";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
@@ -19,11 +19,9 @@ export function useUser(): proto.User {
   const user_snap = useSnapshot(user_store);
   const suspense_promise = useRef<Promise<void> | null>(null);
 
-  useEffect(() => {
-    if (user_snap.state === UserStoreState.Initial) {
-      userSignIn(user_store, api_client);
-    }
-  }, [user_snap.state, user_store, api_client]);
+  if (user_snap.state === UserStoreState.Initial) {
+    userSignIn(user_store, api_client);
+  }
 
   if (user_snap.state === UserStoreState.Error) {
     throw new Error("Failed to sign in");
@@ -36,6 +34,7 @@ export function useUser(): proto.User {
           if (user_store.state === UserStoreState.Ready) {
             unsubscribe();
             resolve();
+            suspense_promise.current = null;
           }
         });
       });
