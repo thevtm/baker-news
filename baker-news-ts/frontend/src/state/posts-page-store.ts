@@ -30,46 +30,33 @@ export function makePostsPageStore(): PostsPageStore {
   return store;
 }
 
-export async function startLoadingPosts(store: PostsPageStore, api_client: APIClient, user_id: number): Promise<void> {
+export function startLoadingPosts(store: PostsPageStore, api_client: APIClient, user_id: number): void {
   if (store.state !== PostsPageState.Initial && store.state !== PostsPageState.Error) return;
 
-  // Set up abort controller up front so stopLoadingPosts can cancel at any stage
   const abort_controller = new AbortController();
   store.abort_controller = ref(abort_controller);
   store.state = PostsPageState.Loading;
 
-  // Request
-  const response_promise = api_client.getPosts({ userId: user_id }, { signal: abort_controller.signal });
-  store.promise = ref(response_promise as unknown as Promise<void>);
-  const response = await response_promise;
+  let resolve_initial!: () => void;
+  const initial_promise = new Promise<void>((resolve) => (resolve_initial = resolve));
+  store.promise = ref(initial_promise) as unknown as Promise<void>;
 
-  // Aborted during initial fetch
-  if (abort_controller.signal.aborted) {
-    store.promise = null;
-    store.abort_controller = null;
-    return;
-  }
-
-  // Error
-  if (response.result.case === "error") {
-    console.error("Error loading posts:", response.result.value);
-    store.state = PostsPageState.Error;
-    store.promise = null;
-    store.abort_controller = null;
-    return;
-  }
-
-  // Success
-  invariant(response.result.case === "success");
-  invariant(Array.isArray(response.result.value.postList?.posts));
-  store.posts = response.result.value.postList!.posts;
-  sort_posts(store);
-
-  // Set up subscription for live updates (reuses the same abort controller)
   (async () => {
     try {
       const feed = api_client.getPostsFeed({ userId: user_id }, { signal: abort_controller.signal });
-      for await (const response of feed) handle_get_posts_feed_event(store, response);
+      for await (const response of feed) {
+        if (
+          store.state === PostsPageState.Loading &&
+          response.result.case === "success" &&
+          response.result.value.event.case === "initialPosts"
+        ) {
+          store.state = PostsPageState.Live;
+          resolve_initial();
+          store.promise = null;
+        }
+
+        handle_get_posts_feed_event(store, response);
+      }
     } catch (err) {
       if (err instanceof ConnectError && err.code === Code.Canceled) {
         // Aborted, expected
@@ -78,9 +65,6 @@ export async function startLoadingPosts(store: PostsPageStore, api_client: APICl
       }
     }
   })();
-
-  store.state = PostsPageState.Live;
-  store.promise = null;
 }
 
 export function stopLoadingPosts(store: PostsPageStore): void {

@@ -1,12 +1,13 @@
 import { useEffect, useMemo } from "react";
-import { createFileRoute, invariant } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useSnapshot } from "valtio";
+import invariant from "tiny-invariant";
 
 import * as proto from "../proto/index.ts";
 import { useUser } from "../queries";
 import { PostsPage } from "../pages/PostsPage";
 import { useAPIClient } from "../contexts/api-client.tsx";
-import { makePostsPageStore, startLoadingPosts, stopLoadingPosts } from "../state/posts-page-store.ts";
+import { makePostsPageStore, PostsPageState, startLoadingPosts, stopLoadingPosts } from "../state/posts-page-store.ts";
 
 export const Route = createFileRoute("/")({
   component: IndexRouteComponent,
@@ -18,14 +19,20 @@ function IndexRouteComponent() {
 
   const store = useMemo(() => makePostsPageStore(), []);
   const snap = useSnapshot(store);
-  const posts = snap.posts as proto.Post[];
+
+  if (snap.state === PostsPageState.Initial) {
+    startLoadingPosts(store, api_client, user.id);
+  }
 
   useEffect(() => {
-    invariant(user.id !== undefined);
-    startLoadingPosts(store, api_client, user.id);
-
     return () => stopLoadingPosts(store);
-  }, [api_client, user.id, store]);
+  }, [store]);
 
+  if (snap.state === PostsPageState.Loading) {
+    invariant(snap.promise !== null);
+    throw snap.promise;
+  }
+
+  const posts = snap.posts as proto.Post[];
   return <PostsPage posts={posts} />;
 }
