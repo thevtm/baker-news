@@ -49,21 +49,6 @@ export function usePost(user_id: number, post_id: number): proto.GetPostResponse
   return data;
 }
 
-export function getPostsQueryKey(user_id: number) {
-  return [proto.BakerNewsService.typeName, proto.BakerNewsService.method.getPosts.name, user_id];
-}
-
-export function usePosts(user_id: number): proto.GetPostsResponse {
-  const api_client = useAPIClient();
-
-  const { data } = useSuspenseQuery({
-    queryKey: getPostsQueryKey(user_id),
-    queryFn: () => api_client.getPosts({ userId: user_id }),
-  });
-
-  return data;
-}
-
 type ProtoQuerySchemaTypes = proto.User | proto.GetPostsResponse | proto.GetPostResponse;
 
 const PROTO_QUERIES_SERIALIZATION_MAP = {
