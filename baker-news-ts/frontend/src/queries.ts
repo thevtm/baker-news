@@ -10,14 +10,13 @@ import * as proto from "./proto";
 import { useAPIClient } from "./contexts/api-client";
 import { useUserStore } from "./contexts/user-store";
 import { userSignIn, UserStoreState } from "./state/user-store";
-import { useSnapshot, subscribe } from "valtio";
+import { useSnapshot } from "valtio";
 
 export function useUser(): proto.User {
   const api_client = useAPIClient();
   const user_store = useUserStore();
 
   const user_snap = useSnapshot(user_store);
-  const suspense_promise = useRef<Promise<void> | null>(null);
 
   if (user_snap.state === UserStoreState.Initial) {
     userSignIn(user_store, api_client);
@@ -27,19 +26,9 @@ export function useUser(): proto.User {
     throw new Error("Failed to sign in");
   }
 
-  if (user_snap.state !== UserStoreState.Ready) {
-    if (suspense_promise.current === null) {
-      suspense_promise.current = new Promise<void>((resolve) => {
-        const unsubscribe = subscribe(user_store, () => {
-          if (user_store.state === UserStoreState.Ready) {
-            unsubscribe();
-            resolve();
-            suspense_promise.current = null;
-          }
-        });
-      });
-    }
-    throw suspense_promise.current;
+  if (user_snap.state === UserStoreState.SigningIn) {
+    invariant(user_snap.promise !== null);
+    throw user_snap.promise;
   }
 
   invariant(user_store.user !== null);

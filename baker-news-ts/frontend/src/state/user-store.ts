@@ -15,12 +15,14 @@ export enum UserStoreState {
 export interface UserStore {
   state: UserStoreState;
   user: proto.User | null;
+  promise: Promise<void> | null;
 }
 
 export function makeUserStore(): UserStore {
   const store = proxy<UserStore>({
     state: UserStoreState.Initial,
     user: null,
+    promise: null,
   });
 
   return store;
@@ -41,13 +43,15 @@ export async function userSignIn(store: UserStore, api_client: APIClient): Promi
   }
 
   // Create a random user
-  const username_number = Math.floor(Math.random() * 9999)
+  const username_number = Math.floor(Math.random() * 999999)
     .toString()
-    .padStart(4, "0");
+    .padStart(6, "0");
 
   const random_username = `User-${username_number}`;
 
-  const response = await api_client.createUser({ username: random_username });
+  const response_promise = api_client.createUser({ username: random_username });
+  store.promise = response_promise as unknown as Promise<void>;
+  const response = await response_promise;
 
   // Error
   if (response.result.case === "error") {
@@ -65,12 +69,14 @@ export async function userSignIn(store: UserStore, api_client: APIClient): Promi
   localStorage.setItem("user", toJsonString(proto.UserSchema, user));
 
   store.state = UserStoreState.Ready;
+  store.promise = null;
   store.user = user;
 }
 
 export async function userReset(store: UserStore, api_client: APIClient): Promise<void> {
   store.state = UserStoreState.Initial;
   store.user = null;
+  store.promise = null;
   localStorage.removeItem("user");
   await userSignIn(store, api_client);
 }
