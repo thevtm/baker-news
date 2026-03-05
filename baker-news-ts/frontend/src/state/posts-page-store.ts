@@ -61,7 +61,8 @@ export function startLoadingPosts(store: PostsPageStore, api_client: APIClient, 
       if (err instanceof ConnectError && err.code === Code.Canceled) {
         // Aborted, expected
       } else {
-        throw err;
+        store.state = PostsPageState.Error;
+        console.error("Error loading posts feed:", err);
       }
     }
   })();
