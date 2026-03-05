@@ -1,8 +1,17 @@
-import { proxy } from "valtio";
+import { proxy, ref } from "valtio";
 import { proxyMap } from "valtio/utils";
 import invariant from "tiny-invariant";
 
 import * as proto from "../proto/index.ts";
+import { APIClient } from "../api-client.ts";
+import { Code, ConnectError } from "@connectrpc/connect";
+
+export enum PostPageState {
+  Initial = "initial",
+  Error = "error",
+  Loading = "loading",
+  Live = "live",
+}
 
 export interface PostPageComment {
   comment: proto.Comment;
@@ -10,24 +19,57 @@ export interface PostPageComment {
 }
 
 export interface PostPageStore {
-  state: "initial" | "error" | "ready";
+  state: PostPageState;
   post: proto.Post | null;
   comments: Map<number, PostPageComment>;
   rootComments: PostPageComment[];
+  abort_controller: AbortController | null;
 }
 
 export function makePostStore(): PostPageStore {
   const store = proxy<PostPageStore>({
-    state: "initial",
+    state: PostPageState.Initial,
     post: null,
     comments: proxyMap(),
     rootComments: [],
+    abort_controller: null,
   });
 
   return store;
 }
 
-export function handleFeedEvent(store: PostPageStore, response: proto.GetPostFeedResponse): void {
+export function startLoadingPost(store: PostPageStore, api_client: APIClient, user_id: number, post_id: number): void {
+  if (store.state !== PostPageState.Initial && store.state !== PostPageState.Error) return;
+
+  const abort_controller = new AbortController();
+  store.abort_controller = ref(abort_controller);
+  store.state = PostPageState.Loading;
+
+  (async () => {
+    try {
+      const feed = api_client.getPostFeed({ userId: user_id, postId: post_id }, { signal: abort_controller.signal });
+      for await (const response of feed) handle_feed_event(store, response);
+    } catch (err) {
+      if (err instanceof ConnectError && err.code === Code.Canceled) {
+        // Aborted, expected
+      } else {
+        throw err;
+      }
+    }
+  })();
+}
+
+export function stopLoadingPost(store: PostPageStore): void {
+  if (store.state !== PostPageState.Loading && store.state !== PostPageState.Live) return;
+
+  invariant(store.abort_controller !== null);
+  store.abort_controller.abort("Stopped loading post");
+  store.abort_controller = null;
+
+  store.state = PostPageState.Initial;
+}
+
+function handle_feed_event(store: PostPageStore, response: proto.GetPostFeedResponse): void {
   invariant(response.result.case === "success");
 
   const event: proto.GetPostFeedSuccessfulResponse["event"] = response.result.value.event;
@@ -92,8 +134,7 @@ function handle_initial_post(event: { value: proto.Post; case: "initialPost" }, 
     }
   }
 
-  // State
-  store.state = "ready";
+  store.state = PostPageState.Live;
 }
 
 function handle_comment_created(event: { value: proto.CommentCreated; case: "commentCreated" }, store: PostPageStore) {
