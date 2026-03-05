@@ -1,4 +1,4 @@
-import { proxy } from "valtio";
+import { proxy, ref } from "valtio";
 import invariant from "tiny-invariant";
 import { fromJsonString, toJsonString } from "@bufbuild/protobuf";
 
@@ -50,7 +50,7 @@ export async function userSignIn(store: UserStore, api_client: APIClient): Promi
   const random_username = `User-${username_number}`;
 
   const response_promise = api_client.createUser({ username: random_username });
-  store.promise = response_promise as unknown as Promise<void>;
+  store.promise = ref(response_promise) as unknown as Promise<void>;
   const response = await response_promise;
 
   // Error

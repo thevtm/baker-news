@@ -1,4 +1,4 @@
-import { proxy } from "valtio";
+import { proxy, ref } from "valtio";
 import invariant from "tiny-invariant";
 
 import * as proto from "../proto/index.ts";
@@ -35,12 +35,12 @@ export async function startLoadingPosts(store: PostsPageStore, api_client: APICl
 
   // Set up abort controller up front so stopLoadingPosts can cancel at any stage
   const abort_controller = new AbortController();
-  store.abort_controller = abort_controller;
+  store.abort_controller = ref(abort_controller);
   store.state = PostsPageState.Loading;
 
   // Request
   const response_promise = api_client.getPosts({ userId: user_id }, { signal: abort_controller.signal });
-  store.promise = response_promise as unknown as Promise<void>;
+  store.promise = ref(response_promise as unknown as Promise<void>);
   const response = await response_promise;
 
   // Aborted during initial fetch
