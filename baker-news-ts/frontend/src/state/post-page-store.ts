@@ -53,7 +53,8 @@ export function startLoadingPost(store: PostPageStore, api_client: APIClient, us
       if (err instanceof ConnectError && err.code === Code.Canceled) {
         // Aborted, expected
       } else {
-        throw err;
+        store.state = PostPageState.Error;
+        console.error("Error loading post feed:", err);
       }
     }
   })();
