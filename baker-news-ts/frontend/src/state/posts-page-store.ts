@@ -1,58 +1,74 @@
 import { proxy, ref } from "valtio";
 import invariant from "tiny-invariant";
+import { Code, ConnectError } from "@connectrpc/connect";
 
 import * as proto from "../proto/index.ts";
 import { APIClient } from "../api-client.ts";
-import { Code, ConnectError } from "@connectrpc/connect";
 
-export enum PostsPageState {
+enum PostsPageState {
   Initial = "initial",
   Error = "error",
   Loading = "loading",
   Live = "live",
+  Stopped = "stopped",
 }
 
 export interface PostsPageStore {
-  state: PostsPageState;
   posts: proto.Post[];
-  promise: Promise<void> | null;
-  abort_controller: AbortController | null;
+  promise: Promise<void>;
+  notStarted: boolean;
+  _abort_controller: AbortController | null;
+  _state: PostsPageState;
+  _promise_resolve: () => void;
+  _promise_reject: (reason?: unknown) => void;
 }
 
 export function makePostsPageStore(): PostsPageStore {
+  let promise_resolve!: () => void;
+  let promise_reject!: (reason?: unknown) => void;
+
+  const promise = new Promise<void>((resolve, reject) => {
+    promise_resolve = resolve;
+    promise_reject = reject;
+  });
+
   const store = proxy<PostsPageStore>({
-    state: PostsPageState.Initial,
     posts: [],
-    promise: null,
-    abort_controller: null,
+    promise: ref(promise),
+
+    _state: PostsPageState.Initial,
+    _promise_resolve: promise_resolve,
+    _promise_reject: promise_reject,
+    _abort_controller: null,
+
+    get notStarted() {
+      return this._state === PostsPageState.Initial;
+    },
   });
 
   return store;
 }
 
 export function startLoadingPosts(store: PostsPageStore, api_client: APIClient, user_id: number): void {
-  if (store.state !== PostsPageState.Initial && store.state !== PostsPageState.Error) return;
+  if (store._state !== PostsPageState.Initial && store._state !== PostsPageState.Error) {
+    throw new Error(`startLoadingPosts called in invalid state: ${store._state}`);
+  }
 
   const abort_controller = new AbortController();
-  store.abort_controller = ref(abort_controller);
-  store.state = PostsPageState.Loading;
-
-  let resolve_initial!: () => void;
-  const initial_promise = new Promise<void>((resolve) => (resolve_initial = resolve));
-  store.promise = ref(initial_promise) as unknown as Promise<void>;
+  store._abort_controller = ref(abort_controller);
+  store._state = PostsPageState.Loading;
 
   (async () => {
     try {
       const feed = api_client.getPostsFeed({ userId: user_id }, { signal: abort_controller.signal });
       for await (const response of feed) {
         if (
-          store.state === PostsPageState.Loading &&
+          store._state === PostsPageState.Loading &&
           response.result.case === "success" &&
           response.result.value.event.case === "initialPosts"
         ) {
-          store.state = PostsPageState.Live;
-          resolve_initial();
-          store.promise = null;
+          store._state = PostsPageState.Live;
+          store._promise_resolve();
         }
 
         handle_get_posts_feed_event(store, response);
@@ -61,7 +77,8 @@ export function startLoadingPosts(store: PostsPageStore, api_client: APIClient, 
       if (err instanceof ConnectError && err.code === Code.Canceled) {
         // Aborted, expected
       } else {
-        store.state = PostsPageState.Error;
+        store._state = PostsPageState.Error;
+        store._promise_reject();
         console.error("Error loading posts feed:", err);
       }
     }
@@ -69,14 +86,13 @@ export function startLoadingPosts(store: PostsPageStore, api_client: APIClient, 
 }
 
 export function stopLoadingPosts(store: PostsPageStore): void {
-  if (store.state !== PostsPageState.Loading && store.state !== PostsPageState.Live) return;
+  if (store._state !== PostsPageState.Loading && store._state !== PostsPageState.Live) return;
 
-  invariant(store.abort_controller !== null);
-  store.abort_controller.abort("Stopped loading posts");
-  store.abort_controller = null;
-  store.promise = null;
+  invariant(store._abort_controller !== null);
+  store._abort_controller.abort("Stopped loading posts");
+  store._abort_controller = null;
 
-  store.state = PostsPageState.Initial;
+  store._state = PostsPageState.Stopped;
 }
 
 function handle_get_posts_feed_event(store: PostsPageStore, response: proto.GetPostsFeedResponse): void {

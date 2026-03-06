@@ -1,17 +1,15 @@
-import * as proto from "../proto";
+import { Suspense } from "react";
 
 import { PostList } from "../components/PostList";
 import CreatePostForm from "../components/CreatePostForm";
 
-export interface PostsPageProps {
-  posts: proto.Post[];
-}
-
-export const PostsPage: React.FC<PostsPageProps> = ({ posts }) => {
+export const PostsPage: React.FC = () => {
   return (
     <>
       <CreatePostForm />
-      <PostList posts={posts} />
+      <Suspense fallback={<div>Loading...</div>}>
+        <PostList />
+      </Suspense>
     </>
   );
 };
