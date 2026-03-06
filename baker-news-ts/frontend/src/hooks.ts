@@ -3,9 +3,18 @@ import { useSnapshot } from "valtio";
 import { use, useContext } from "react";
 
 import * as proto from "./proto";
-import { useAPIClient } from "./contexts/api-client";
+import { APIClientContext } from "./contexts/api-client";
 import { UserStoreContext } from "./contexts/user-store";
+import { APIClient } from "./api-client";
 import { UserStore, userSignIn } from "./state/user-store";
+
+export const useAPIClient = (): APIClient => {
+  const context = useContext(APIClientContext);
+  if (!context) {
+    throw new Error("useAPIClient must be used within an APIClientProvider");
+  }
+  return context;
+};
 
 export const useUserStore = (): UserStore => {
   const context = useContext(UserStoreContext);

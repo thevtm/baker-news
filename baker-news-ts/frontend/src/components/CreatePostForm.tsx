@@ -3,7 +3,7 @@ import clsx from "clsx";
 import invariant from "tiny-invariant";
 
 import { useUser } from "../hooks";
-import { useAPIClient } from "../contexts/api-client";
+import { useAPIClient } from "../hooks";
 
 import { container } from "../css/styles.css";
 import { sprinkles } from "../css/sprinkles.css";

@@ -3,7 +3,7 @@ import invariant from "tiny-invariant";
 
 import * as proto from "../proto";
 import { useUser } from "../hooks";
-import { useAPIClient } from "../contexts/api-client";
+import { useAPIClient } from "../hooks";
 import { PostPageComment } from "../state/post-page-store";
 
 import VoteButton from "./VoteButton";

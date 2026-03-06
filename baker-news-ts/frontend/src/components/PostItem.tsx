@@ -4,7 +4,7 @@ import { Link } from "@tanstack/react-router";
 
 import * as proto from "../proto";
 import { useUser } from "../hooks";
-import { useAPIClient } from "../contexts/api-client";
+import { useAPIClient } from "../hooks";
 
 import VoteButton from "./VoteButton";
 

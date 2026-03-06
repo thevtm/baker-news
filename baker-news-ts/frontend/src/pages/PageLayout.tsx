@@ -2,7 +2,7 @@ import React from "react";
 import cslx from "clsx";
 
 import { useUser, useUserStore } from "../hooks";
-import { useAPIClient } from "../contexts/api-client";
+import { useAPIClient } from "../hooks";
 
 import { sprinkles } from "../css/sprinkles.css";
 import { container } from "../css/styles.css";

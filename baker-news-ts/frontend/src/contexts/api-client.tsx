@@ -1,17 +1,8 @@
-import { createContext, ReactNode, useContext } from "react";
+import { createContext, ReactNode } from "react";
 
 import { APIClient } from "../api-client";
 
-const APIClientContext = createContext<APIClient | null>(null);
-
-// eslint-disable-next-line react-refresh/only-export-components
-export const useAPIClient = (): APIClient => {
-  const context = useContext(APIClientContext);
-  if (!context) {
-    throw new Error("useAPIClient must be used within an APIClientProvider");
-  }
-  return context;
-};
+export const APIClientContext = createContext<APIClient | null>(null);
 
 type APIClientProviderProps = {
   apiClient: APIClient;
