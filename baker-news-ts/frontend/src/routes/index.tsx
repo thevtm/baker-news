@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { Suspense, useMemo } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 
 import { PostsPage } from "../pages/PostsPage";
@@ -14,7 +14,9 @@ function IndexRouteComponent() {
 
   return (
     <PostsPageStoreProvider store={store}>
-      <PostsPage />
+      <Suspense fallback={<div>Loading...</div>}>
+        <PostsPage />
+      </Suspense>
     </PostsPageStoreProvider>
   );
 }

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import cslx from "clsx";
 
 import { useUser, useUserStore } from "../hooks";
@@ -25,17 +25,25 @@ const footer_style = sprinkles({
   background: "orange-200",
 });
 
+function Username() {
+  // It was necessary to extract this component for suspense to work
+  const user_store = useUserStore();
+  const api_client = useAPIClient();
+  const user = useUser();
+
+  const reset_user = () => userReset(user_store, api_client);
+
+  return (
+    <span className={sprinkles({ marginX: 1 })} onClick={() => reset_user()}>
+      {user.username}
+    </span>
+  );
+}
+
 export type PageLayoutProps = React.PropsWithChildren<object>;
 
 const PageLayout: React.FC<PageLayoutProps> = ({ children }) => {
-  const user_store = useUserStore();
-  const api_client = useAPIClient();
-
-  const user = useUser();
-  const username = user.username;
-
   const current_year = new Date().getFullYear();
-  const reset_user = () => userReset(user_store, api_client);
 
   return (
     <>
@@ -63,9 +71,9 @@ const PageLayout: React.FC<PageLayoutProps> = ({ children }) => {
             </a>
           </div>
 
-          <span className={sprinkles({ marginX: 1 })} onClick={() => reset_user()}>
-            {username}
-          </span>
+          <Suspense fallback={<span>Loading...</span>}>
+            <Username />
+          </Suspense>
         </nav>
       </header>
 
