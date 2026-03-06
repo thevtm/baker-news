@@ -1,8 +1,8 @@
-import React, { Suspense } from "react";
 import cslx from "clsx";
+import React, { Suspense } from "react";
+import { Link } from "@tanstack/react-router";
 
-import { useUser, useUserStore } from "../hooks";
-import { useAPIClient } from "../hooks";
+import { useUser, useUserStore, useAPIClient } from "../hooks";
 
 import { sprinkles } from "../css/sprinkles.css";
 import { container } from "../css/styles.css";
@@ -50,25 +50,16 @@ const PageLayout: React.FC<PageLayoutProps> = ({ children }) => {
       <header className={cslx(container, header_style)}>
         <nav className={sprinkles({ display: "flex", paddingY: 1 })}>
           <div className={sprinkles({ display: "flex", flexGrow: 1 })}>
-            <a
-              className={sprinkles({ marginX: 1, fontWeight: "bold", textDecoration: "none" })}
-              href="/"
-              hx-get="/"
-              hx-target="main"
-              hx-push-url="true"
-            >
+            <Link className={sprinkles({ marginX: 1, fontWeight: "bold", textDecoration: "none" })} to="/">
               🥖
-            </a>
+            </Link>
 
-            <a
+            <Link
               className={sprinkles({ marginX: 1, fontWeight: "bold", textDecoration: "none", color: "white" })}
-              href="/"
-              hx-get="/"
-              hx-target="main"
-              hx-push-url="true"
+              to="/"
             >
               Backer News
-            </a>
+            </Link>
           </div>
 
           <Suspense fallback={<span>Loading...</span>}>
