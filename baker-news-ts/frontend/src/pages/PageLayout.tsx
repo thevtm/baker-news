@@ -1,8 +1,7 @@
 import React from "react";
 import cslx from "clsx";
 
-import { useUser } from "../hooks";
-import { useUserStore } from "../contexts/user-store";
+import { useUser, useUserStore } from "../hooks";
 import { useAPIClient } from "../contexts/api-client";
 
 import { sprinkles } from "../css/sprinkles.css";

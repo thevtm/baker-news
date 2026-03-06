@@ -1,17 +1,8 @@
-import { createContext, ReactNode, useContext } from "react";
+import { createContext, ReactNode } from "react";
 
 import { UserStore } from "../state/user-store.ts";
 
-const UserStoreContext = createContext<UserStore | null>(null);
-
-// eslint-disable-next-line react-refresh/only-export-components
-export const useUserStore = (): UserStore => {
-  const context = useContext(UserStoreContext);
-  if (!context) {
-    throw new Error("useUserStore must be used within a UserStoreProvider");
-  }
-  return context;
-};
+export const UserStoreContext = createContext<UserStore | null>(null);
 
 type UserStoreProviderProps = {
   store: UserStore;
