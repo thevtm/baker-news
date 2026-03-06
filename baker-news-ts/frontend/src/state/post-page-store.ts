@@ -1,16 +1,17 @@
+import invariant from "tiny-invariant";
 import { proxy, ref } from "valtio";
 import { proxyMap } from "valtio/utils";
-import invariant from "tiny-invariant";
+import { Code, ConnectError } from "@connectrpc/connect";
 
 import * as proto from "../proto/index.ts";
 import { APIClient } from "../api-client.ts";
-import { Code, ConnectError } from "@connectrpc/connect";
 
 export enum PostPageState {
   Initial = "initial",
   Error = "error",
   Loading = "loading",
   Live = "live",
+  Stopped = "stopped",
 }
 
 export interface PostPageComment {
@@ -19,41 +20,80 @@ export interface PostPageComment {
 }
 
 export interface PostPageStore {
-  state: PostPageState;
   post: proto.Post | null;
   comments: Map<number, PostPageComment>;
   rootComments: PostPageComment[];
-  abort_controller: AbortController | null;
+  promise: Promise<void>;
+
+  _state: PostPageState;
+  _promise_resolve: () => void;
+  _promise_reject: (reason?: unknown) => void;
+  _abort_controller: AbortController | null;
+
+  isIdle: boolean;
 }
 
 export function makePostStore(): PostPageStore {
+  const [promise, promise_resolve, promise_reject] = make_promise();
+
   const store = proxy<PostPageStore>({
-    state: PostPageState.Initial,
     post: null,
     comments: proxyMap(),
     rootComments: [],
-    abort_controller: null,
+    promise: ref(promise),
+
+    _state: PostPageState.Initial,
+    _promise_resolve: promise_resolve,
+    _promise_reject: promise_reject,
+    _abort_controller: null,
+
+    get isIdle() {
+      return this._state === PostPageState.Initial || this._state === PostPageState.Stopped;
+    },
   });
 
   return store;
 }
 
 export function startLoadingPost(store: PostPageStore, api_client: APIClient, user_id: number, post_id: number): void {
-  if (store.state !== PostPageState.Initial && store.state !== PostPageState.Error) return;
+  if (
+    store._state !== PostPageState.Initial &&
+    store._state !== PostPageState.Error &&
+    store._state !== PostPageState.Stopped
+  ) {
+    throw new Error(`startLoadingPost called in invalid state: ${store._state}`);
+  }
+
+  store._state = PostPageState.Loading;
 
   const abort_controller = new AbortController();
-  store.abort_controller = ref(abort_controller);
-  store.state = PostPageState.Loading;
+  store._abort_controller = ref(abort_controller);
+
+  const promise_resolve = store._promise_resolve;
+  const promise_reject = store._promise_reject;
 
   (async () => {
     try {
       const feed = api_client.getPostFeed({ userId: user_id, postId: post_id }, { signal: abort_controller.signal });
-      for await (const response of feed) handle_feed_event(store, response);
+
+      for await (const response of feed) {
+        if (
+          store._state === PostPageState.Loading &&
+          response.result.case === "success" &&
+          response.result.value.event.case === "initialPost"
+        ) {
+          store._state = PostPageState.Live;
+          promise_resolve();
+        }
+
+        handle_feed_event(store, response);
+      }
     } catch (err) {
       if (err instanceof ConnectError && err.code === Code.Canceled) {
         // Aborted, expected
       } else {
-        store.state = PostPageState.Error;
+        store._state = PostPageState.Error;
+        promise_reject();
         console.error("Error loading post feed:", err);
       }
     }
@@ -61,13 +101,37 @@ export function startLoadingPost(store: PostPageStore, api_client: APIClient, us
 }
 
 export function stopLoadingPost(store: PostPageStore): void {
-  if (store.state !== PostPageState.Loading && store.state !== PostPageState.Live) return;
+  if (store._state !== PostPageState.Loading && store._state !== PostPageState.Live) {
+    throw new Error(`stopLoadingPost called in invalid state: ${store._state}`);
+  }
 
-  invariant(store.abort_controller !== null);
-  store.abort_controller.abort("Stopped loading post");
-  store.abort_controller = null;
+  invariant(store._abort_controller !== null);
+  store._abort_controller.abort();
+  store._abort_controller = null;
 
-  store.state = PostPageState.Initial;
+  store._state = PostPageState.Stopped;
+  store.post = null;
+  store.comments.clear();
+  store.rootComments = [];
+
+  // Pre-create the promise for the next loading cycle so React's use() can
+  // cache it — promises created during render trigger an "uncached promise" warning
+  const [promise, promise_resolve, promise_reject] = make_promise();
+  store.promise = ref(promise);
+  store._promise_resolve = promise_resolve;
+  store._promise_reject = promise_reject;
+}
+
+function make_promise(): [Promise<void>, () => void, (reason?: unknown) => void] {
+  let promise_resolve!: () => void;
+  let promise_reject!: (reason?: unknown) => void;
+
+  const promise = new Promise<void>((resolve, reject) => {
+    promise_resolve = resolve;
+    promise_reject = reject;
+  });
+
+  return [promise, promise_resolve, promise_reject];
 }
 
 function handle_feed_event(store: PostPageStore, response: proto.GetPostFeedResponse): void {
@@ -134,8 +198,6 @@ function handle_initial_post(event: { value: proto.Post; case: "initialPost" }, 
       parentComment.children.push(comment);
     }
   }
-
-  store.state = PostPageState.Live;
 }
 
 function handle_comment_created(event: { value: proto.CommentCreated; case: "commentCreated" }, store: PostPageStore) {

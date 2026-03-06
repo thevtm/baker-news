@@ -1,13 +1,11 @@
 import cslx from "clsx";
 
-import * as proto from "../proto";
-
+import { usePost } from "../hooks";
 import PostItem from "../components/PostItem";
 import CommentList from "../components/CommentList";
 
 import { sprinkles } from "../css/sprinkles.css";
 import { container } from "../css/styles.css";
-import { PostPageComment } from "../state/post-page-store";
 import { CommentForm } from "../components/CommentForm";
 
 // container mx-auto bg-orange-100 py-1
@@ -18,11 +16,12 @@ const style = sprinkles({
 });
 
 export interface PostPageProps {
-  post: proto.Post;
-  rootComments: PostPageComment[];
+  postId: number;
 }
 
-export const PostPage: React.FC<PostPageProps> = ({ post, rootComments }) => {
+export const PostPage: React.FC<PostPageProps> = ({ postId }) => {
+  const { post, rootComments } = usePost(postId);
+
   return (
     <div className={cslx(container, style)}>
       <PostItem key={post.id} post={post} />
