@@ -1,7 +1,7 @@
 import React from "react";
 import cslx from "clsx";
 
-import { useUser } from "../queries";
+import { useUser } from "../hooks";
 import { useUserStore } from "../contexts/user-store";
 import { useAPIClient } from "../contexts/api-client";
 

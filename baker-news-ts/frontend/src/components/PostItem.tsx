@@ -3,7 +3,7 @@ import invariant from "tiny-invariant";
 import { Link } from "@tanstack/react-router";
 
 import * as proto from "../proto";
-import { useUser } from "../queries";
+import { useUser } from "../hooks";
 import { useAPIClient } from "../contexts/api-client";
 
 import VoteButton from "./VoteButton";

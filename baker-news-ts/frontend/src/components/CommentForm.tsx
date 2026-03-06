@@ -3,7 +3,7 @@ import clsx from "clsx";
 import invariant from "tiny-invariant";
 
 import * as proto from "../proto";
-import { useUser } from "../queries";
+import { useUser } from "../hooks";
 import { useAPIClient } from "../contexts/api-client";
 
 import { container } from "../css/styles.css";

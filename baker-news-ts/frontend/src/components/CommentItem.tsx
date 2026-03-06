@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import invariant from "tiny-invariant";
 
 import * as proto from "../proto";
-import { useUser } from "../queries";
+import { useUser } from "../hooks";
 import { useAPIClient } from "../contexts/api-client";
 import { PostPageComment } from "../state/post-page-store";
 

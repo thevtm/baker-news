@@ -2,7 +2,7 @@ import React from "react";
 import clsx from "clsx";
 import invariant from "tiny-invariant";
 
-import { useUser } from "../queries";
+import { useUser } from "../hooks";
 import { useAPIClient } from "../contexts/api-client";
 
 import { container } from "../css/styles.css";

@@ -1,10 +1,11 @@
 import invariant from "tiny-invariant";
+import { useSnapshot } from "valtio";
+import { use } from "react";
 
 import * as proto from "./proto";
 import { useAPIClient } from "./contexts/api-client";
 import { useUserStore } from "./contexts/user-store";
-import { userSignIn, UserStoreState } from "./state/user-store";
-import { useSnapshot } from "valtio";
+import { userSignIn } from "./state/user-store";
 
 export function useUser(): proto.User {
   const api_client = useAPIClient();
@@ -12,18 +13,11 @@ export function useUser(): proto.User {
 
   const user_snap = useSnapshot(user_store);
 
-  if (user_snap.state === UserStoreState.Initial) {
+  if (user_snap.user === null) {
     userSignIn(user_store, api_client);
   }
 
-  if (user_snap.state === UserStoreState.Error) {
-    throw new Error("Failed to sign in");
-  }
-
-  if (user_snap.state === UserStoreState.SigningIn) {
-    invariant(user_snap.promise !== null);
-    throw user_snap.promise;
-  }
+  use(user_snap.promise);
 
   invariant(user_store.user !== null);
   return user_store.user;
