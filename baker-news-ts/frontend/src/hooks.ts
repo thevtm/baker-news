@@ -1,6 +1,6 @@
 import invariant from "tiny-invariant";
 import { useSnapshot } from "valtio";
-import { use, useContext, useEffect } from "react";
+import { use, useContext } from "react";
 
 import * as proto from "./proto";
 import { APIClientContext } from "./contexts/api-client";
@@ -8,7 +8,7 @@ import { UserStoreContext } from "./contexts/user-store";
 import { PostsPageStoreContext } from "./contexts/posts-page-store";
 import { APIClient } from "./api-client";
 import { UserStore, userSignIn } from "./state/user-store";
-import { PostsPageStore, startLoadingPosts, stopLoadingPosts } from "./state/posts-page-store";
+import { PostsPageStore, startLoadingPosts } from "./state/posts-page-store";
 
 export const useAPIClient = (): APIClient => {
   const context = useContext(APIClientContext);
@@ -57,9 +57,7 @@ export function usePosts(): proto.Post[] {
   const store = usePostsPageStore();
   const snap = useSnapshot(store);
 
-  useEffect(() => () => stopLoadingPosts(store), [store]);
-
-  if (snap.notStarted) {
+  if (snap.isIdle) {
     startLoadingPosts(store, api_client, user.id);
   }
 

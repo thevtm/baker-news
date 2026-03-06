@@ -16,7 +16,7 @@ enum PostsPageState {
 export interface PostsPageStore {
   posts: proto.Post[];
   promise: Promise<void>;
-  notStarted: boolean;
+  isIdle: boolean;
   _abort_controller: AbortController | null;
   _state: PostsPageState;
   _promise_resolve: () => void;
@@ -24,13 +24,7 @@ export interface PostsPageStore {
 }
 
 export function makePostsPageStore(): PostsPageStore {
-  let promise_resolve!: () => void;
-  let promise_reject!: (reason?: unknown) => void;
-
-  const promise = new Promise<void>((resolve, reject) => {
-    promise_resolve = resolve;
-    promise_reject = reject;
-  });
+  const [promise, promise_resolve, promise_reject] = make_promise();
 
   const store = proxy<PostsPageStore>({
     posts: [],
@@ -41,8 +35,8 @@ export function makePostsPageStore(): PostsPageStore {
     _promise_reject: promise_reject,
     _abort_controller: null,
 
-    get notStarted() {
-      return this._state === PostsPageState.Initial;
+    get isIdle() {
+      return this._state === PostsPageState.Stopped || this._state === PostsPageState.Initial;
     },
   });
 
@@ -50,7 +44,11 @@ export function makePostsPageStore(): PostsPageStore {
 }
 
 export function startLoadingPosts(store: PostsPageStore, api_client: APIClient, user_id: number): void {
-  if (store._state !== PostsPageState.Initial && store._state !== PostsPageState.Error) {
+  if (
+    store._state !== PostsPageState.Initial &&
+    store._state !== PostsPageState.Error &&
+    store._state !== PostsPageState.Stopped
+  ) {
     throw new Error(`startLoadingPosts called in invalid state: ${store._state}`);
   }
 
@@ -93,6 +91,26 @@ export function stopLoadingPosts(store: PostsPageStore): void {
   store._abort_controller = null;
 
   store._state = PostsPageState.Stopped;
+  store.posts = [];
+
+  // Pre-create the promise for the next loading cycle so React's use() can
+  // cache it — promises created during render trigger an "uncached promise" warning
+  const [promise, promise_resolve, promise_reject] = make_promise();
+  store.promise = ref(promise);
+  store._promise_resolve = promise_resolve;
+  store._promise_reject = promise_reject;
+}
+
+function make_promise(): [Promise<void>, () => void, (reason?: unknown) => void] {
+  let promise_resolve!: () => void;
+  let promise_reject!: (reason?: unknown) => void;
+
+  const promise = new Promise<void>((resolve, reject) => {
+    promise_resolve = resolve;
+    promise_reject = reject;
+  });
+
+  return [promise, promise_resolve, promise_reject];
 }
 
 function handle_get_posts_feed_event(store: PostsPageStore, response: proto.GetPostsFeedResponse): void {
