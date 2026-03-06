@@ -87,7 +87,7 @@ export function stopLoadingPosts(store: PostsPageStore): void {
   if (store._state !== PostsPageState.Loading && store._state !== PostsPageState.Live) return;
 
   invariant(store._abort_controller !== null);
-  store._abort_controller.abort("Stopped loading posts");
+  store._abort_controller.abort();
   store._abort_controller = null;
 
   store._state = PostsPageState.Stopped;
