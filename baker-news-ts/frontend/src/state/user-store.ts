@@ -72,7 +72,6 @@ export async function userSignIn(store: UserStore, api_client: APIClient): Promi
 
   // Error
   if (response.result.case === "error") {
-    console.error("Error creating user:", response.result.value);
     store._state = UserStoreState.Error;
     store._promise_reject(new Error("Failed to create user"));
     return;
@@ -89,7 +88,6 @@ export async function userSignIn(store: UserStore, api_client: APIClient): Promi
   store._state = UserStoreState.SignedIn;
   store.user = user;
   store._promise_resolve();
-  console.log("User signed in:", user);
 }
 
 export async function userReset(store: UserStore, api_client: APIClient): Promise<void> {
