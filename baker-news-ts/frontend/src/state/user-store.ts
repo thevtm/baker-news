@@ -15,6 +15,7 @@ export enum UserStoreState {
 export interface UserStore {
   user: proto.User | null;
   promise: Promise<void>;
+  signInRequested: boolean;
   _promise_resolve: () => void;
   _promise_reject: (reason?: unknown) => void;
   _state: UserStoreState;
@@ -32,12 +33,17 @@ export function makeUserStore(): UserStore {
   const store = proxy<UserStore>({
     user: null,
     promise: ref(promise),
+
+    get signInRequested() {
+      return this._state !== UserStoreState.Initial;
+    },
+
     _promise_resolve: promise_resolve,
     _promise_reject: promise_reject,
     _state: UserStoreState.Initial,
   });
 
-  return store;
+  return store as UserStore;
 }
 
 export async function userSignIn(store: UserStore, api_client: APIClient): Promise<void> {

@@ -13,7 +13,7 @@ export function useUser(): proto.User {
 
   const user_snap = useSnapshot(user_store);
 
-  if (user_snap.user === null) {
+  if (!user_snap.signInRequested) {
     userSignIn(user_store, api_client);
   }
 
