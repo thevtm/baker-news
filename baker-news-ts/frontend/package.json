@@ -12,11 +12,11 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
-    "@bufbuild/protobuf": "^2.2.5",
+    "@bufbuild/protobuf": "^2.11.0",
     "@chromatic-com/storybook": "^3.2.6",
-    "@connectrpc/connect": "^2.0.2",
-    "@connectrpc/connect-node": "^2.0.2",
-    "@connectrpc/connect-web": "^2.0.2",
+    "@connectrpc/connect": "^2.1.1",
+    "@connectrpc/connect-node": "^2.1.1",
+    "@connectrpc/connect-web": "^2.1.1",
     "@eslint/js": "^9.25.1",
     "@storybook/addon-essentials": "^8.6.12",
     "@storybook/addon-interactions": "^8.6.12",
