@@ -53,7 +53,7 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = () => {
   };
 
   return (
-    <div className={clsx(container, sprinkles({ marginX: "auto", paddingY: 1, background: "orange-50" }))}>
+    <div className={clsx(container, sprinkles({ paddingY: 1, background: "orange-50" }))}>
       {state === State.ERROR && errorMessage && (
         <div
           className={sprinkles({

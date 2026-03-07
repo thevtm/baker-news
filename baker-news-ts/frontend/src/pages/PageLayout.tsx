@@ -1,4 +1,4 @@
-import cslx from "clsx";
+import clsx from "clsx";
 import React, { Suspense } from "react";
 import { Link } from "@tanstack/react-router";
 
@@ -10,7 +10,6 @@ import { userReset } from "../state/user-store";
 
 // container mx-auto bg-orange-800 text-gray-200
 const header_style = sprinkles({
-  marginX: "auto",
   background: "orange-800",
   color: "gray-200",
 });
@@ -19,7 +18,6 @@ const footer_style = sprinkles({
   display: "flex",
   justifyContent: "center",
 
-  marginX: "auto",
   padding: 1,
 
   background: "orange-200",
@@ -47,7 +45,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({ children }) => {
 
   return (
     <>
-      <header className={cslx(container, header_style)}>
+      <header className={clsx(container, header_style)}>
         <nav className={sprinkles({ display: "flex", paddingY: 1 })}>
           <div className={sprinkles({ display: "flex", flexGrow: 1 })}>
             <Link className={sprinkles({ marginX: 1, fontWeight: "bold", textDecoration: "none" })} to="/">
@@ -68,9 +66,11 @@ const PageLayout: React.FC<PageLayoutProps> = ({ children }) => {
         </nav>
       </header>
 
-      <main id="main">{children}</main>
+      <main id="main" className={clsx(container)}>
+        {children}
+      </main>
 
-      <footer className={cslx(container, footer_style)}>&copy; {current_year} Baker News Ltda.</footer>
+      <footer className={clsx(container, footer_style)}>&copy; {current_year} Baker News Ltda.</footer>
     </>
   );
 };

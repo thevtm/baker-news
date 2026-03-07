@@ -51,7 +51,7 @@ export const CommentForm: React.FC<CommentFormProps> = ({ parent, onSuccess }) =
   };
 
   return (
-    <div className={clsx(container, sprinkles({ marginX: "auto", paddingY: 1, background: "orange-100" }))}>
+    <div className={clsx(container, sprinkles({ paddingY: 1, background: "orange-100" }))}>
       {state === State.ERROR && errorMessage && (
         <div
           className={sprinkles({

@@ -10,7 +10,6 @@ import { CommentForm } from "../components/CommentForm";
 
 // container mx-auto bg-orange-100 py-1
 const style = sprinkles({
-  marginX: "auto",
   background: "orange-100",
   paddingY: 1,
 });
