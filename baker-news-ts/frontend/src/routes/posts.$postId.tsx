@@ -16,7 +16,11 @@ function PostsShowRouteComponent() {
   const post_id = parseInt(params.postId);
 
   useEffect(() => {
-    return () => stopLoadingPost(store);
+    return () => {
+      if (!store.isIdle) {
+        stopLoadingPost(store);
+      }
+    };
   }, []);
 
   return (
