@@ -52,6 +52,8 @@ const responsiveProperties = defineProperties({
     width: ["100%"],
     maxWidth: ["640px", "768px", "1024px"],
 
+    minHeight: ["12rem", "24rem", "32rem"],
+
     marginTop: space,
     marginBottom: space,
     marginLeft: space,

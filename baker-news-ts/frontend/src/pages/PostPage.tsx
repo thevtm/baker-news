@@ -8,10 +8,12 @@ import { sprinkles } from "../css/sprinkles.css";
 import { container } from "../css/styles.css";
 import { CommentForm } from "../components/CommentForm";
 
-// container mx-auto bg-orange-100 py-1
 const style = sprinkles({
   background: "orange-100",
+
   paddingY: 1,
+
+  flexGrow: 1,
 });
 
 export interface PostPageProps {

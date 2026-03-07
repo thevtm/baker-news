@@ -1,5 +1,5 @@
 import React from "react";
-import cslx from "clsx";
+import clsx from "clsx";
 
 import PostItem from "./PostItem";
 
@@ -17,7 +17,7 @@ export const PostList: React.FC = () => {
   const posts = usePosts();
 
   return (
-    <div className={cslx(container, style)} style={{ minHeight: "30rem" }}>
+    <div className={clsx(container, style)}>
       {posts.map((post) => (
         <PostItem key={post.id} post={post} />
       ))}

@@ -14,6 +14,13 @@ const header_style = sprinkles({
   color: "gray-200",
 });
 
+const main_style = sprinkles({
+  minHeight: "32rem",
+
+  display: "flex",
+  flexDirection: "column",
+});
+
 const footer_style = sprinkles({
   display: "flex",
   justifyContent: "center",
@@ -66,7 +73,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({ children }) => {
         </nav>
       </header>
 
-      <main id="main" className={clsx(container)}>
+      <main id="main" className={clsx(container, main_style)}>
         {children}
       </main>
 
